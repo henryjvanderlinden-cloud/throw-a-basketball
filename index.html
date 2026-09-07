@@ -85,9 +85,13 @@
           stroke-dasharray="5 10" stroke-linecap="round"/>
   </g>
 
-  <!-- ===== player (swap this group for a sprite later) ===== -->
+  <!-- ===== player ===== -->
+  <!-- Sprite frames are injected into #psprite by the game; #pvector is the
+       fallback figure used when sprites/ is not available. -->
   <g id="player">
-    <g id="pflip">
+   <g id="pflip">
+    <g id="psprite"></g>
+    <g id="pvector">
       <!-- white sticker outline so the figure reads on any court -->
       <g stroke="#ffffff" stroke-linecap="round" fill="#ffffff" opacity="0.85">
         <line x1="-8" y1="-26" x2="-11" y2="0" stroke-width="13"/>
@@ -109,6 +113,7 @@
       <circle cx="1" cy="-70" r="13" fill="#f0c9a4" stroke="var(--ink)" stroke-width="2"/>
       <path d="M-12,-76 a13,13 0 0 1 26,0 z" fill="var(--ink)"/>
     </g>
+   </g>
   </g>
 
   <!-- ===== ball (swap circle for <image> sprite later) ===== -->
@@ -146,6 +151,16 @@
           font-family="ui-sans-serif,system-ui">Court: Vector</text>
   </g>
 
+  <!-- ===== character select ===== -->
+  <g id="select" opacity="0" pointer-events="none">
+    <rect x="0" y="0" width="960" height="640" fill="#0b0d12" opacity="0.82"/>
+    <text x="480" y="96" text-anchor="middle" font-size="34" font-weight="800" fill="#fff"
+          font-family="ui-sans-serif,system-ui" letter-spacing="1">CHOOSE YOUR BALLER</text>
+    <g id="selCards"></g>
+    <text x="480" y="592" text-anchor="middle" font-size="15" fill="#aab2c0"
+          font-family="ui-sans-serif,system-ui">← → to pick · Space to play</text>
+  </g>
+
   <!-- ===== overlay ===== -->
   <g id="overlay" opacity="0" pointer-events="none">
     <rect x="0" y="0" width="960" height="640" fill="#000" opacity="0.62"/>
@@ -154,7 +169,7 @@
     <text id="ovScore" x="480" y="338" text-anchor="middle" font-size="24" fill="#e6e9f0"
           font-family="ui-monospace,monospace">0 points</text>
     <text x="480" y="392" text-anchor="middle" font-size="17" fill="#aab2c0"
-          font-family="ui-sans-serif,system-ui">Press R to play again</text>
+          font-family="ui-sans-serif,system-ui">Press Space or R to play again</text>
   </g>
 </svg>
 </div>
@@ -162,9 +177,12 @@
 <p class="legend">
   <kbd>←</kbd> <kbd>→</kbd> move &amp; dribble · <kbd>Space</kbd> pick up the ball and aim ·
   <kbd>←</kbd> <kbd>→</kbd> set the angle · hold <kbd>Space</kbd> to charge (green → red), release to shoot ·
-  <kbd>R</kbd> restart · <kbd>C</kbd> or <kbd>1</kbd>–<kbd>4</kbd> switch court.
+  <kbd>R</kbd> restart (and pick a new character) · <kbd>C</kbd> or <kbd>1</kbd>–<kbd>4</kbd> switch court.
   The shot clock starts on your first <kbd>Space</kbd> and resets on every throw — let it hit zero and the game is over.
 </p>
+
+<!-- Generated sprite data. Absent -> the game falls back to the vector figure. -->
+<script src="sprites/manifest.js"></script>
 
 <script>
 (() => {
@@ -193,7 +211,7 @@ const CHARGE_RATE = 1 / 1.05;   // full power in ~1.05 s
 const AIM_RATE = 62;            // degrees per second
 const AIM_MIN = 18, AIM_MAX = 162;
 const SPEED_MIN = 760, SPEED_MAX = 1560;
-const PICKUP_DIST = 46;
+const PICKUP_DIST = 62;
 const PICKUP_LOCKOUT = 0.35;    // s after release before you can re-catch
 
 const CLOCK_BASE = 10, CLOCK_FLOOR = 3, CLOCK_STEP = 0.5, PTS_PER_STEP = 12;
@@ -209,6 +227,8 @@ const el = {
   overlay: $('overlay'), ovTitle: $('ovTitle'), ovScore: $('ovScore'),
   net: $('net'),
   aimg: $('aimg'), aimBg: $('aimlineBg'), armFbg: $('armFbg'), armBbg: $('armBbg'),
+  psprite: $('psprite'), pvector: $('pvector'),
+  select: $('select'), selCards: $('selCards'), hud: $('hud'),
   court: $('court'), scrim: $('scrim'), vectorScene: $('vectorScene'),
   ceiling: $('ceiling'), floorLine: $('floorLine'),
   shPlayer: $('shPlayer'), shBall: $('shBall'),
@@ -281,13 +301,114 @@ el.court.addEventListener('error', () => { if (courtIdx !== 0) applyCourt(0, fal
   el.net.innerHTML = `<path d="${d}"/>`;
 })();
 
+// ---------------------------------------------------------------- characters
+// sprites/manifest.js defines window.SPRITE_MANIFEST. Without it the game runs
+// on the vector figure and skips the character picker.
+const SVGNS = 'http://www.w3.org/2000/svg';
+const CHARS = (window.SPRITE_MANIFEST && Array.isArray(window.SPRITE_MANIFEST.characters))
+  ? window.SPRITE_MANIFEST.characters : [];
+const HAS_SPRITES = CHARS.length > 0;
+
+// how fast each animation alternates, in frames per second
+const ANIM_HZ = { dribble: 6.5, aim: 2.6, charge: 9, release: 0, follow: 0 };
+const RELEASE_HOLD = 0.22;      // seconds the throw pose stays up
+const FOLLOW_HOLD = 0.5;        // ...then the follow-through
+
+let charIdx = 0, curChar = null, charFrames = [], shownFrame = -1;
+
+function buildCharacter(i) {
+  curChar = CHARS[i] || null;
+  el.psprite.textContent = '';
+  charFrames = []; shownFrame = -1;
+  el.pvector.setAttribute('opacity', curChar ? '0' : '1');
+  if (!curChar) return;
+  for (const f of curChar.frames) {
+    const im = document.createElementNS(SVGNS, 'image');
+    im.setAttribute('href', f.src);
+    im.setAttribute('width', f.w); im.setAttribute('height', f.h);
+    im.setAttribute('x', -f.footX); im.setAttribute('y', -f.footY);
+    im.setAttribute('opacity', '0');
+    el.psprite.appendChild(im);
+    charFrames.push(im);
+  }
+  try { localStorage.setItem('hoop.char', curChar.key); } catch (e) {}
+}
+
+function showFrame(pose1based) {
+  const i = pose1based - 1;
+  if (i === shownFrame || !charFrames[i]) return;
+  if (charFrames[shownFrame]) charFrames[shownFrame].setAttribute('opacity', '0');
+  charFrames[i].setAttribute('opacity', '1');
+  shownFrame = i;
+}
+
+// where the ball sits when the character is holding it
+function holdPos() {
+  const hx = curChar ? curChar.handX : HAND_DX;
+  const hy = curChar ? curChar.handY + 12 : HAND_DY - 14;
+  return [g.px + hx * g.facing, GROUND + hy];
+}
+
+function buildSelectCards() {
+  el.selCards.textContent = '';
+  const n = CHARS.length, cw = 200, gap = 24;
+  const x0 = (W - (n * cw + (n - 1) * gap)) / 2;
+  CHARS.forEach((c, i) => {
+    const x = x0 + i * (cw + gap), y = 140, ch = 400;
+    const grp = document.createElementNS(SVGNS, 'g');
+    grp.setAttribute('data-i', String(i));
+    grp.style.cursor = 'pointer';
+
+    const card = document.createElementNS(SVGNS, 'rect');
+    card.setAttribute('x', x); card.setAttribute('y', y);
+    card.setAttribute('width', cw); card.setAttribute('height', ch);
+    card.setAttribute('rx', 16); card.setAttribute('fill', '#ffffff');
+    card.setAttribute('fill-opacity', '0.07');
+    card.setAttribute('stroke', '#ffffff'); card.setAttribute('stroke-opacity', '0.25');
+    card.setAttribute('stroke-width', '3');
+    grp.appendChild(card);
+
+    const f = c.frames[0], k = 250 / f.h;
+    const im = document.createElementNS(SVGNS, 'image');
+    im.setAttribute('href', f.src);
+    im.setAttribute('width', f.w * k); im.setAttribute('height', f.h * k);
+    im.setAttribute('x', x + cw / 2 - f.footX * k);
+    im.setAttribute('y', y + ch - 74 - f.footY * k);
+    grp.appendChild(im);
+
+    const t = document.createElementNS(SVGNS, 'text');
+    t.setAttribute('x', x + cw / 2); t.setAttribute('y', y + ch - 32);
+    t.setAttribute('text-anchor', 'middle'); t.setAttribute('font-size', '19');
+    t.setAttribute('font-weight', '700'); t.setAttribute('fill', '#fff');
+    t.setAttribute('font-family', 'ui-sans-serif,system-ui');
+    t.textContent = c.label;
+    grp.appendChild(t);
+
+    grp.addEventListener('click', () => {
+      if (g.state !== STATE.SELECT) return;
+      charIdx = i; paintSelection(); startRun();
+    });
+    el.selCards.appendChild(grp);
+  });
+}
+
+function paintSelection() {
+  [...el.selCards.children].forEach((grp, i) => {
+    const on = i === charIdx, card = grp.firstChild;
+    card.setAttribute('fill-opacity', on ? '0.18' : '0.07');
+    card.setAttribute('stroke', on ? '#ffb347' : '#ffffff');
+    card.setAttribute('stroke-opacity', on ? '1' : '0.25');
+    card.setAttribute('stroke-width', on ? '5' : '3');
+  });
+}
+
 // ---------------------------------------------------------------- state
-const STATE = { DRIBBLE: 'DRIBBLE', AIM: 'AIM', CHARGE: 'CHARGE', LIVE: 'LIVE', OVER: 'OVER' };
+const STATE = { SELECT: 'SELECT', DRIBBLE: 'DRIBBLE', AIM: 'AIM', CHARGE: 'CHARGE', LIVE: 'LIVE', OVER: 'OVER' };
 let g;
 
 function reset() {
   g = {
-    state: STATE.DRIBBLE,
+    state: HAS_SPRITES ? STATE.SELECT : STATE.DRIBBLE,
     px: W * 0.5 - 170,          // player feet x
     facing: 1,
     dribT: 0,
@@ -302,17 +423,36 @@ function reset() {
     clockOn: false,
     clockLimit: CLOCK_BASE,
     clock: CLOCK_BASE,
-    flash: 0
+    flash: 0,
+    animT: 0,
+    throwT: 99                  // time since the release, for the throw poses
   };
   el.overlay.setAttribute('opacity', '0');
+  el.select.setAttribute('opacity', g.state === STATE.SELECT ? '1' : '0');
+  el.select.setAttribute('pointer-events', g.state === STATE.SELECT ? 'auto' : 'none');
+}
+
+function startRun() {
+  buildCharacter(charIdx);
+  g.state = STATE.DRIBBLE;
+  el.select.setAttribute('opacity', '0');
+  el.select.setAttribute('pointer-events', 'none');
+}
+
+if (HAS_SPRITES) {
+  let saved = null;
+  try { saved = localStorage.getItem('hoop.char'); } catch (e) {}
+  const i = CHARS.findIndex(c => c.key === saved);
+  charIdx = i >= 0 ? i : 0;
 }
 reset();
+if (HAS_SPRITES) { buildSelectCards(); paintSelection(); buildCharacter(charIdx); }
 
 function clockLimitFor(points) {
   return Math.max(CLOCK_FLOOR, CLOCK_BASE - CLOCK_STEP * Math.floor(points / PTS_PER_STEP));
 }
-const handX = () => g.px + HAND_DX * g.facing;
-const handY = () => GROUND + HAND_DY;
+// how tall the current character is, for shadow and pickup sizing
+const bodyH = () => curChar ? curChar.frames[0].h : 70;
 
 // ---------------------------------------------------------------- input
 const keys = Object.create(null);
@@ -327,6 +467,11 @@ window.addEventListener('keydown', e => {
   }
   if (e.repeat) return;
   keys[k] = true;
+  if (g.state === STATE.SELECT) {
+    if (k === 'ArrowLeft')  { charIdx = (charIdx - 1 + CHARS.length) % CHARS.length; paintSelection(); return; }
+    if (k === 'ArrowRight') { charIdx = (charIdx + 1) % CHARS.length; paintSelection(); return; }
+    if (k === 'Enter') { startRun(); return; }
+  }
   if (k === 'Space') onSpaceDown();
 });
 window.addEventListener('keyup', e => {
@@ -337,7 +482,8 @@ window.addEventListener('keyup', e => {
 window.addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
 
 function onSpaceDown() {
-  if (g.state === STATE.OVER) return;
+  if (g.state === STATE.SELECT) { startRun(); return; }
+  if (g.state === STATE.OVER) { reset(); return; }
   if (!g.clockOn) { g.clockOn = true; g.clock = g.clockLimit; }
   if (g.state === STATE.DRIBBLE) {
     g.state = STATE.AIM;                 // grab the ball, start aiming
@@ -355,7 +501,7 @@ function shoot() {
   const rad = g.angle * Math.PI / 180;
   const speed = SPEED_MIN + (SPEED_MAX - SPEED_MIN) * g.power;
   const b = g.ball;
-  b.x = handX(); b.y = handY() - 14;
+  [b.x, b.y] = holdPos();
   b.vx = Math.cos(rad) * speed;
   b.vy = -Math.sin(rad) * speed;
   b.rest = false;
@@ -364,6 +510,7 @@ function shoot() {
   g.scoredThisShot = false;
   g.state = STATE.LIVE;
   g.power = 0;
+  g.throwT = 0;
   g.clock = g.clockLimit;   // every throw resets the shot clock
 }
 
@@ -416,6 +563,10 @@ function collideCircle(b, cx, cy, cr, rest) {
 // ---------------------------------------------------------------- update
 function step(dt) {
   const left = !!keys.ArrowLeft, right = !!keys.ArrowRight;
+  g.animT += dt;
+  g.throwT += dt;
+
+  if (g.state === STATE.SELECT) return;
 
   // shot clock
   if (g.clockOn && g.state !== STATE.OVER) {
@@ -453,13 +604,13 @@ function step(dt) {
   const b = g.ball;
   if (g.state === STATE.DRIBBLE) {
     // dribbling next to the player
-    const h = Math.abs(Math.sin(g.dribT)) * 92;
-    b.x = g.px + 26 * g.facing;
+    const h = Math.abs(Math.sin(g.dribT)) * bodyH() * 0.62;
+    b.x = g.px + bodyH() * 0.26 * g.facing;
     b.y = GROUND - BALL_R - h;
     b.spin += dt * 300 * g.facing;
     b.vx = 0; b.vy = 0;
   } else if (g.state === STATE.AIM || g.state === STATE.CHARGE) {
-    b.x = handX(); b.y = handY() - 14;
+    [b.x, b.y] = holdPos();
   } else {
     // free flight
     g.lockout = Math.max(0, g.lockout - dt);
@@ -508,7 +659,7 @@ function step(dt) {
 
     // auto pickup
     if (g.lockout <= 0) {
-      const dx = b.x - handX(), dy = b.y - (handY() - 6);
+      const dx = b.x - g.px, dy = b.y - (GROUND - bodyH() * 0.45);
       if (Math.hypot(dx, dy) < PICKUP_DIST) {
         g.state = STATE.DRIBBLE;
         g.held = true;
@@ -530,18 +681,47 @@ function powerColor(p) {
   return `rgb(${c(0)},${c(1)},${c(2)})`;
 }
 
+// Pick the pose for this frame. Two-frame loops at a handful of frames per
+// second -- the heave that old DOS sports games ran on.
+function animatePlayer() {
+  if (!curChar) return;
+  const p = curChar.poses;
+  let list, hz;
+
+  if (g.state === STATE.CHARGE) {
+    list = p.charge; hz = ANIM_HZ.charge * (0.6 + 0.7 * g.power);   // tenses up
+  } else if (g.state === STATE.AIM) {
+    list = p.aim; hz = ANIM_HZ.aim;
+  } else if (g.state === STATE.LIVE && g.throwT < RELEASE_HOLD) {
+    list = p.release; hz = 0;
+  } else if (g.state === STATE.LIVE && g.throwT < RELEASE_HOLD + FOLLOW_HOLD) {
+    list = p.follow; hz = 0;
+  } else {
+    const moving = !!keys.ArrowLeft || !!keys.ArrowRight;
+    list = p.dribble;
+    hz = g.state === STATE.DRIBBLE ? ANIM_HZ.dribble * (moving ? 1.15 : 1)
+                                   : (moving ? ANIM_HZ.dribble : 0);
+  }
+  const i = hz > 0 ? Math.floor(g.animT * hz) % list.length : 0;
+  showFrame(list[i]);
+}
+
 // ---------------------------------------------------------------- render
 function render() {
   const b = g.ball;
   el.player.setAttribute('transform', `translate(${g.px.toFixed(1)},${GROUND})`);
   el.pflip.setAttribute('transform', g.facing < 0 ? 'scale(-1,1)' : 'scale(1,1)');
+  el.player.setAttribute('opacity', g.state === STATE.SELECT ? '0' : '1');
+  animatePlayer();
 
   // shadows shrink with height off the floor
   el.shPlayer.setAttribute('cx', g.px.toFixed(1));
+  el.shPlayer.setAttribute('rx', (bodyH() * 0.2).toFixed(1));
   const hAir = Math.max(0, Math.min(1, (GROUND - BALL_R - b.y) / 420));
   el.shBall.setAttribute('cx', b.x.toFixed(1));
   el.shBall.setAttribute('rx', (12 * (1 - 0.55 * hAir)).toFixed(1));
-  el.shBall.setAttribute('opacity', (0.20 * (1 - 0.7 * hAir)).toFixed(3));
+  el.shBall.setAttribute('opacity', g.state === STATE.SELECT ? '0'
+                                    : (0.20 * (1 - 0.7 * hAir)).toFixed(3));
 
   const aiming = (g.state === STATE.AIM || g.state === STATE.CHARGE);
   // front arm points at the ball when holding, hangs otherwise
@@ -554,12 +734,15 @@ function render() {
 
   el.ballg.setAttribute('transform',
     `translate(${b.x.toFixed(1)},${b.y.toFixed(1)}) rotate(${(b.spin % 360).toFixed(1)})`);
+  const hidden = g.state === STATE.SELECT ? '0' : '1';
+  el.ballg.setAttribute('opacity', hidden);
+  el.shPlayer.setAttribute('opacity', g.state === STATE.SELECT ? '0' : '0.22');
 
   // aim line
   if (aiming) {
     const rad = g.angle * Math.PI / 180;
     const len = 78 + 150 * g.power;
-    const x1 = handX(), y1 = handY() - 14;
+    const [x1, y1] = holdPos();
     const x2 = (x1 + Math.cos(rad) * len).toFixed(1);
     const y2 = (y1 - Math.sin(rad) * len).toFixed(1);
     for (const n of [el.aim, el.aimBg]) {
@@ -575,7 +758,7 @@ function render() {
   if (g.state === STATE.CHARGE) {
     // sit the meter on the side the player is NOT aiming towards
     const side = -g.facing;
-    const bx = Math.max(8, Math.min(W - 24, g.px + 56 * side - 8)), by = GROUND - 200;
+    const bx = Math.max(8, Math.min(W - 24, g.px + 74 * side - 8)), by = GROUND - 210;
     el.power.setAttribute('opacity', '1');
     el.power.setAttribute('transform', `translate(${bx.toFixed(1)},${by})`);
     const h = 96 * g.power;
@@ -592,6 +775,7 @@ function render() {
   el.clock.setAttribute('fill', g.clock <= 3 ? '#e2572b' : 'var(--ink)');
   el.pts.setAttribute('fill', g.flash > 0 ? '#3fbf5f' : 'var(--ink)');
   el.toast.setAttribute('opacity', Math.min(1, toastT / 0.4).toFixed(2));
+  el.hud.setAttribute('opacity', g.state === STATE.SELECT ? '0' : '1');
 }
 
 // ---------------------------------------------------------------- loop
@@ -609,6 +793,8 @@ function frame(now) {
 requestAnimationFrame(frame);
 
 // expose for debugging / future sprite work
-window.__hoop = { get state(){ return g; }, reset, step, render, keys, STATE, HOOP };
+window.__hoop = { get state(){ return g; }, reset, step, render, keys, STATE, HOOP,
+                  startRun, get chars(){ return CHARS; },
+                  get charIdx(){ return charIdx; }, set charIdx(v){ charIdx = v; } };
 })();
 </script>
