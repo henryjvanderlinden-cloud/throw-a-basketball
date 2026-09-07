@@ -1,0 +1,18 @@
+# Normalise line endings: LF in the repo, native in the working tree.
+* text=auto
+
+*.html  text eol=lf
+*.md    text eol=lf
+*.js    text eol=lf
+*.css   text eol=lf
+*.json  text eol=lf
+
+# Artwork and other binaries must never be munged.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.mp3   binary
+*.ogg   binary
+*.wav   binary

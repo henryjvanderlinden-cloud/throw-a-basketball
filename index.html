@@ -1,0 +1,614 @@
+<title>Hoop Shooter</title>
+<style>
+  :root{
+    --bg:#f4efe6; --ink:#20232b; --muted:#6c7280; --line:#d8d0c2;
+    --wood:#e3b579; --wood2:#d3a165; --panel:#ffffff; --accent:#e2572b;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#14161b; --ink:#eceff5; --muted:#98a0b0; --line:#2b3038;
+      --wood:#7a5533; --wood2:#6a4829; --panel:#1d2027; --accent:#ff7a4d;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#14161b; --ink:#eceff5; --muted:#98a0b0; --line:#2b3038;
+    --wood:#7a5533; --wood2:#6a4829; --panel:#1d2027; --accent:#ff7a4d;
+  }
+  body{background:var(--bg);color:var(--ink);font:14px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+       display:flex;flex-direction:column;align-items:center;gap:10px;padding:14px;min-height:100vh;box-sizing:border-box}
+  #stagewrap{width:100%;max-width:980px}
+  svg#stage{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:12px;background:var(--panel);
+            touch-action:none;user-select:none}
+  .legend{color:var(--muted);font-size:12.5px;text-align:center;max-width:820px}
+  kbd{font:inherit;font-size:11.5px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:1px 5px;background:var(--bg);color:var(--ink)}
+</style>
+
+<div id="stagewrap">
+<svg id="stage" viewBox="0 0 960 640" xmlns="http://www.w3.org/2000/svg" aria-label="Basketball game">
+  <defs>
+    <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="var(--wood)"/><stop offset="1" stop-color="var(--wood2)"/>
+    </linearGradient>
+    <radialGradient id="ballGrad" cx="0.35" cy="0.3" r="0.8">
+      <stop offset="0" stop-color="#ff9f56"/><stop offset="1" stop-color="#d8541c"/>
+    </radialGradient>
+    <clipPath id="ballClip"><circle cx="0" cy="0" r="13"/></clipPath>
+  </defs>
+
+  <!-- ===== static scene ===== -->
+  <g id="scene">
+    <!-- painted court backdrop; sized so the artwork's own rim lands on the play rim -->
+    <image id="court" x="0" y="0" width="960" height="720"
+           preserveAspectRatio="xMidYMin slice" opacity="0" href=""/>
+    <rect id="scrim" x="0" y="0" width="960" height="640" fill="#0b0d12" opacity="0"/>
+    <!-- vector court (shown when no artwork is loaded) -->
+    <g id="vectorScene">
+      <rect x="0" y="596" width="960" height="44" fill="url(#floorGrad)"/>
+      <line x1="0" y1="596" x2="960" y2="596" stroke="var(--line)" stroke-width="2"/>
+    </g>
+    <!-- ceiling beam (the ball bounces off this) -->
+    <rect id="ceiling" x="0" y="0" width="960" height="10" fill="var(--line)"/>
+    <!-- floor contact line, kept subtle over artwork -->
+    <line id="floorLine" x1="0" y1="596" x2="960" y2="596" stroke="#000" stroke-width="2" opacity="0"/>
+  </g>
+
+  <!-- ground shadows -->
+  <ellipse id="shPlayer" cx="0" cy="596" rx="26" ry="6" fill="#000" opacity="0.22"/>
+  <ellipse id="shBall" cx="0" cy="596" rx="12" ry="4" fill="#000" opacity="0.18"/>
+
+  <!-- ===== hoop rig (top middle) ===== -->
+  <g id="hoop">
+    <!-- support -->
+    <rect x="474" y="10" width="12" height="34" fill="var(--muted)"/>
+    <rect x="384" y="40" width="192" height="9" fill="var(--muted)"/>
+    <!-- backboards (left / right wings) -->
+    <rect id="bbL" x="390" y="49" width="12" height="96" fill="#c9d4e2" stroke="var(--ink)" stroke-width="2"/>
+    <rect id="bbR" x="558" y="49" width="12" height="96" fill="#c9d4e2" stroke="var(--ink)" stroke-width="2"/>
+    <!-- inner target squares -->
+    <rect x="402" y="96" width="4" height="34" fill="none" stroke="var(--accent)" stroke-width="3"/>
+    <rect x="554" y="96" width="4" height="34" fill="none" stroke="var(--accent)" stroke-width="3"/>
+    <!-- brackets tying the rim to the boards -->
+    <path d="M396,145 L422,166 M564,145 L538,166" stroke="var(--muted)" stroke-width="4" fill="none"/>
+    <!-- net -->
+    <g id="net" stroke="var(--muted)" stroke-width="1.6" fill="none" opacity="0.85"></g>
+    <!-- rim -->
+    <line x1="422" y1="166" x2="538" y2="166" stroke="#e2572b" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="422" cy="166" r="6" fill="#e2572b"/>
+    <circle cx="538" cy="166" r="6" fill="#e2572b"/>
+  </g>
+
+  <!-- ===== aim line (white underlay keeps it readable on dark artwork) ===== -->
+  <g id="aimg" opacity="0" pointer-events="none">
+    <line id="aimlineBg" x1="0" y1="0" x2="0" y2="0" stroke="#ffffff" stroke-width="8"
+          stroke-dasharray="5 10" stroke-linecap="round" opacity="0.75"/>
+    <line id="aimline" x1="0" y1="0" x2="0" y2="0" stroke="#20232b" stroke-width="3"
+          stroke-dasharray="5 10" stroke-linecap="round"/>
+  </g>
+
+  <!-- ===== player (swap this group for a sprite later) ===== -->
+  <g id="player">
+    <g id="pflip">
+      <!-- white sticker outline so the figure reads on any court -->
+      <g stroke="#ffffff" stroke-linecap="round" fill="#ffffff" opacity="0.85">
+        <line x1="-8" y1="-26" x2="-11" y2="0" stroke-width="13"/>
+        <line x1="6"  y1="-26" x2="10" y2="0" stroke-width="13"/>
+        <line id="armBbg" x1="-10" y1="-52" x2="-22" y2="-34" stroke-width="12"/>
+        <line id="armFbg" x1="10" y1="-52" x2="24" y2="-36" stroke-width="12"/>
+        <rect x="-16" y="-62" width="33" height="42" rx="11"/>
+        <circle cx="1" cy="-70" r="17"/>
+      </g>
+      <!-- legs -->
+      <line x1="-8" y1="-26" x2="-11" y2="0" stroke="var(--ink)" stroke-width="7" stroke-linecap="round"/>
+      <line x1="6"  y1="-26" x2="10" y2="0" stroke="var(--ink)" stroke-width="7" stroke-linecap="round"/>
+      <!-- body -->
+      <rect x="-12" y="-58" width="25" height="34" rx="8" fill="var(--accent)"/>
+      <!-- arms -->
+      <line id="armB" x1="-10" y1="-52" x2="-22" y2="-34" stroke="var(--ink)" stroke-width="6" stroke-linecap="round"/>
+      <line id="armF" x1="10" y1="-52" x2="24" y2="-36" stroke="var(--ink)" stroke-width="6" stroke-linecap="round"/>
+      <!-- head -->
+      <circle cx="1" cy="-70" r="13" fill="#f0c9a4" stroke="var(--ink)" stroke-width="2"/>
+      <path d="M-12,-76 a13,13 0 0 1 26,0 z" fill="var(--ink)"/>
+    </g>
+  </g>
+
+  <!-- ===== ball (swap circle for <image> sprite later) ===== -->
+  <g id="ballg">
+    <circle r="13" fill="url(#ballGrad)" stroke="#7d2f0d" stroke-width="1.5"/>
+    <g clip-path="url(#ballClip)" stroke="#7d2f0d" stroke-width="1.6" fill="none">
+      <line x1="-13" y1="0" x2="13" y2="0"/>
+      <line x1="0" y1="-13" x2="0" y2="13"/>
+      <path d="M-9,-13 q6,13 0,26"/>
+      <path d="M9,-13 q-6,13 0,26"/>
+    </g>
+  </g>
+
+  <!-- ===== power meter ===== -->
+  <g id="power" opacity="0">
+    <rect id="pwBg" x="0" y="0" width="16" height="96" rx="8" fill="var(--line)"/>
+    <rect id="pwFill" x="0" y="0" width="16" height="0" rx="8" fill="#3fbf5f"/>
+  </g>
+
+  <!-- ===== HUD ===== -->
+  <g id="hud" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">
+    <rect x="620" y="20" width="320" height="56" rx="12" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>
+    <text x="648" y="43" font-size="11" fill="var(--muted)" letter-spacing="1.5">MADE</text>
+    <text id="hudMade" x="648" y="66" font-size="22" font-weight="700" fill="var(--ink)">0</text>
+    <text x="716" y="43" font-size="11" fill="var(--muted)" letter-spacing="1.5">POINTS</text>
+    <text id="hudPts" x="716" y="66" font-size="22" font-weight="700" fill="var(--ink)">0</text>
+    <text x="828" y="43" font-size="11" fill="var(--muted)" letter-spacing="1.5">SHOT CLOCK</text>
+    <text id="hudClock" x="828" y="66" font-size="22" font-weight="700" fill="var(--ink)">10.0</text>
+  </g>
+
+  <!-- court name toast -->
+  <g id="toast" opacity="0">
+    <rect x="20" y="20" width="150" height="30" rx="10" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>
+    <text id="toastText" x="95" y="40" text-anchor="middle" font-size="13" fill="var(--ink)"
+          font-family="ui-sans-serif,system-ui">Court: Vector</text>
+  </g>
+
+  <!-- ===== overlay ===== -->
+  <g id="overlay" opacity="0" pointer-events="none">
+    <rect x="0" y="0" width="960" height="640" fill="#000" opacity="0.62"/>
+    <text id="ovTitle" x="480" y="286" text-anchor="middle" font-size="52" font-weight="800" fill="#fff"
+          font-family="ui-sans-serif,system-ui">TIME'S UP</text>
+    <text id="ovScore" x="480" y="338" text-anchor="middle" font-size="24" fill="#e6e9f0"
+          font-family="ui-monospace,monospace">0 points</text>
+    <text x="480" y="392" text-anchor="middle" font-size="17" fill="#aab2c0"
+          font-family="ui-sans-serif,system-ui">Press R to play again</text>
+  </g>
+</svg>
+</div>
+
+<p class="legend">
+  <kbd>←</kbd> <kbd>→</kbd> move &amp; dribble · <kbd>Space</kbd> pick up the ball and aim ·
+  <kbd>←</kbd> <kbd>→</kbd> set the angle · hold <kbd>Space</kbd> to charge (green → red), release to shoot ·
+  <kbd>R</kbd> restart · <kbd>C</kbd> or <kbd>1</kbd>–<kbd>4</kbd> switch court.
+  The shot clock starts on your first <kbd>Space</kbd> and resets on every throw — let it hit zero and the game is over.
+</p>
+
+<script>
+(() => {
+'use strict';
+
+// ---------------------------------------------------------------- constants
+const W = 960, H = 640, GROUND = 596;
+const G = 1500;                 // gravity px/s^2
+const BALL_R = 13;
+const AIR = 0.13;               // linear air drag coefficient
+const REST_FLOOR = 0.66, REST_WALL = 0.72, REST_RIM = 0.62, REST_BOARD = 0.68;
+const FRICTION = 0.86;          // tangential damping on rim/board hits
+
+const HOOP = { cx: 480, rimY: 166, halfW: 58, nubR: 6 };
+const BOARDS = [
+  { x: 390, y: 49, w: 12, h: 96 },   // left wing
+  { x: 558, y: 49, w: 12, h: 96 }    // right wing
+];
+const BEAM = { x: 384, y: 40, w: 192, h: 9 };
+
+const PLAYER_SPEED = 330;
+const PLAYER_MIN_X = 40, PLAYER_MAX_X = W - 40;
+const HAND_DY = -92;            // hand offset from feet (ball held above the head)
+const HAND_DX = 20;
+const CHARGE_RATE = 1 / 1.05;   // full power in ~1.05 s
+const AIM_RATE = 62;            // degrees per second
+const AIM_MIN = 18, AIM_MAX = 162;
+const SPEED_MIN = 760, SPEED_MAX = 1560;
+const PICKUP_DIST = 46;
+const PICKUP_LOCKOUT = 0.35;    // s after release before you can re-catch
+
+const CLOCK_BASE = 10, CLOCK_FLOOR = 3, CLOCK_STEP = 0.5, PTS_PER_STEP = 12;
+const POINTS_PER_BASKET = 3;
+
+// ---------------------------------------------------------------- elements
+const $ = id => document.getElementById(id);
+const el = {
+  player: $('player'), pflip: $('pflip'), armF: $('armF'), armB: $('armB'),
+  ballg: $('ballg'), aim: $('aimline'),
+  power: $('power'), pwBg: $('pwBg'), pwFill: $('pwFill'),
+  made: $('hudMade'), pts: $('hudPts'), clock: $('hudClock'),
+  overlay: $('overlay'), ovTitle: $('ovTitle'), ovScore: $('ovScore'),
+  net: $('net'),
+  aimg: $('aimg'), aimBg: $('aimlineBg'), armFbg: $('armFbg'), armBbg: $('armBbg'),
+  court: $('court'), scrim: $('scrim'), vectorScene: $('vectorScene'),
+  ceiling: $('ceiling'), floorLine: $('floorLine'),
+  shPlayer: $('shPlayer'), shBall: $('shBall'),
+  bbL: $('bbL'), bbR: $('bbR'),
+  toast: $('toast'), toastText: $('toastText')
+};
+
+// ---------------------------------------------------------------- courts
+// Backdrops live next to this file. The artwork is framed so its painted rim
+// lands on the play rim when the image is drawn 960x720, top-aligned.
+const COURT_DIR = 'artwork/basketball-courts/';
+const COURTS = [
+  { id: 'vector',   label: 'Vector',   src: null },
+  { id: 'nba',      label: 'NBA',      src: COURT_DIR + 'nba.png' },
+  { id: 'school',   label: 'School',   src: COURT_DIR + 'school.png' },
+  { id: 'graffiti', label: 'Graffiti', src: COURT_DIR + 'graffiti.png' }
+];
+let courtIdx = 0, toastT = 0;
+
+function applyCourt(i, announce) {
+  courtIdx = ((i % COURTS.length) + COURTS.length) % COURTS.length;
+  const c = COURTS[courtIdx];
+  if (c.src) {
+    el.court.setAttribute('href', c.src);
+    el.court.setAttribute('opacity', '1');
+    el.scrim.setAttribute('opacity', '0.12');
+    el.vectorScene.setAttribute('opacity', '0');
+    el.ceiling.setAttribute('opacity', '0.25');
+    el.floorLine.setAttribute('opacity', '0.35');
+    el.bbL.setAttribute('opacity', '0.5'); el.bbR.setAttribute('opacity', '0.5');
+  } else {
+    el.court.setAttribute('opacity', '0');
+    el.scrim.setAttribute('opacity', '0');
+    el.vectorScene.setAttribute('opacity', '1');
+    el.ceiling.setAttribute('opacity', '1');
+    el.floorLine.setAttribute('opacity', '0');
+    el.bbL.setAttribute('opacity', '1'); el.bbR.setAttribute('opacity', '1');
+  }
+  try { localStorage.setItem('hoop.court', c.id); } catch (e) {}
+  if (announce) { el.toastText.textContent = 'Court: ' + c.label; toastT = 1.6; }
+}
+// artwork missing (e.g. opened without the repo folder) -> fall back to vector
+el.court.addEventListener('error', () => { if (courtIdx !== 0) applyCourt(0, false); });
+(() => {
+  let saved = null;
+  try { saved = localStorage.getItem('hoop.court'); } catch (e) {}
+  const i = Math.max(0, COURTS.findIndex(c => c.id === saved));
+  applyCourt(i >= 0 ? i : 0, false);
+})();
+
+// net strings (static)
+(() => {
+  let d = '';
+  const L = HOOP.cx - HOOP.halfW, R = HOOP.cx + HOOP.halfW, top = HOOP.rimY, bot = HOOP.rimY + 40;
+  const n = 7;
+  for (let i = 0; i <= n; i++) {
+    const t = i / n, x = L + (R - L) * t;
+    const xb = HOOP.cx + (x - HOOP.cx) * 0.55;
+    d += `M${x.toFixed(1)},${top} L${xb.toFixed(1)},${bot} `;
+  }
+  for (let k = 1; k <= 2; k++) {
+    const y = top + (bot - top) * (k / 3), s = 1 - 0.45 * (k / 3);
+    let pts = [];
+    for (let i = 0; i <= n; i++) {
+      const t = i / n, x = L + (R - L) * t;
+      pts.push(`${(HOOP.cx + (x - HOOP.cx) * s).toFixed(1)},${y.toFixed(1)}`);
+    }
+    d += 'M' + pts.join(' L') + ' ';
+  }
+  el.net.innerHTML = `<path d="${d}"/>`;
+})();
+
+// ---------------------------------------------------------------- state
+const STATE = { DRIBBLE: 'DRIBBLE', AIM: 'AIM', CHARGE: 'CHARGE', LIVE: 'LIVE', OVER: 'OVER' };
+let g;
+
+function reset() {
+  g = {
+    state: STATE.DRIBBLE,
+    px: W * 0.5 - 170,          // player feet x
+    facing: 1,
+    dribT: 0,
+    angle: 74,                  // degrees, CCW from +x
+    power: 0,
+    spaceHeld: false,
+    ball: { x: 0, y: 0, vx: 0, vy: 0, r: BALL_R, spin: 0, rest: false },
+    held: true,
+    lockout: 0,
+    scoredThisShot: false,
+    made: 0, points: 0,
+    clockOn: false,
+    clockLimit: CLOCK_BASE,
+    clock: CLOCK_BASE,
+    flash: 0
+  };
+  el.overlay.setAttribute('opacity', '0');
+}
+reset();
+
+function clockLimitFor(points) {
+  return Math.max(CLOCK_FLOOR, CLOCK_BASE - CLOCK_STEP * Math.floor(points / PTS_PER_STEP));
+}
+const handX = () => g.px + HAND_DX * g.facing;
+const handY = () => GROUND + HAND_DY;
+
+// ---------------------------------------------------------------- input
+const keys = Object.create(null);
+window.addEventListener('keydown', e => {
+  const k = e.code;
+  if (['ArrowLeft', 'ArrowRight', 'Space', 'ArrowUp', 'ArrowDown'].includes(k)) e.preventDefault();
+  if (k === 'KeyR') { reset(); return; }
+  if (k === 'KeyC') { applyCourt(courtIdx + 1, true); return; }
+  if (k.startsWith('Digit')) {
+    const n = +k.slice(5);
+    if (n >= 1 && n <= COURTS.length) { applyCourt(n - 1, true); return; }
+  }
+  if (e.repeat) return;
+  keys[k] = true;
+  if (k === 'Space') onSpaceDown();
+});
+window.addEventListener('keyup', e => {
+  const k = e.code;
+  keys[k] = false;
+  if (k === 'Space') onSpaceUp();
+});
+window.addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
+
+function onSpaceDown() {
+  if (g.state === STATE.OVER) return;
+  if (!g.clockOn) { g.clockOn = true; g.clock = g.clockLimit; }
+  if (g.state === STATE.DRIBBLE) {
+    g.state = STATE.AIM;                 // grab the ball, start aiming
+    g.held = true;
+  } else if (g.state === STATE.AIM) {
+    g.state = STATE.CHARGE;              // second press: start charging
+    g.power = 0;
+  }
+}
+function onSpaceUp() {
+  if (g.state === STATE.CHARGE) shoot();
+}
+
+function shoot() {
+  const rad = g.angle * Math.PI / 180;
+  const speed = SPEED_MIN + (SPEED_MAX - SPEED_MIN) * g.power;
+  const b = g.ball;
+  b.x = handX(); b.y = handY() - 14;
+  b.vx = Math.cos(rad) * speed;
+  b.vy = -Math.sin(rad) * speed;
+  b.rest = false;
+  g.held = false;
+  g.lockout = PICKUP_LOCKOUT;
+  g.scoredThisShot = false;
+  g.state = STATE.LIVE;
+  g.power = 0;
+  g.clock = g.clockLimit;   // every throw resets the shot clock
+}
+
+// ---------------------------------------------------------------- collisions
+function collideRect(b, r, rest) {
+  const cx = Math.max(r.x, Math.min(b.x, r.x + r.w));
+  const cy = Math.max(r.y, Math.min(b.y, r.y + r.h));
+  let dx = b.x - cx, dy = b.y - cy;
+  let d = Math.hypot(dx, dy);
+  let nx, ny;
+  if (d > b.r) return false;
+  if (d < 1e-6) {                                    // centre inside the rect
+    const left = b.x - r.x, right = r.x + r.w - b.x, top = b.y - r.y, bot = r.y + r.h - b.y;
+    const m = Math.min(left, right, top, bot);
+    if (m === left) { nx = -1; ny = 0; }
+    else if (m === right) { nx = 1; ny = 0; }
+    else if (m === top) { nx = 0; ny = -1; }
+    else { nx = 0; ny = 1; }
+    b.x += nx * (m + b.r); b.y += ny * (m + b.r);
+  } else {
+    nx = dx / d; ny = dy / d;
+    b.x = cx + nx * b.r; b.y = cy + ny * b.r;
+  }
+  const vn = b.vx * nx + b.vy * ny;
+  if (vn < 0) {
+    const tx = b.vx - vn * nx, ty = b.vy - vn * ny;
+    b.vx = tx * FRICTION - vn * nx * rest;
+    b.vy = ty * FRICTION - vn * ny * rest;
+  }
+  return true;
+}
+
+function collideCircle(b, cx, cy, cr, rest) {
+  let dx = b.x - cx, dy = b.y - cy;
+  let d = Math.hypot(dx, dy);
+  const min = b.r + cr;
+  if (d > min) return false;
+  if (d < 1e-6) { dx = 0; dy = -1; d = 1; }
+  const nx = dx / d, ny = dy / d;
+  b.x = cx + nx * min; b.y = cy + ny * min;
+  const vn = b.vx * nx + b.vy * ny;
+  if (vn < 0) {
+    const tx = b.vx - vn * nx, ty = b.vy - vn * ny;
+    b.vx = tx * FRICTION - vn * nx * rest;
+    b.vy = ty * FRICTION - vn * ny * rest;
+  }
+  return true;
+}
+
+// ---------------------------------------------------------------- update
+function step(dt) {
+  const left = !!keys.ArrowLeft, right = !!keys.ArrowRight;
+
+  // shot clock
+  if (g.clockOn && g.state !== STATE.OVER) {
+    g.clock -= dt;
+    if (g.clock <= 0) {
+      g.clock = 0;
+      g.state = STATE.OVER;
+      el.ovScore.textContent = `${g.points} points  ·  ${g.made} made`;
+      el.overlay.setAttribute('opacity', '1');
+    }
+  }
+  if (g.state === STATE.OVER) return;
+
+  // ---- movement / aiming
+  if (g.state === STATE.DRIBBLE || g.state === STATE.LIVE) {
+    let vx = 0;
+    if (left) vx -= PLAYER_SPEED;
+    if (right) vx += PLAYER_SPEED;
+    if (vx !== 0) g.facing = Math.sign(vx);
+    g.px = Math.max(PLAYER_MIN_X, Math.min(PLAYER_MAX_X, g.px + vx * dt));
+    g.dribT += dt * (vx !== 0 ? 9 : 7);
+  } else {
+    // aiming: arrows sweep the angle
+    if (left) g.angle += AIM_RATE * dt;
+    if (right) g.angle -= AIM_RATE * dt;
+    g.angle = Math.max(AIM_MIN, Math.min(AIM_MAX, g.angle));
+    g.facing = Math.cos(g.angle * Math.PI / 180) >= 0 ? 1 : -1;
+  }
+
+  if (g.state === STATE.CHARGE) {
+    g.power = Math.min(1, g.power + CHARGE_RATE * dt);
+  }
+
+  // ---- ball
+  const b = g.ball;
+  if (g.state === STATE.DRIBBLE) {
+    // dribbling next to the player
+    const h = Math.abs(Math.sin(g.dribT)) * 92;
+    b.x = g.px + 26 * g.facing;
+    b.y = GROUND - BALL_R - h;
+    b.spin += dt * 300 * g.facing;
+    b.vx = 0; b.vy = 0;
+  } else if (g.state === STATE.AIM || g.state === STATE.CHARGE) {
+    b.x = handX(); b.y = handY() - 14;
+  } else {
+    // free flight
+    g.lockout = Math.max(0, g.lockout - dt);
+    const prevY = b.y, prevX = b.x;
+
+    b.vy += G * dt;
+    b.vx -= b.vx * AIR * dt;
+    b.vy -= b.vy * AIR * dt;
+    b.x += b.vx * dt;
+    b.y += b.vy * dt;
+    b.spin += b.vx * dt * 1.6;
+
+    // walls / ceiling / floor
+    if (b.x - b.r < 0) { b.x = b.r; b.vx = -b.vx * REST_WALL; }
+    if (b.x + b.r > W) { b.x = W - b.r; b.vx = -b.vx * REST_WALL; }
+    if (b.y - b.r < 10) { b.y = 10 + b.r; b.vy = -b.vy * REST_WALL; }
+    if (b.y + b.r > GROUND) {
+      b.y = GROUND - b.r;
+      b.vy = -b.vy * REST_FLOOR;
+      b.vx *= 0.94;
+      if (Math.abs(b.vy) < 55) { b.vy = 0; }
+    }
+    if (b.y + b.r >= GROUND - 0.6 && Math.abs(b.vy) < 1 && Math.abs(b.vx) < 12) {
+      b.vx = 0; b.rest = true;
+    }
+
+    // hoop rig
+    collideRect(b, BEAM, REST_BOARD);
+    for (const r of BOARDS) collideRect(b, r, REST_BOARD);
+    collideCircle(b, HOOP.cx - HOOP.halfW, HOOP.rimY, HOOP.nubR, REST_RIM);
+    collideCircle(b, HOOP.cx + HOOP.halfW, HOOP.rimY, HOOP.nubR, REST_RIM);
+
+    // score: centre crosses the rim plane downward, inside the ring
+    if (!g.scoredThisShot && prevY < HOOP.rimY && b.y >= HOOP.rimY && b.vy > 0) {
+      const t = (HOOP.rimY - prevY) / Math.max(1e-6, b.y - prevY);
+      const xAt = prevX + (b.x - prevX) * t;
+      if (Math.abs(xAt - HOOP.cx) < HOOP.halfW - HOOP.nubR) {
+        g.scoredThisShot = true;
+        g.made += 1;
+        g.points += POINTS_PER_BASKET;
+        g.clockLimit = clockLimitFor(g.points);
+        g.clock = g.clockLimit;              // a make also refreshes the clock
+        g.flash = 0.5;
+      }
+    }
+
+    // auto pickup
+    if (g.lockout <= 0) {
+      const dx = b.x - handX(), dy = b.y - (handY() - 6);
+      if (Math.hypot(dx, dy) < PICKUP_DIST) {
+        g.state = STATE.DRIBBLE;
+        g.held = true;
+        g.dribT = 0;
+      }
+    }
+  }
+
+  g.flash = Math.max(0, g.flash - dt);
+  toastT = Math.max(0, toastT - dt);
+}
+
+// green -> yellow -> red, written as literal rgb() so every renderer agrees
+function powerColor(p) {
+  const stops = [[63, 191, 95], [232, 200, 60], [226, 87, 43]];
+  const t = Math.max(0, Math.min(1, p)) * (stops.length - 1);
+  const i = Math.min(stops.length - 2, Math.floor(t)), f = t - i;
+  const c = k => Math.round(stops[i][k] + (stops[i + 1][k] - stops[i][k]) * f);
+  return `rgb(${c(0)},${c(1)},${c(2)})`;
+}
+
+// ---------------------------------------------------------------- render
+function render() {
+  const b = g.ball;
+  el.player.setAttribute('transform', `translate(${g.px.toFixed(1)},${GROUND})`);
+  el.pflip.setAttribute('transform', g.facing < 0 ? 'scale(-1,1)' : 'scale(1,1)');
+
+  // shadows shrink with height off the floor
+  el.shPlayer.setAttribute('cx', g.px.toFixed(1));
+  const hAir = Math.max(0, Math.min(1, (GROUND - BALL_R - b.y) / 420));
+  el.shBall.setAttribute('cx', b.x.toFixed(1));
+  el.shBall.setAttribute('rx', (12 * (1 - 0.55 * hAir)).toFixed(1));
+  el.shBall.setAttribute('opacity', (0.20 * (1 - 0.7 * hAir)).toFixed(3));
+
+  const aiming = (g.state === STATE.AIM || g.state === STATE.CHARGE);
+  // front arm points at the ball when holding, hangs otherwise
+  const armF = aiming ? [HAND_DX + 4, HAND_DY + 6] : [24, -36];
+  const armB = aiming ? [HAND_DX - 12, HAND_DY + 12] : [-22, -34];
+  for (const [node, bg, [x2, y2]] of [[el.armF, el.armFbg, armF], [el.armB, el.armBbg, armB]]) {
+    node.setAttribute('x2', String(x2)); node.setAttribute('y2', String(y2));
+    bg.setAttribute('x2', String(x2)); bg.setAttribute('y2', String(y2));
+  }
+
+  el.ballg.setAttribute('transform',
+    `translate(${b.x.toFixed(1)},${b.y.toFixed(1)}) rotate(${(b.spin % 360).toFixed(1)})`);
+
+  // aim line
+  if (aiming) {
+    const rad = g.angle * Math.PI / 180;
+    const len = 78 + 150 * g.power;
+    const x1 = handX(), y1 = handY() - 14;
+    const x2 = (x1 + Math.cos(rad) * len).toFixed(1);
+    const y2 = (y1 - Math.sin(rad) * len).toFixed(1);
+    for (const n of [el.aim, el.aimBg]) {
+      n.setAttribute('x1', x1); n.setAttribute('y1', y1);
+      n.setAttribute('x2', x2); n.setAttribute('y2', y2);
+    }
+    el.aimg.setAttribute('opacity', '1');
+  } else {
+    el.aimg.setAttribute('opacity', '0');
+  }
+
+  // power meter
+  if (g.state === STATE.CHARGE) {
+    // sit the meter on the side the player is NOT aiming towards
+    const side = -g.facing;
+    const bx = Math.max(8, Math.min(W - 24, g.px + 56 * side - 8)), by = GROUND - 200;
+    el.power.setAttribute('opacity', '1');
+    el.power.setAttribute('transform', `translate(${bx.toFixed(1)},${by})`);
+    const h = 96 * g.power;
+    el.pwFill.setAttribute('y', (96 - h).toFixed(1));
+    el.pwFill.setAttribute('height', h.toFixed(1));
+    el.pwFill.setAttribute('fill', powerColor(g.power));
+  } else {
+    el.power.setAttribute('opacity', '0');
+  }
+
+  el.made.textContent = String(g.made);
+  el.pts.textContent = String(g.points);
+  el.clock.textContent = g.clock.toFixed(1);
+  el.clock.setAttribute('fill', g.clock <= 3 ? '#e2572b' : 'var(--ink)');
+  el.pts.setAttribute('fill', g.flash > 0 ? '#3fbf5f' : 'var(--ink)');
+  el.toast.setAttribute('opacity', Math.min(1, toastT / 0.4).toFixed(2));
+}
+
+// ---------------------------------------------------------------- loop
+let last = performance.now();
+function frame(now) {
+  let dt = (now - last) / 1000;
+  last = now;
+  dt = Math.min(dt, 1 / 30);
+  // fixed sub-steps keep fast shots from tunnelling through the rim
+  const n = 3, h = dt / n;
+  for (let i = 0; i < n; i++) step(h);
+  render();
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+// expose for debugging / future sprite work
+window.__hoop = { get state(){ return g; }, reset, step, render, keys, STATE, HOOP };
+})();
+</script>
