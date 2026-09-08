@@ -313,7 +313,9 @@ const CHARS = (window.SPRITE_MANIFEST && Array.isArray(window.SPRITE_MANIFEST.ch
   ? window.SPRITE_MANIFEST.characters : [];
 const HAS_SPRITES = CHARS.length > 0;
 
-// how fast each animation alternates, in frames per second
+// How fast each animation alternates, in frames per second. Dribbling is the
+// exception: it is driven by the ball's own bounce, not by a rate. This figure
+// covers walking after a loose ball, when there is no bounce to follow.
 const ANIM_HZ = { dribble: 6.5, aim: 2.6, charge: 9, release: 0, follow: 0 };
 const RELEASE_HOLD = 0.22;      // seconds the throw pose stays up
 const FOLLOW_HOLD = 0.5;        // ...then the follow-through
@@ -703,11 +705,18 @@ function animatePlayer() {
     list = p.release; hz = 0;
   } else if (g.state === STATE.LIVE && g.throwT < RELEASE_HOLD + FOLLOW_HOLD) {
     list = p.follow; hz = 0;
+  } else if (g.state === STATE.DRIBBLE) {
+    // Locked to the ball rather than free-running: the low-handed stance shows
+    // while the ball is up at the hand, the recoiled one while it is down at
+    // the floor. Both poses come off the same dribT the bounce is drawn from,
+    // so they cannot drift apart -- and a faster dribble drives a faster heave.
+    g.mirrorPose = true;
+    showFrame(p.dribble[Math.abs(Math.sin(g.dribT)) > 0.5 ? 0 : 1]);
+    return;
   } else {
-    const moving = !!keys.ArrowLeft || !!keys.ArrowRight;
+    // ball is loose: idle, and only heave while actually walking
     list = p.dribble;
-    hz = g.state === STATE.DRIBBLE ? ANIM_HZ.dribble * (moving ? 1.15 : 1)
-                                   : (moving ? ANIM_HZ.dribble : 0);
+    hz = (keys.ArrowLeft || keys.ArrowRight) ? ANIM_HZ.dribble : 0;
   }
   // The front-facing stances are drawn with the free hand on the far side, so
   // they get mirrored: that puts the dribbling hand over the bouncing ball.

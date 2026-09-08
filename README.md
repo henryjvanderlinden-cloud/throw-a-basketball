@@ -83,7 +83,7 @@ handful of frames per second — the heave that old DOS sports games ran on.
 
 | State | Frames | Rate |
 | --- | --- | --- |
-| dribbling | two front-facing stances | 6.5 fps |
+| dribbling | two front-facing stances | locked to the ball's bounce |
 | aiming | two back-facing stances | 2.6 fps |
 | charging | the wind-up | 5.4–11.7 fps, rising with power |
 | release | held at the throw | 0.22 s |
@@ -109,7 +109,9 @@ overhead come out slightly smaller; because every animation pair is two poses
 of the same kind, that only ever shows on a state change, never inside a loop.
 
 To add a character: drop a folder of eight poses in, add a row to `CHARACTERS`
-and a mapping to `POSES` in the build script, and re-run it.
+and a mapping to `POSES` in the build script, and re-run it. In `POSES` the
+order of the two `dribble` entries matters — the lower-handed stance goes
+first, because it is the one shown while the ball is up at the hand.
 
 If `sprites/manifest.js` is missing the game skips the picker and falls back to
 a plain vector figure, so `index.html` still runs on its own.

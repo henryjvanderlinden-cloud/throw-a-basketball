@@ -49,7 +49,10 @@ CHARACTERS = [
 ]
 
 # Which pose plays when. Numbers are 1-based pose indices.
-#   dribble : two front-facing stances, alternated for the old-school heave
+#   dribble : two front-facing stances, driven by the ball's bounce. ORDER
+#             MATTERS: the first must be the one with the LOWER hands -- it is
+#             shown while the ball is up at the hand, the second while the ball
+#             is down at the floor.
 #   aim     : two back-facing stances, alternated slowly
 #   charge  : the wind-up, alternated fast so it reads as tensing
 #   release : held for a moment at the instant of the throw
