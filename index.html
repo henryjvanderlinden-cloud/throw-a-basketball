@@ -212,6 +212,10 @@ const AIM_RATE = 62;            // degrees per second
 const AIM_MIN = 18, AIM_MAX = 162;
 const SPEED_MIN = 760, SPEED_MAX = 1560;
 const PICKUP_DIST = 62;
+// Height of the dribbling hand, as a fraction of the character's height. The
+// four characters measure 0.40-0.45; one constant is steadier than per-sprite
+// detection, which trips over things like the monkey's tail.
+const DRIBBLE_HAND_H = 0.42;
 const PICKUP_LOCKOUT = 0.35;    // s after release before you can re-catch
 
 const CLOCK_BASE = 10, CLOCK_FLOOR = 3, CLOCK_STEP = 0.5, PTS_PER_STEP = 12;
@@ -604,7 +608,9 @@ function step(dt) {
   const b = g.ball;
   if (g.state === STATE.DRIBBLE) {
     // dribbling next to the player
-    const h = Math.abs(Math.sin(g.dribT)) * bodyH() * 0.62;
+    // the top of the ball rises to meet the hand, and no higher
+    const peak = Math.max(6, bodyH() * DRIBBLE_HAND_H - 2 * BALL_R);
+    const h = Math.abs(Math.sin(g.dribT)) * peak;
     b.x = g.px + bodyH() * 0.26 * g.facing;
     b.y = GROUND - BALL_R - h;
     b.spin += dt * 300 * g.facing;
