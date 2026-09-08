@@ -684,6 +684,7 @@ function powerColor(p) {
 // Pick the pose for this frame. Two-frame loops at a handful of frames per
 // second -- the heave that old DOS sports games ran on.
 function animatePlayer() {
+  g.mirrorPose = false;
   if (!curChar) return;
   const p = curChar.poses;
   let list, hz;
@@ -702,6 +703,10 @@ function animatePlayer() {
     hz = g.state === STATE.DRIBBLE ? ANIM_HZ.dribble * (moving ? 1.15 : 1)
                                    : (moving ? ANIM_HZ.dribble : 0);
   }
+  // The front-facing stances are drawn with the free hand on the far side, so
+  // they get mirrored: that puts the dribbling hand over the bouncing ball.
+  g.mirrorPose = list === p.dribble;
+
   const i = hz > 0 ? Math.floor(g.animT * hz) % list.length : 0;
   showFrame(list[i]);
 }
@@ -710,9 +715,10 @@ function animatePlayer() {
 function render() {
   const b = g.ball;
   el.player.setAttribute('transform', `translate(${g.px.toFixed(1)},${GROUND})`);
-  el.pflip.setAttribute('transform', g.facing < 0 ? 'scale(-1,1)' : 'scale(1,1)');
   el.player.setAttribute('opacity', g.state === STATE.SELECT ? '0' : '1');
-  animatePlayer();
+  animatePlayer();                       // sets g.mirrorPose for this frame
+  const flip = g.facing * (g.mirrorPose ? -1 : 1);
+  el.pflip.setAttribute('transform', flip < 0 ? 'scale(-1,1)' : 'scale(1,1)');
 
   // shadows shrink with height off the floor
   el.shPlayer.setAttribute('cx', g.px.toFixed(1));
