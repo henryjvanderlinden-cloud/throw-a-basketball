@@ -610,8 +610,10 @@ function step(dt) {
   const b = g.ball;
   if (g.state === STATE.DRIBBLE) {
     // dribbling next to the player
-    // the top of the ball rises to meet the hand, and no higher
-    const peak = Math.max(6, bodyH() * DRIBBLE_HAND_H - 2 * BALL_R);
+    // The ball rises until its centre is at hand height, so the hand sits over
+    // the top half of it. (Stopping at the ball's top instead -- subtract
+    // 2 * BALL_R -- is truer to life but reads as too short a bounce.)
+    const peak = Math.max(6, bodyH() * DRIBBLE_HAND_H - BALL_R);
     const h = Math.abs(Math.sin(g.dribT)) * peak;
     b.x = g.px + bodyH() * 0.26 * g.facing;
     b.y = GROUND - BALL_R - h;
