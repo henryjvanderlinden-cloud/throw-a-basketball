@@ -126,9 +126,14 @@ def build_from_sequences(key: str, stem: str, label: str) -> dict | None:
     if not seq_dirs:
         return None
 
-    # Scale from the standing dribble, so every character stands the same height.
+    # Base scale, from the standing dribble's first animation frame. Only used
+    # for sequences with no calibration frame of their own; the SEQ_SCALE
+    # figures are measured against this, so it must skip any 00.png.
     ref_dir = src / "dribble_idle"
-    ref = Image.open(sorted(ref_dir.glob("*.png"))[0]).convert("RGBA")
+    ref_file = ref_dir / "01.png"
+    if not ref_file.exists():
+        ref_file = sorted(ref_dir.glob("*.png"))[0]
+    ref = Image.open(ref_file).convert("RGBA")
     rx0, ry0, rx1, ry1 = bbox(mask_of(ref))
     scale = STANDING_H / (ry1 - ry0)
 
@@ -140,14 +145,31 @@ def build_from_sequences(key: str, stem: str, label: str) -> dict | None:
 
     seq_scale = SEQ_SCALE.get(key, {})
     sequences = {}
+    auto = []
     for d in seq_dirs:
         files = sorted(d.glob("*.png"))
         if not files:
             continue
+
+        # A leading 00.png is a calibration frame: the same standing pose drawn
+        # at the start of every strip. Measuring it scales the sequence exactly,
+        # instead of relying on a hand-measured SEQ_SCALE entry.
+        calib = None
+        if files[0].name == "00.png":
+            calib, files = files[0], files[1:]
+        if not files:
+            continue
+
+        if calib is not None:
+            ch = bbox(mask_of(Image.open(calib).convert("RGBA")))
+            s = STANDING_H / (ch[3] - ch[1])
+            auto.append(d.name)
+        else:
+            s = scale * seq_scale.get(d.name, 1.0)
+
         ims = [Image.open(f).convert("RGBA") for f in files]
         masks = [mask_of(im) for im in ims]
         boxes = [bbox(m) for m in masks]
-        s = scale * seq_scale.get(d.name, 1.0)
 
         ground = max(b[3] for b in boxes)
         cell_cx = ims[0].width / 2
@@ -169,6 +191,8 @@ def build_from_sequences(key: str, stem: str, label: str) -> dict | None:
             })
         sequences[d.name] = frames
 
+    if auto:
+        print(f"{key:<14} auto-scaled from calibration frames: {', '.join(auto)}")
     return {"key": key, "label": label, "mirror": False, "sequences": sequences,
             "ballSide": BALL_SIDE.get(key, {})}
 

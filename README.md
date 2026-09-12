@@ -114,7 +114,8 @@ it instantly, and breaks are suppressed under 4 seconds on the shot clock.
 ### The sprite pipeline
 
 Two stages. Generated strips (one image per sequence, frames side by side — see
-[docs/ANIMATION.md](docs/ANIMATION.md)) go in
+[docs/ANIMATION.md](docs/ANIMATION.md) for the workflow and prompt template, and
+[docs/LESSONS.md](docs/LESSONS.md) for why it is shaped that way) go in
 `artwork/basketball-players/<Name> poses/`:
 
 ```

@@ -151,6 +151,58 @@ absorb them one at a time.
 
 ## Generating the frames
 
+### The workflow
+
+For each sequence, in order. Steps 1–4 are one sequence's worth of work; do a
+whole one end-to-end before starting the next.
+
+1. **Write the prompt** from the template below. Fill in the frame list from the
+   sequence table; paste the character's SUBJECT block in verbatim.
+2. **Generate**, attaching a reference frame of the character. Re-roll on the
+   spot if the frame count is wrong — everything downstream assumes it.
+3. **Slice**: `python tools/slice-strips.py <sequence>` after adding a row to
+   `STRIPS`. The tool reports the frame count, the ground-line spread and any
+   bleed it cleaned. A ground-line spread over ~10px means re-roll.
+4. **Look at it on a baseline** before anything else — all frames composited on
+   a common floor line with a standing-height line. Scale drift and sideways
+   slide are invisible frame by frame and obvious here.
+5. **Build**: `python tools/build-sprites.py`, then check the new sequence
+   against the others at game size.
+6. **Play it**, then keep or re-roll. Re-rolls are a coin flip; generate a
+   couple and keep the best rather than refining the prompt forever.
+
+### The calibration frame
+
+The one piece of manual work left in this pipeline is `SEQ_SCALE` — a measured
+correction per sequence, because separately generated strips drift in scale
+against each other by as much as 40%.
+
+**This is avoidable, and future strips should avoid it.** Ask for one extra
+frame at the *start* of every strip: the character's plain neutral standing
+pose, identical in every strip. Then every strip contains the same pose, and the
+scale correction is no longer a judgement call — it is the ratio between that
+frame's height here and its height in the reference strip, which a tool can
+compute exactly.
+
+It costs one frame per generation and buys three things: automatic scaling, a
+registration anchor with feet definitely on the floor, and an instant read on
+whether the character's identity has drifted.
+
+**The tools already support it.** Add `True` as a fourth element of the strip's
+row in `STRIPS`:
+
+```python
+("aim", "Monkey_sequence_006.png", 2, True),   # 3 cells: calibration + 2 frames
+```
+
+The slicer then expects one extra cell, writes it as `00.png` and leaves it out
+of the animation; `build-sprites.py` measures it and scales that sequence
+exactly, ignoring `SEQ_SCALE`. Verified on a synthetic strip drawn 25%
+oversized: it comes back at the correct standing height with no manual figure.
+
+Sequences without a calibration frame keep using `SEQ_SCALE`, so this can be
+adopted one strip at a time as sequences get regenerated.
+
 ### The one change that matters most
 
 **Ask for all frames of a sequence in a single image, as one horizontal strip.**
@@ -192,8 +244,12 @@ frame N where the character is airborne].
 VIEW: [front view, facing the viewer / back view, seen from behind].
 
 FRAMES, left to right:
-1. [pose]
+1. CALIBRATION POSE: standing straight upright, feet shoulder-width apart, arms
+   hanging relaxed at his sides, facing the viewer. This exact pose appears as
+   the first frame of every sheet in this set and must be drawn identically
+   every time.
 2. [pose]
+3. [pose]
 ...
 
 STYLE: 16-bit arcade pixel art, bold dark outline, flat cel shading, limited
@@ -203,6 +259,9 @@ palette, crisp hard pixel edges. The background must be fully transparent
 The character is NOT holding a basketball in any frame — the ball is drawn
 separately by the game.
 ```
+
+Remember to ask for N+1 frames in LAYOUT when you include the calibration frame,
+and to name the *animation's* first frame as frame 2.
 
 For a loop, add:
 
@@ -287,7 +346,8 @@ separately by the game.
 
 | Clause | Failure it prevents |
 | --- | --- |
-| one image, one row | frames drawn at different scales |
+| one image, one row | frames drawn at different scales *within* a sequence |
+| the calibration frame | sequences drawn at different scales *from each other* |
 | "exactly the same height … do not zoom" | the model re-composing each pose to fill the frame |
 | "share one ground line" | feet floating at different heights |
 | "no haze, glow or soft fringe" | the faint alpha wash over the whole canvas in the current art |

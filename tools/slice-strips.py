@@ -31,8 +31,14 @@ SRC = ROOT / "artwork" / "basketball-players"
 ALPHA_CUT = 128
 SNAP_WINDOW = 0.12          # search +/- this share of a cell width for the cut
 
-# character -> [(sequence name, strip file, frame count)]
+# character -> [(sequence name, strip file, frame count[, calibration])]
 # Numbers match the prompts in docs/prompts-monkey.md.
+#
+# A fourth element of True means the strip carries a leading CALIBRATION FRAME:
+# the character's plain standing pose, drawn identically at the start of every
+# strip in the set. It is written as 00.png and left out of the animation;
+# build-sprites.py measures it to scale the sequence automatically, which is
+# what removes the hand-measured SEQ_SCALE entry. See docs/ANIMATION.md.
 STRIPS = {
     "Monkey": [
         ("dribble_idle",    "Monkey_sequence_001.png", 4),
@@ -151,18 +157,23 @@ def slice_character(name: str, seqs) -> None:
     src_dir = SRC / f"{name} poses"
     out_root = SRC / f"{name} frames"
     print(f"== {name}")
-    for seq, filename, n in seqs:
+    for entry in seqs:
+        seq, filename, n = entry[0], entry[1], entry[2]
+        calib = len(entry) > 3 and entry[3]
         path = src_dir / filename
         if not path.exists():
             print(f"  {seq:<16} MISSING {filename}")
             continue
         im = Image.open(path).convert("RGBA")
-        cuts = cut_points(im, n)
+        cells = n + 1 if calib else n
+        cuts = cut_points(im, cells)
 
         out_dir = out_root / seq
         out_dir.mkdir(parents=True, exist_ok=True)
+        for old in out_dir.glob("*.png"):
+            old.unlink()                       # a re-roll may have fewer frames
         heights, feet, cleaned = [], [], 0
-        for i in range(n):
+        for i in range(cells):
             cell = im.crop((cuts[i], 0, cuts[i + 1], im.height))
             m = np.array(cell.getchannel("A")) > ALPHA_CUT
             if not m.any():
@@ -170,12 +181,15 @@ def slice_character(name: str, seqs) -> None:
                 continue
             # Ink on an *internal* cut means a neighbour bled in; the outer
             # edges are just the image border cropping the figure.
-            cleaned += drop_bleed(cell, touch_left=i > 0, touch_right=i < n - 1)
+            cleaned += drop_bleed(cell, touch_left=i > 0, touch_right=i < cells - 1)
             m = np.array(cell.getchannel("A")) > ALPHA_CUT
             ys, xs = np.where(m)
-            heights.append(int(ys.max() - ys.min()))
-            feet.append(int(ys.max()))
-            cell.save(out_dir / f"{i+1:02d}.png")
+            # The calibration frame is 00 and is not part of the animation, so
+            # it does not count towards the ground-line check either.
+            if not (calib and i == 0):
+                heights.append(int(ys.max() - ys.min()))
+                feet.append(int(ys.max()))
+            cell.save(out_dir / f"{(i if calib else i + 1):02d}.png")
 
         flags = []
         if seq not in AIRBORNE and max(feet) - min(feet) > 12:
@@ -183,7 +197,8 @@ def slice_character(name: str, seqs) -> None:
         if cleaned:
             flags.append(f"removed {cleaned} bleed fragment(s)")
         note = "  <-- " + "; ".join(flags) if flags else ""
-        print(f"  {seq:<16} {n} frames  h={min(heights)}-{max(heights)}  "
+        print(f"  {seq:<16} {n} frames{' +calib' if calib else '       '}  "
+              f"h={min(heights)}-{max(heights)}  "
               f"foot spread {max(feet)-min(feet)}px{note}")
 
 
