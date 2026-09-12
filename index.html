@@ -39,15 +39,15 @@
             display:flex;align-items:center;justify-content:center}
   #stagewrap:-webkit-full-screen svg#stage{width:auto;height:100%;max-width:100%;border:0;border-radius:0}
   /* On a tablet or phone held sideways the limit is height, not width. The
-     stage is 960x736, so fit it to whatever height is left and the touch pads
+     stage is 960x788, so fit it to whatever height is left and the touch pads
      stay thumb-sized instead of shrinking to fit a wide viewport. */
   @media (orientation:landscape) and (max-height:900px){
     body{padding:6px;gap:6px}
-    #stagewrap{max-width:min(980px, calc((100vh - 104px) * 1.304))}
+    #stagewrap{max-width:min(980px, calc((100vh - 104px) * 1.218))}
   }
   @media (orientation:landscape) and (max-height:620px){
     body{padding:2px;gap:0}
-    #stagewrap{max-width:min(980px, calc((100vh - 8px) * 1.304))}
+    #stagewrap{max-width:min(980px, calc((100vh - 8px) * 1.218))}
     .legend{display:none}          /* the pads carry their own key labels */
   }
   .legend{color:var(--muted);font-size:12.5px;text-align:center;max-width:860px}
@@ -58,7 +58,7 @@
 <body>
 
 <div id="stagewrap">
-<svg id="stage" viewBox="0 0 960 736" xmlns="http://www.w3.org/2000/svg" aria-label="Basketball game">
+<svg id="stage" viewBox="0 0 960 788" xmlns="http://www.w3.org/2000/svg" aria-label="Basketball game">
   <defs>
     <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="var(--wood)"/><stop offset="1" stop-color="var(--wood2)"/>
@@ -195,26 +195,26 @@
 
   <!-- ===== control band (scoreboard + touch pads) ===== -->
   <g id="band">
-    <rect x="0" y="640" width="960" height="96" fill="var(--band)"/>
+    <rect x="0" y="640" width="960" height="148" fill="var(--band)"/>
     <line x1="0" y1="640" x2="960" y2="640" stroke="var(--line)" stroke-width="2"/>
     <g id="pads"></g>
     <g id="scoreboard" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">
       <!-- left slot: player 2 -->
       <g id="sbL" opacity="0">
-        <text id="sbLName" x="330" y="668" font-size="11" fill="var(--p2)" letter-spacing="1.6" font-weight="700">PLAYER 2</text>
-        <text id="sbLPts" x="330" y="700" font-size="28" font-weight="700" fill="var(--ink)">0</text>
-        <text id="sbLMade" x="330" y="720" font-size="10.5" fill="var(--muted)" letter-spacing="1">0 MADE</text>
+        <text id="sbLName" x="300" y="686" font-size="11.5" fill="var(--p2)" letter-spacing="1.6" font-weight="700">PLAYER 2</text>
+        <text id="sbLPts" x="300" y="728" font-size="32" font-weight="700" fill="var(--ink)">0</text>
+        <text id="sbLMade" x="300" y="750" font-size="10.5" fill="var(--muted)" letter-spacing="1">0 MADE</text>
       </g>
       <!-- centre: shot clock -->
       <g id="sbC">
-        <text x="480" y="668" text-anchor="middle" font-size="11" fill="var(--muted)" letter-spacing="1.6">SHOT CLOCK</text>
-        <text id="sbClock" x="480" y="704" text-anchor="middle" font-size="34" font-weight="700" fill="var(--ink)">10.0</text>
+        <text id="sbClockLabel" x="480" y="686" text-anchor="middle" font-size="11.5" fill="var(--muted)" letter-spacing="1.6">SHOT CLOCK</text>
+        <text id="sbClock" x="480" y="734" text-anchor="middle" font-size="42" font-weight="700" fill="var(--ink)">10.0</text>
       </g>
       <!-- right slot: player 1 -->
       <g id="sbR" opacity="0">
-        <text id="sbRName" x="630" y="668" text-anchor="end" font-size="11" fill="var(--p1)" letter-spacing="1.6" font-weight="700">PLAYER 1</text>
-        <text id="sbRPts" x="630" y="700" text-anchor="end" font-size="28" font-weight="700" fill="var(--ink)">0</text>
-        <text id="sbRMade" x="630" y="720" text-anchor="end" font-size="10.5" fill="var(--muted)" letter-spacing="1">0 MADE</text>
+        <text id="sbRName" x="660" y="686" text-anchor="end" font-size="11.5" fill="var(--p1)" letter-spacing="1.6" font-weight="700">PLAYER 1</text>
+        <text id="sbRPts" x="660" y="728" text-anchor="end" font-size="32" font-weight="700" fill="var(--ink)">0</text>
+        <text id="sbRMade" x="660" y="750" text-anchor="end" font-size="10.5" fill="var(--muted)" letter-spacing="1">0 MADE</text>
       </g>
     </g>
   </g>
@@ -266,7 +266,8 @@
   <b>Player 1</b> <kbd>←</kbd> <kbd>→</kbd> move &amp; aim · <kbd>↑</kbd> pick up, aim, hold to charge, release to shoot · <kbd>↓</kbd> steal.
   <b>Player 2</b> <kbd>A</kbd> <kbd>D</kbd> · <kbd>W</kbd> · <kbd>S</kbd>.
   <kbd>R</kbd> restart · <kbd>C</kbd> or <kbd>1</kbd>–<kbd>4</kbd> switch court · <kbd>F</kbd> fullscreen.
-  The shot clock starts on the first <kbd>↑</kbd> and resets on every throw — let it hit zero and the game is over.
+  The shot clock runs only while somebody has the ball: every throw resets it and holds it until the rebound is
+  gathered. Let it hit zero and the game is over.
 </p>
 
 <!-- Generated sprite data. Absent -> the game falls back to the vector figure. -->
@@ -278,7 +279,7 @@
 
 // ---------------------------------------------------------------- constants
 const W = 960, H = 640, GROUND = 596;
-const BAND_Y = 640, BAND_H = 96;
+const BAND_Y = 640, BAND_H = 148;
 const G = 1500;                 // gravity px/s^2
 const BALL_R = 13;
 const AIR = 0.13;               // linear air drag coefficient
@@ -339,7 +340,7 @@ const el = {
   band: $('band'), pads: $('pads'),
   sbL: $('sbL'), sbLPts: $('sbLPts'), sbLMade: $('sbLMade'),
   sbR: $('sbR'), sbRPts: $('sbRPts'), sbRMade: $('sbRMade'), sbRName: $('sbRName'),
-  sbC: $('sbC'), sbClock: $('sbClock'),
+  sbC: $('sbC'), sbClock: $('sbClock'), sbClockLabel: $('sbClockLabel'),
   fsBtn: $('fsBtn'), fsIcon: $('fsIcon'), stagewrap: $('stagewrap'), stage: $('stage')
 };
 
@@ -421,7 +422,7 @@ const HAS_SPRITES = CHARS.length > 0;
 // Frames per second for the sequences that run on a clock. Dribbling is the
 // exception -- it is driven by the ball's own bounce. RUN covers chasing a
 // loose ball, where there is no bounce to follow.
-const ANIM_HZ = { aim: 2.6, run: 7, gameover: 2.5 };
+const ANIM_HZ = { aim: 2.6, run: 7, gameover: 2.5, panic: 6 };
 const RISE_HOLD = 0.05;         // the shot's rising frame, if the art has one
 const RELEASE_HOLD = 0.27;      // ...then the release
 const FOLLOW_HOLD = 0.5;        // ...then the follow-through
@@ -794,11 +795,17 @@ function confirmPick() {
 // ---------------------------------------------------------------- touch pads
 // One pad per player, in the control band: player 2 on the left, player 1 on
 // the right, matching where WASD and the arrow keys sit on a keyboard.
-const PAD_BTN = 64, PAD_GAP = 10, PAD_W = 4 * PAD_BTN + 3 * PAD_GAP;
+// The buttons sit where the keys they stand for sit: the shoot key alone on
+// top, the other three in a row beneath it, shoot and steal in the same column.
+// Nothing to translate in your head mid-game.
+const PAD_BTN = 64, PAD_GAP = 8;
+const PAD_W = 3 * PAD_BTN + 2 * PAD_GAP;
+const PAD_H = 2 * PAD_BTN + PAD_GAP;
 const PAD_X = [W - 16 - PAD_W, 16];        // player 1 right, player 2 left
-const PAD_Y = BAND_Y + (BAND_H - PAD_BTN) / 2;
-const PAD_KEYS = [['←', '→', '↑', '↓'], ['A', 'D', 'W', 'S']];
+const PAD_Y = BAND_Y + (BAND_H - PAD_H) / 2;
 const PAD_DIRS = ['left', 'right', 'up', 'down'];
+const PAD_CELL = { left: [0, 1], right: [2, 1], up: [1, 0], down: [1, 1] };  // col, row
+const PAD_KEYS = [['←', '→', '↑', '↓'], ['A', 'D', 'W', 'S']];
 const PAD_GLYPH = ['◀', '▶', '▲', '▼'];
 const PAD_CAP = ['', '', 'SHOOT', 'STEAL'];
 const padBtns = [[], []];
@@ -809,11 +816,13 @@ function buildPads() {
     const grp = document.createElementNS(SVGNS, 'g');
     grp.setAttribute('data-pad', String(n));
     PAD_DIRS.forEach((dir, k) => {
-      const x = PAD_X[n] + k * (PAD_BTN + PAD_GAP);
+      const [col, row] = PAD_CELL[dir];
+      const x = PAD_X[n] + col * (PAD_BTN + PAD_GAP);
+      const y = PAD_Y + row * (PAD_BTN + PAD_GAP);
       const b = document.createElementNS(SVGNS, 'g');
       b.style.cursor = 'pointer';
       const r = document.createElementNS(SVGNS, 'rect');
-      r.setAttribute('x', x); r.setAttribute('y', PAD_Y);
+      r.setAttribute('x', x); r.setAttribute('y', y);
       r.setAttribute('width', PAD_BTN); r.setAttribute('height', PAD_BTN);
       r.setAttribute('rx', 14);
       r.setAttribute('fill', 'var(--panel)');
@@ -822,14 +831,14 @@ function buildPads() {
       r.setAttribute('stroke-opacity', '0.55');
       b.appendChild(r);
       const key = document.createElementNS(SVGNS, 'text');
-      key.setAttribute('x', x + PAD_BTN / 2); key.setAttribute('y', PAD_Y + 15);
+      key.setAttribute('x', x + PAD_BTN / 2); key.setAttribute('y', y + 15);
       key.setAttribute('text-anchor', 'middle'); key.setAttribute('font-size', '10');
       key.setAttribute('fill', 'var(--muted)');
       key.setAttribute('font-family', 'ui-monospace,SFMono-Regular,Menlo,monospace');
       key.textContent = PAD_KEYS[n][k];
       b.appendChild(key);
       const gl = document.createElementNS(SVGNS, 'text');
-      gl.setAttribute('x', x + PAD_BTN / 2); gl.setAttribute('y', PAD_Y + 42);
+      gl.setAttribute('x', x + PAD_BTN / 2); gl.setAttribute('y', y + 42);
       gl.setAttribute('text-anchor', 'middle'); gl.setAttribute('font-size', '21');
       gl.setAttribute('fill', n === 0 ? 'var(--p1)' : 'var(--p2)');
       gl.setAttribute('font-family', 'ui-sans-serif,system-ui');
@@ -837,7 +846,7 @@ function buildPads() {
       b.appendChild(gl);
       if (PAD_CAP[k]) {
         const cap = document.createElementNS(SVGNS, 'text');
-        cap.setAttribute('x', x + PAD_BTN / 2); cap.setAttribute('y', PAD_Y + 56);
+        cap.setAttribute('x', x + PAD_BTN / 2); cap.setAttribute('y', y + 56);
         cap.setAttribute('text-anchor', 'middle'); cap.setAttribute('font-size', '8.5');
         cap.setAttribute('fill', 'var(--muted)'); cap.setAttribute('letter-spacing', '0.8');
         cap.setAttribute('font-family', 'ui-sans-serif,system-ui');
@@ -894,7 +903,7 @@ function layoutBand() {
   }
   el.sbL.setAttribute('opacity', scoreOn && numPlayers > 1 ? '1' : '0');
   el.sbR.setAttribute('opacity', scoreOn ? '1' : '0');
-  el.sbC.setAttribute('opacity', scoreOn ? '1' : '0');
+  // sbC's opacity is render's business -- it dims while the clock is stopped.
   el.sbRName.textContent = numPlayers > 1 ? 'PLAYER 1' : 'SCORE';
   el.sbRName.setAttribute('fill', numPlayers > 1 ? 'var(--p1)' : 'var(--muted)');
 }
@@ -989,6 +998,9 @@ function pressUp(n) {
   const p = players[n];
   if (!p || g.owner !== n) return;
   if (p.state === PS.DRIBBLE) {
+    // Only ever true for the opening possession: after that the clock starts
+    // when somebody gathers the ball. The tip-off keeps its grace period so the
+    // game does not start ticking before anyone's hands are on the keys.
     if (!g.clockOn) { g.clockOn = true; g.clock = g.clockLimit; }
     p.state = PS.AIM;                     // grab the ball, start aiming
     p.turnT = TURN_TIME;                  // pivot from the front stance
@@ -1075,6 +1087,9 @@ function giveBall(p, viaPickup) {
   if (viaPickup) p.pickupT = PICKUP_TIME;
   g.stealImmune = STEAL_IMMUNE;
   g.ball.rest = false;
+  // Gathering the ball is what starts the clock again. Chasing a rebound is
+  // untimed; the moment somebody has it, they are on the clock.
+  g.clockOn = true;
 }
 
 function trySteal(p) {
@@ -1108,7 +1123,10 @@ function shoot(n) {
   p.lockout = PICKUP_LOCKOUT;      // only the shooter waits to re-catch
   p.power = 0;
   p.throwT = 0;
-  g.clock = g.clockLimit;          // every throw resets the shot clock
+  // Every throw resets the clock and stops it. It does not run again until
+  // somebody gathers the ball, so the scramble for the rebound is free time.
+  g.clock = g.clockLimit;
+  g.clockOn = false;
 }
 
 function clockLimitFor(points) {
@@ -1416,6 +1434,13 @@ function animatePlayer(p) {
     p.mirrorPose = p.char.mirror;
     return showFrame(p, 'turn', Math.min(turn.length - 1, turn.length - 1 - k));
   }
+  // The clock is everyone's problem. Whoever is standing around when it runs
+  // down points at it and sweats, ball or no ball -- the free arm just hangs.
+  if (g.clockOn && g.clock <= PANIC_CLOCK && seqOf(p, 'panic')) {
+    p.mirrorPose = p.char.mirror;
+    const n = seqOf(p, 'panic').length;
+    return showFrame(p, 'panic', Math.floor(p.animT * ANIM_HZ.panic) % n);
+  }
   p.mirrorPose = p.char.mirror;
   return showFrame(p, 'dribble_idle', 0);
 }
@@ -1504,7 +1529,12 @@ function render() {
     el.sbLPts.setAttribute('fill', g.flash > 0 && g.shooter === 1 ? '#3fbf5f' : 'var(--ink)');
   }
   el.sbClock.textContent = g.clock.toFixed(1);
-  el.sbClock.setAttribute('fill', g.clock <= 3 ? '#e2572b' : 'var(--ink)');
+  el.sbClock.setAttribute('fill', g.clockOn && g.clock <= 3 ? '#e2572b' : 'var(--ink)');
+  // A stopped clock says so by going quiet, rather than just sitting there
+  // looking like a clock that has frozen.
+  const scoreShown = (g.ms === MS.PLAY || g.ms === MS.OVER);
+  el.sbC.setAttribute('opacity', scoreShown ? (g.clockOn ? '1' : '0.45') : '0');
+  el.sbClockLabel.textContent = (scoreShown && !g.clockOn) ? 'SHOT CLOCK · HELD' : 'SHOT CLOCK';
 
   // pads light up with whatever is held, keyboard included
   for (let n = 0; n < 2; n++) {

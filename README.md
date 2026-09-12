@@ -32,9 +32,11 @@ shot the ball bounces around live — walk into it and you pick it up automatica
 
 Both players also have a four-button pad along the bottom of the stage: player 2
 on the left, player 1 on the right, matching where <kbd>WASD</kbd> and the arrow
-keys sit on a keyboard. They work for the menus as well as the game, so an iPad
-needs no keyboard at all. The pads light up with whatever is held, keyboard
-included.
+keys sit on a keyboard. Each pad is laid out like the keys themselves — the shoot
+key alone on top, the other three in a row beneath it, shoot and steal in the
+same column — so there is nothing to translate mid-game. They work for the menus
+as well as the game, so an iPad needs no keyboard at all. The pads light up with
+whatever is held, keyboard included.
 
 The stage fits itself to the screen height in landscape, so the buttons stay
 thumb-sized. The fullscreen button sits top right; Safari on iPhone and iPad has
@@ -44,8 +46,13 @@ home screen instead and it opens without browser chrome.
 ## Rules
 
 - **3 points** per made basket.
-- The **shot clock** starts on the first ever shoot press and resets on **every
-  throw** and every made basket. Let it reach zero and the game is over.
+- The **shot clock** runs only while somebody has the ball. Every throw resets it
+  *and holds it*; it starts again when anyone gathers the ball, so the scramble
+  for the rebound is free time. Let it reach zero and the game is over. The
+  scoreboard says `SHOT CLOCK · HELD` and goes quiet while it is stopped.
+- The one exception is the opening possession, which waits for the first shoot
+  press rather than starting at the tip-off — so the game does not begin ticking
+  before anyone's hands are on the keys.
 - The clock starts at **10 seconds** and drops by **0.5 s for every 12 points**
   scored, down to a floor of **3 seconds**. In a two-player game the ramp runs on
   the two scores added together.
@@ -154,7 +161,7 @@ The **Monkey** is fully animated, with fourteen sequences:
 | `celebrate`, `celebrate_pump`, `celebrate_flip` | one-shot | one picked at random per made basket; the handspring lands about one basket in eight and plays faster |
 | `gameover` | loop | 2.5 fps, panting |
 | `break_banana`, `break_wave` | one-shot | idle breaks, see below |
-| `panic` | loop | while the shot clock is at 2s or less and he is standing still |
+| `panic` | loop | while the shot clock is at 2s or less and he is standing still — with the ball, locked to the bounce; without it, 6 fps, because the clock is everyone's problem |
 
 The other three still run on the original eight poses, which the build script
 maps onto the same sequence names — so the game has one code path, and they get
