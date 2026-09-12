@@ -316,14 +316,16 @@ const HAS_SPRITES = CHARS.length > 0;
 // Frames per second for the sequences that run on a clock. Dribbling is the
 // exception -- it is driven by the ball's own bounce. RUN covers chasing a
 // loose ball, where there is no bounce to follow.
-const ANIM_HZ = { aim: 2.6, charge: 9, run: 7, gameover: 2.5, celebrate: 5 };
+const ANIM_HZ = { aim: 2.6, run: 7, gameover: 2.5, celebrate: 2.5 };
 const RISE_HOLD = 0.05;         // the shot's rising frame, if the art has one
 const RELEASE_HOLD = 0.27;      // ...then the release
 const FOLLOW_HOLD = 0.5;        // ...then the follow-through
-const TURN_TIME = 0.18;         // front stance -> back stance
+const TURN_TIME = 0.36;         // front stance -> back stance
 const PICKUP_TIME = 0.30;       // gathering the ball off the floor
-const CELEBRATE_TIME = 0.9;
-const BREAK_MIN = 8, BREAK_MAX = 15;   // seconds of still dribbling between breaks
+const CELEBRATE_TIME = 1.3;
+// With a 10s shot clock there is never a long quiet stretch, so breaks come
+// early and often; the clock floor is what stops them being a liability.
+const BREAK_MIN = 2, BREAK_MAX = 4;
 const BREAK_CLOCK_FLOOR = 4;    // never mug for the crowd under this much time
 
 let charIdx = 0, curChar = null;
@@ -364,11 +366,32 @@ function showFrame(name, idx) {
   shown = [name, idx];
 }
 
+// A character drawn per direction is never mirrored, so nothing it carries
+// flips with facing either.
+const flipsWithFacing = () => !curChar || curChar.mirror;
+
+// Which way the dribbling hand points in a given sequence: +1 is the viewer's
+// right. Mirrored characters have only one set of art, so theirs follows facing.
+function ballSide(seq) {
+  if (flipsWithFacing()) return g.facing;
+  return (curChar.ballSide && curChar.ballSide[seq]) || 1;
+}
+
+// The sequence the dribble is playing right now -- needed in step() to put the
+// ball on the correct side, and in animatePlayer() to draw it.
+function dribbleSeq() {
+  if (!curChar) return 'dribble_idle';
+  if (keys.ArrowLeft || keys.ArrowRight) {
+    return firstSeq(g.facing >= 0 ? 'run_dribble_r' : 'run_dribble_l', 'dribble_idle');
+  }
+  return (g.breakSeq && seqOf(g.breakSeq)) ? g.breakSeq : 'dribble_idle';
+}
+
 // where the ball sits when the character is holding it
 function holdPos() {
   const hx = curChar ? curChar.handX : HAND_DX;
   const hy = curChar ? curChar.handY + 12 : HAND_DY - 14;
-  return [g.px + hx * g.facing, GROUND + hy];
+  return [g.px + hx * (flipsWithFacing() ? g.facing : 1), GROUND + hy];
 }
 
 function buildSelectCards() {
@@ -642,7 +665,7 @@ function step(dt) {
     // is truer to life, but on screen it reads as too short a bounce.)
     const peak = Math.max(6, bodyH() * DRIBBLE_HAND_H - 0.5 * BALL_R);
     const h = Math.abs(Math.sin(g.dribT)) * peak;
-    b.x = g.px + bodyH() * 0.26 * g.facing;
+    b.x = g.px + bodyH() * 0.26 * ballSide(dribbleSeq());
 
     // Idle breaks: after a while standing still, the character does something
     // in character. Any movement cancels it, and they never run down the clock.
@@ -744,13 +767,6 @@ function dribbleFrame(n) {
   return Math.floor(((((u - 0.5) % 1) + 1) % 1) * n) % n;
 }
 
-// Ping-pong, so a three-frame coil reads going in and coming back out.
-function pingPong(i, n) {
-  if (n < 3) return i % n;
-  const period = 2 * n - 2, k = i % period;
-  return k < n ? k : period - k;
-}
-
 // Pick the sequence and frame for this tick. Loops run at a handful of frames
 // per second -- the heave that old DOS sports games ran on -- except dribbling,
 // which follows the ball.
@@ -786,9 +802,10 @@ function animatePlayer() {
   }
 
   if (g.state === STATE.CHARGE) {
+    // Not a loop: the coil deepens with the power meter and holds at its
+    // deepest. Cycling it made him bob up and down while winding up.
     const n = seqOf('charge').length;
-    const hz = ANIM_HZ.charge * (0.6 + 0.7 * g.power);   // tenses as it fills
-    return showFrame('charge', pingPong(Math.floor(g.animT * hz), n));
+    return showFrame('charge', Math.min(n - 1, Math.floor(g.power * n)));
   }
 
   if (g.state === STATE.AIM) {
@@ -810,11 +827,7 @@ function animatePlayer() {
   // The old-style characters have no left/right art, so their front stance is
   // mirrored to keep the dribbling hand over the ball.
   g.mirrorPose = curChar.mirror;
-  if (moving) {
-    const name = firstSeq(right ? 'run_dribble_r' : 'run_dribble_l', 'dribble_idle');
-    return showFrame(name, dribbleFrame(seqOf(name).length));
-  }
-  const name = (g.breakSeq && seqOf(g.breakSeq)) ? g.breakSeq : 'dribble_idle';
+  const name = dribbleSeq();
   showFrame(name, dribbleFrame(seqOf(name).length));
 }
 
@@ -824,7 +837,9 @@ function render() {
   el.player.setAttribute('transform', `translate(${g.px.toFixed(1)},${GROUND})`);
   el.player.setAttribute('opacity', g.state === STATE.SELECT ? '0' : '1');
   animatePlayer();                       // sets g.mirrorPose for this frame
-  const flip = g.facing * (g.mirrorPose ? -1 : 1);
+  // Characters drawn per direction are never flipped; only the single-facing
+  // art turns around.
+  const flip = flipsWithFacing() ? g.facing * (g.mirrorPose ? -1 : 1) : 1;
   el.pflip.setAttribute('transform', flip < 0 ? 'scale(-1,1)' : 'scale(1,1)');
 
   // shadows shrink with height off the floor

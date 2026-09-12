@@ -58,6 +58,36 @@ LEGACY_POSES = {
 }
 LEGACY_IDLE_POSE = 1        # the plain standing pose, used to set the scale
 
+# --- per-sequence corrections -------------------------------------------
+# Each strip is generated separately, so they drift in scale relative to each
+# other even though every frame *within* a strip is consistent. No automatic
+# landmark survives the pose changes (silhouette height, shoe width and ink area
+# all move with the pose, not just with the scale), so these are measured by eye
+# against the standing dribble. Regenerating a strip at a matching scale is the
+# real fix; then its entry goes back to 1.0.
+SEQ_SCALE = {
+    "monkey": {
+        "aim": 0.72, "turn": 0.87, "charge": 0.86, "shot": 0.94,
+        "pickup": 0.85, "celebrate": 0.88, "gameover": 0.80,
+        "run_r": 0.78, "run_l": 0.73, "break_wave": 0.95,
+    },
+}
+
+# Which side of the body the ball sits on, +1 = viewer's right. Measured from
+# the art: the generator put the monkey's dribbling hand on the viewer's LEFT
+# for the standing poses, not the right the prompt asked for.
+BALL_SIDE = {
+    "monkey": {
+        "dribble_idle": -1, "break_banana": -1, "break_wave": -1,
+        "pickup": -1, "run_dribble_r": +1, "run_dribble_l": -1,
+    },
+}
+
+# Sequences where the feet genuinely travel, so the frame is anchored on the
+# cell rather than on the feet. Everywhere else the feet are planted and get
+# anchored directly, which stops the character sliding sideways mid-loop.
+TRAVELLING = {"run_r", "run_l", "run_dribble_r", "run_dribble_l"}
+
 
 def mask_of(im: Image.Image) -> np.ndarray:
     return np.array(im.getchannel("A")) > ALPHA_CUT
@@ -98,6 +128,13 @@ def build_from_sequences(key: str, stem: str, label: str) -> dict | None:
     rx0, ry0, rx1, ry1 = bbox(mask_of(ref))
     scale = STANDING_H / (ry1 - ry0)
 
+    def foot_cx(m, box):
+        y1 = box[3]
+        band = m[max(0, y1 - max(4, (y1 - box[1]) // 12)):y1, :]
+        xs = np.where(band.any(axis=0))[0]
+        return float((xs.min() + xs.max()) / 2) if len(xs) else (box[0] + box[2]) / 2
+
+    seq_scale = SEQ_SCALE.get(key, {})
     sequences = {}
     for d in seq_dirs:
         files = sorted(d.glob("*.png"))
@@ -106,28 +143,30 @@ def build_from_sequences(key: str, stem: str, label: str) -> dict | None:
         ims = [Image.open(f).convert("RGBA") for f in files]
         masks = [mask_of(im) for im in ims]
         boxes = [bbox(m) for m in masks]
+        s = scale * seq_scale.get(d.name, 1.0)
 
-        # Anchor on the cell, not on the feet. The generator centres the figure
-        # in each equal-width cell and holds one ground line across the strip,
-        # so the cell's midpoint and the strip's lowest foot are far steadier
-        # than per-frame foot detection -- which wanders on running poses and
-        # makes the character jitter sideways.
-        cell_cx = ims[0].width / 2
         ground = max(b[3] for b in boxes)
+        cell_cx = ims[0].width / 2
+        travelling = d.name in TRAVELLING
 
         frames = []
-        for i, (im, box) in enumerate(zip(ims, boxes), start=1):
+        for i, (im, m, box) in enumerate(zip(ims, masks, boxes), start=1):
+            # A travelling pose anchors on the cell, because its feet are
+            # mid-stride and move on purpose. A planted pose anchors on its own
+            # feet, so the character cannot drift sideways through the loop.
+            ax = cell_cx if travelling else foot_cx(m, box)
             dest = OUT / key / d.name / f"{i:02d}.png"
-            w, h = write_frame(im, box, scale, dest)
+            w, h = write_frame(im, box, s, dest)
             frames.append({
                 "src": f"sprites/{key}/{d.name}/{i:02d}.png",
                 "w": w, "h": h,
-                "footX": round((cell_cx - box[0]) * scale, 2),
-                "footY": round((ground - box[1]) * scale, 2),
+                "footX": round((ax - box[0]) * s, 2),
+                "footY": round((ground - box[1]) * s, 2),
             })
         sequences[d.name] = frames
 
-    return {"key": key, "label": label, "mirror": False, "sequences": sequences}
+    return {"key": key, "label": label, "mirror": False, "sequences": sequences,
+            "ballSide": BALL_SIDE.get(key, {})}
 
 
 # ---------------------------------------------------------------- old style
@@ -173,7 +212,8 @@ def build_from_poses(key: str, stem: str, label: str) -> dict | None:
     }
     sequences = {name: [frame_for(pose, name, i) for i, pose in enumerate(poses, 1)]
                  for name, poses in plan.items()}
-    return {"key": key, "label": label, "mirror": True, "sequences": sequences}
+    return {"key": key, "label": label, "mirror": True, "sequences": sequences,
+            "ballSide": {}}
 
 
 def hand_point(char: dict) -> tuple[float, float]:

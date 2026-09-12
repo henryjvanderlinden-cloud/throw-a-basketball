@@ -10,17 +10,17 @@ window.SPRITE_MANIFEST = {
     "aim": [
      {
       "src": "sprites/monkey/aim/01.png",
-      "w": 125.5,
-      "h": 183.37,
-      "footX": 37.17,
-      "footY": 183.37
+      "w": 90.36,
+      "h": 132.03,
+      "footX": 49.47,
+      "footY": 132.03
      },
      {
       "src": "sprites/monkey/aim/02.png",
-      "w": 130.05,
-      "h": 177.08,
-      "footX": 60.36,
-      "footY": 177.08
+      "w": 93.64,
+      "h": 127.5,
+      "footX": 52.12,
+      "footY": 127.5
      }
     ],
     "break_banana": [
@@ -28,98 +28,98 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/monkey/break_banana/01.png",
       "w": 116.61,
       "h": 138.5,
-      "footX": 58.09,
+      "footX": 60.58,
       "footY": 138.5
      },
      {
       "src": "sprites/monkey/break_banana/02.png",
       "w": 110.11,
       "h": 138.5,
-      "footX": 52.24,
+      "footX": 54.95,
       "footY": 138.5
      },
      {
       "src": "sprites/monkey/break_banana/03.png",
       "w": 108.59,
       "h": 138.29,
-      "footX": 54.4,
+      "footX": 54.19,
       "footY": 138.29
      },
      {
       "src": "sprites/monkey/break_banana/04.png",
       "w": 123.55,
       "h": 137.42,
-      "footX": 58.09,
+      "footX": 57.55,
       "footY": 137.42
      }
     ],
     "break_wave": [
      {
       "src": "sprites/monkey/break_wave/01.png",
-      "w": 112.06,
-      "h": 151.94,
-      "footX": 55.7,
-      "footY": 151.94
+      "w": 106.46,
+      "h": 144.34,
+      "footX": 54.46,
+      "footY": 144.34
      },
      {
       "src": "sprites/monkey/break_wave/02.png",
-      "w": 115.09,
-      "h": 132.65,
-      "footX": 49.64,
-      "footY": 132.65
+      "w": 109.34,
+      "h": 126.02,
+      "footX": 51.68,
+      "footY": 126.02
      },
      {
       "src": "sprites/monkey/break_wave/03.png",
-      "w": 118.78,
-      "h": 134.82,
-      "footX": 53.97,
-      "footY": 134.82
+      "w": 112.84,
+      "h": 128.08,
+      "footX": 52.2,
+      "footY": 128.08
      },
      {
       "src": "sprites/monkey/break_wave/04.png",
-      "w": 110.33,
-      "h": 130.05,
-      "footX": 56.35,
-      "footY": 130.05
+      "w": 104.81,
+      "h": 123.55,
+      "footX": 52.4,
+      "footY": 123.55
      }
     ],
     "celebrate": [
      {
       "src": "sprites/monkey/celebrate/01.png",
-      "w": 121.38,
-      "h": 198.76,
-      "footX": 31.43,
-      "footY": 198.76
+      "w": 106.81,
+      "h": 174.91,
+      "footX": 47.02,
+      "footY": 174.91
      },
      {
       "src": "sprites/monkey/celebrate/02.png",
-      "w": 124.63,
-      "h": 157.14,
-      "footX": 82.58,
-      "footY": 157.14
+      "w": 109.67,
+      "h": 138.29,
+      "footX": 53.5,
+      "footY": 138.29
      }
     ],
     "charge": [
      {
       "src": "sprites/monkey/charge/01.png",
-      "w": 119.65,
-      "h": 152.81,
-      "footX": 48.01,
-      "footY": 152.81
+      "w": 102.89,
+      "h": 131.41,
+      "footX": 59.18,
+      "footY": 131.41
      },
      {
       "src": "sprites/monkey/charge/02.png",
-      "w": 110.54,
-      "h": 135.03,
-      "footX": 30.67,
-      "footY": 135.03
+      "w": 95.07,
+      "h": 116.13,
+      "footX": 50.89,
+      "footY": 116.13
      },
      {
       "src": "sprites/monkey/charge/03.png",
-      "w": 110.98,
-      "h": 114.66,
-      "footX": 24.82,
-      "footY": 114.66
+      "w": 95.44,
+      "h": 98.61,
+      "footX": 50.8,
+      "footY": 98.61
      }
     ],
     "dribble_idle": [
@@ -127,68 +127,68 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/monkey/dribble_idle/01.png",
       "w": 111.41,
       "h": 132.0,
-      "footX": 51.8,
+      "footX": 56.03,
       "footY": 132.0
      },
      {
       "src": "sprites/monkey/dribble_idle/02.png",
       "w": 108.59,
       "h": 133.08,
-      "footX": 53.75,
+      "footX": 53.43,
       "footY": 133.08
      },
      {
       "src": "sprites/monkey/dribble_idle/03.png",
       "w": 108.59,
       "h": 134.6,
-      "footX": 54.4,
+      "footX": 53.75,
       "footY": 134.6
      },
      {
       "src": "sprites/monkey/dribble_idle/04.png",
       "w": 109.89,
       "h": 132.43,
-      "footX": 53.75,
+      "footX": 55.92,
       "footY": 132.43
      }
     ],
     "gameover": [
      {
       "src": "sprites/monkey/gameover/01.png",
-      "w": 136.99,
-      "h": 153.89,
-      "footX": 48.66,
-      "footY": 153.89
+      "w": 109.59,
+      "h": 123.11,
+      "footX": 54.71,
+      "footY": 123.11
      },
      {
       "src": "sprites/monkey/gameover/02.png",
-      "w": 136.77,
-      "h": 163.0,
-      "footX": 56.9,
-      "footY": 163.0
+      "w": 109.41,
+      "h": 130.4,
+      "footX": 54.62,
+      "footY": 130.4
      }
     ],
     "pickup": [
      {
       "src": "sprites/monkey/pickup/01.png",
-      "w": 130.05,
-      "h": 136.12,
-      "footX": 62.64,
-      "footY": 136.77
+      "w": 110.54,
+      "h": 115.7,
+      "footX": 55.18,
+      "footY": 116.25
      },
      {
       "src": "sprites/monkey/pickup/02.png",
-      "w": 130.27,
-      "h": 150.64,
-      "footX": 60.91,
-      "footY": 150.64
+      "w": 110.73,
+      "h": 128.04,
+      "footX": 55.27,
+      "footY": 128.04
      },
      {
       "src": "sprites/monkey/pickup/03.png",
-      "w": 131.13,
-      "h": 154.11,
-      "footX": 62.21,
-      "footY": 154.76
+      "w": 111.46,
+      "h": 130.99,
+      "footX": 57.85,
+      "footY": 131.54
      }
     ],
     "run_dribble_l": [
@@ -254,84 +254,92 @@ window.SPRITE_MANIFEST = {
     "run_l": [
      {
       "src": "sprites/monkey/run_l/01.png",
-      "w": 184.24,
-      "h": 174.27,
-      "footX": 88.22,
-      "footY": 174.27
+      "w": 134.49,
+      "h": 127.21,
+      "footX": 64.4,
+      "footY": 127.21
      },
      {
       "src": "sprites/monkey/run_l/02.png",
-      "w": 179.25,
-      "h": 174.27,
-      "footX": 88.65,
-      "footY": 174.27
+      "w": 130.85,
+      "h": 127.21,
+      "footX": 64.71,
+      "footY": 127.21
      }
     ],
     "run_r": [
      {
       "src": "sprites/monkey/run_r/01.png",
-      "w": 169.71,
-      "h": 162.34,
-      "footX": 78.57,
-      "footY": 162.34
+      "w": 132.38,
+      "h": 126.63,
+      "footX": 61.29,
+      "footY": 126.63
      },
      {
       "src": "sprites/monkey/run_r/02.png",
-      "w": 159.74,
-      "h": 162.34,
-      "footX": 80.09,
-      "footY": 162.34
+      "w": 124.6,
+      "h": 126.63,
+      "footX": 62.47,
+      "footY": 126.63
      }
     ],
     "shot": [
      {
       "src": "sprites/monkey/shot/01.png",
-      "w": 93.64,
-      "h": 105.99,
-      "footX": 40.97,
-      "footY": 105.99
+      "w": 88.02,
+      "h": 99.63,
+      "footX": 45.33,
+      "footY": 99.63
      },
      {
       "src": "sprites/monkey/shot/02.png",
-      "w": 105.34,
-      "h": 146.31,
-      "footX": 52.02,
-      "footY": 146.52
+      "w": 99.02,
+      "h": 137.53,
+      "footX": 60.51,
+      "footY": 137.73
      },
      {
       "src": "sprites/monkey/shot/03.png",
-      "w": 94.72,
-      "h": 174.7,
-      "footX": 51.8,
-      "footY": 176.22
+      "w": 89.04,
+      "h": 164.22,
+      "footX": 55.52,
+      "footY": 165.64
      },
      {
       "src": "sprites/monkey/shot/04.png",
-      "w": 82.36,
-      "h": 165.81,
-      "footX": 40.97,
-      "footY": 166.03
+      "w": 77.42,
+      "h": 155.86,
+      "footX": 44.62,
+      "footY": 156.07
      }
     ],
     "turn": [
      {
       "src": "sprites/monkey/turn/01.png",
-      "w": 124.63,
-      "h": 151.72,
-      "footX": 11.7,
-      "footY": 151.72
+      "w": 108.43,
+      "h": 132.0,
+      "footX": 59.59,
+      "footY": 132.0
      },
      {
       "src": "sprites/monkey/turn/02.png",
-      "w": 115.53,
-      "h": 150.64,
-      "footX": 78.25,
-      "footY": 150.64
+      "w": 100.51,
+      "h": 131.06,
+      "footX": 52.42,
+      "footY": 131.06
      }
     ]
    },
-   "handX": 23.88,
-   "handY": -176.22
+   "ballSide": {
+    "dribble_idle": -1,
+    "break_banana": -1,
+    "break_wave": -1,
+    "pickup": -1,
+    "run_dribble_r": 1,
+    "run_dribble_l": -1
+   },
+   "handX": 15.51,
+   "handY": -165.64
   },
   {
    "key": "nba",
@@ -467,6 +475,7 @@ window.SPRITE_MANIFEST = {
      }
     ]
    },
+   "ballSide": {},
    "handX": 13.39,
    "handY": -129.01
   },
@@ -604,6 +613,7 @@ window.SPRITE_MANIFEST = {
      }
     ]
    },
+   "ballSide": {},
    "handX": 14.68,
    "handY": -131.34
   },
@@ -741,6 +751,7 @@ window.SPRITE_MANIFEST = {
      }
     ]
    },
+   "ballSide": {},
    "handX": 22.65,
    "handY": -131.71
   }

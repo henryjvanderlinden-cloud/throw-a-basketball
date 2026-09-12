@@ -91,7 +91,7 @@ The **Monkey** is fully animated, with fourteen sequences:
 | `pickup` | one-shot | 0.30 s, scooping it off the floor |
 | `turn` | one-shot | 0.18 s, front stance → shooting stance |
 | `aim` | loop | 2.6 fps |
-| `charge` | loop | ping-pong, 5.4–11.7 fps rising with power |
+| `charge` | *not* a loop | frame chosen by the power meter, holding at its deepest |
 | `shot` | one-shot | rise 0.05 s → release 0.27 s → follow-through 0.5 s |
 | `celebrate` | one-shot | 0.9 s on a made basket |
 | `gameover` | loop | 2.5 fps, panting |
@@ -104,7 +104,7 @@ generating strips; nothing in the game needs to change.
 
 ### Idle breaks
 
-Stand still and dribble for 8–15 seconds and the character does something in
+Stand still and dribble for 2–4 seconds and the character does something in
 character — the Monkey peels a banana, or waves to the crowd. The dribbling hand
 keeps the same four positions as the stationary loop throughout, so the ball
 never stops bouncing and the break needs no handover frames. Any input cancels
@@ -128,12 +128,24 @@ bleeds across a cut, the fragment is erased by flood-filling from the cut edge
 and discarding small blobs — scoped to blobs touching a cut, so a genuinely
 detached part of the pose like a thrown banana peel survives.
 
-`build-sprites.py` trims, scales every character to the same standing height,
-quantises, and writes the manifest. Frames from strips are anchored on the
-cell's midpoint and the strip's shared ground line, which is far steadier than
-per-frame foot detection — that wanders on running poses and makes the character
-jitter sideways. The old eight-pose art has no such shared frame, so it is
-anchored on the feet instead.
+`build-sprites.py` trims, scales, quantises, and writes the manifest. Two
+per-sequence corrections live at the top of it:
+
+- **`SEQ_SCALE`** — each strip is generated separately, so strips drift in scale
+  relative to each other even though every frame *within* a strip is consistent.
+  No automatic landmark survives the pose changes: silhouette height, shoe width
+  and ink area all move with the pose, not just with the scale. So these are
+  measured by eye against the standing dribble. Regenerating a strip at a
+  matching scale is the real fix; then its entry goes back to 1.0.
+- **`BALL_SIDE`** — which side the dribbling hand is on, read off the art rather
+  than assumed. The generator put the monkey's dribbling hand on the viewer's
+  *left* for the standing poses, not the right the prompt asked for.
+
+Anchoring is per sequence too. A travelling pose (`run_*`) anchors on the cell
+midpoint, because its feet are mid-stride and move on purpose. A planted pose
+anchors on its own feet, so the character cannot slide sideways through a loop.
+The old eight-pose art has no shared frame at all, so it is always anchored on
+the feet.
 
 Two quirks of the source art shape both tools: a faint alpha haze over the whole
 canvas, so silhouettes need an alpha cut-off rather than a plain bounding box;
