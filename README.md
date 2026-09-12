@@ -93,7 +93,7 @@ The **Monkey** is fully animated, with fourteen sequences:
 | `aim` | loop | 2.6 fps |
 | `charge` | *not* a loop | frame chosen by the power meter, holding at its deepest |
 | `shot` | one-shot | rise 0.05 s → release 0.27 s → follow-through 0.5 s |
-| `celebrate`, `celebrate_pump`, `celebrate_flip` | one-shot | one picked at random per made basket; the handspring is rare and plays faster |
+| `celebrate`, `celebrate_pump`, `celebrate_flip` | one-shot | one picked at random per made basket; the handspring lands about one basket in eight and plays faster |
 | `gameover` | loop | 2.5 fps, panting |
 | `break_banana`, `break_wave` | one-shot | idle breaks, see below |
 | `panic` | loop | while the shot clock is at 2s or less and he is standing still |

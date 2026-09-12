@@ -70,6 +70,7 @@ SEQ_SCALE = {
         "aim": 0.72, "turn": 0.87, "charge": 0.86, "shot": 0.94,
         "pickup": 0.85, "celebrate": 0.88, "gameover": 0.80,
         "run_r": 0.78, "run_l": 0.73, "break_wave": 0.95,
+        "panic": 0.95, "celebrate_flip": 1.16,
     },
 }
 
@@ -83,10 +84,12 @@ BALL_SIDE = {
     },
 }
 
-# Sequences where the feet genuinely travel, so the frame is anchored on the
-# cell rather than on the feet. Everywhere else the feet are planted and get
-# anchored directly, which stops the character sliding sideways mid-loop.
-TRAVELLING = {"run_r", "run_l", "run_dribble_r", "run_dribble_l"}
+# Sequences anchored on the cell rather than on the feet: either the feet
+# travel on purpose (running), or they are not on the floor to anchor to at all
+# (the handspring goes up on its hands and through the air). Everywhere else the
+# feet are planted and anchor directly, which stops the character sliding
+# sideways mid-loop.
+TRAVELLING = {"run_r", "run_l", "run_dribble_r", "run_dribble_l", "celebrate_flip"}
 
 
 def mask_of(im: Image.Image) -> np.ndarray:

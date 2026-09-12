@@ -99,6 +99,73 @@ window.SPRITE_MANIFEST = {
       "footY": 138.29
      }
     ],
+    "celebrate_flip": [
+     {
+      "src": "sprites/monkey/celebrate_flip/01.png",
+      "w": 82.97,
+      "h": 98.06,
+      "footX": 38.47,
+      "footY": 98.06
+     },
+     {
+      "src": "sprites/monkey/celebrate_flip/02.png",
+      "w": 83.47,
+      "h": 123.2,
+      "footX": 37.46,
+      "footY": 133.76
+     },
+     {
+      "src": "sprites/monkey/celebrate_flip/03.png",
+      "w": 81.71,
+      "h": 149.35,
+      "footX": 40.23,
+      "footY": 150.35
+     },
+     {
+      "src": "sprites/monkey/celebrate_flip/04.png",
+      "w": 90.77,
+      "h": 94.29,
+      "footX": 40.73,
+      "footY": 106.61
+     },
+     {
+      "src": "sprites/monkey/celebrate_flip/05.png",
+      "w": 89.76,
+      "h": 79.95,
+      "footX": 44.0,
+      "footY": 79.95
+     },
+     {
+      "src": "sprites/monkey/celebrate_flip/06.png",
+      "w": 79.2,
+      "h": 144.57,
+      "footX": 32.94,
+      "footY": 144.57
+     }
+    ],
+    "celebrate_pump": [
+     {
+      "src": "sprites/monkey/celebrate_pump/01.png",
+      "w": 108.37,
+      "h": 150.64,
+      "footX": 52.13,
+      "footY": 150.64
+     },
+     {
+      "src": "sprites/monkey/celebrate_pump/02.png",
+      "w": 110.54,
+      "h": 133.08,
+      "footX": 55.16,
+      "footY": 133.3
+     },
+     {
+      "src": "sprites/monkey/celebrate_pump/03.png",
+      "w": 110.54,
+      "h": 133.73,
+      "footX": 55.16,
+      "footY": 133.95
+     }
+    ],
     "charge": [
      {
       "src": "sprites/monkey/charge/01.png",
@@ -166,6 +233,36 @@ window.SPRITE_MANIFEST = {
       "h": 130.4,
       "footX": 54.62,
       "footY": 130.4
+     }
+    ],
+    "panic": [
+     {
+      "src": "sprites/monkey/panic/01.png",
+      "w": 107.69,
+      "h": 128.69,
+      "footX": 53.74,
+      "footY": 128.9
+     },
+     {
+      "src": "sprites/monkey/panic/02.png",
+      "w": 107.07,
+      "h": 143.31,
+      "footX": 53.43,
+      "footY": 143.31
+     },
+     {
+      "src": "sprites/monkey/panic/03.png",
+      "w": 107.69,
+      "h": 131.37,
+      "footX": 53.74,
+      "footY": 131.37
+     },
+     {
+      "src": "sprites/monkey/panic/04.png",
+      "w": 106.46,
+      "h": 143.31,
+      "footX": 53.13,
+      "footY": 143.31
      }
     ],
     "pickup": [
@@ -335,6 +432,7 @@ window.SPRITE_MANIFEST = {
     "break_banana": -1,
     "break_wave": -1,
     "pickup": -1,
+    "panic": -1,
     "run_dribble_r": 1,
     "run_dribble_l": -1
    },

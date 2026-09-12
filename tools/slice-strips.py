@@ -19,6 +19,7 @@ Run from anywhere:  python tools/slice-strips.py
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -183,8 +184,16 @@ def slice_character(name: str, seqs) -> None:
 
 
 def main() -> None:
+    # Slicing every strip takes a while, so a sequence name (or several) can be
+    # passed to redo just those: python tools/slice-strips.py panic celebrate_flip
+    wanted = set(sys.argv[1:])
     for name, seqs in STRIPS.items():
-        slice_character(name, seqs)
+        picked = [s for s in seqs if not wanted or s[0] in wanted]
+        if picked:
+            slice_character(name, picked)
+    unknown = wanted - {s[0] for seqs in STRIPS.values() for s in seqs}
+    if unknown:
+        print(f"unknown sequence(s): {', '.join(sorted(unknown))}")
 
 
 if __name__ == "__main__":
