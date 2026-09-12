@@ -742,8 +742,9 @@ keeping it.
 
 # Re-rolls
 
-Three of the fourteen came back wrong. Everything else is good and sliced
-cleanly. Replace the strip file and re-run the slicer.
+Three problems across four strips. The other ten are good and sliced cleanly.
+Replace the strip file, keeping the same filename, and re-run
+`python tools/slice-strips.py`.
 
 ## R1 — replaces prompt 1, stationary dribble
 
