@@ -96,6 +96,7 @@ The **Monkey** is fully animated, with fourteen sequences:
 | `celebrate` | one-shot | 0.9 s on a made basket |
 | `gameover` | loop | 2.5 fps, panting |
 | `break_banana`, `break_wave` | one-shot | idle breaks, see below |
+| `panic` | loop | while the shot clock is at 2s or less and he is standing still |
 
 The other three still run on the original eight poses, which the build script
 maps onto the same sequence names — so the game has one code path, and they get

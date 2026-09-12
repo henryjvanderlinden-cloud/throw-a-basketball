@@ -79,7 +79,7 @@ SEQ_SCALE = {
 BALL_SIDE = {
     "monkey": {
         "dribble_idle": -1, "break_banana": -1, "break_wave": -1,
-        "pickup": -1, "run_dribble_r": +1, "run_dribble_l": -1,
+        "pickup": -1, "panic": -1, "run_dribble_r": +1, "run_dribble_l": -1,
     },
 }
 

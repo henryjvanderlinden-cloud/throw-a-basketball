@@ -81,6 +81,7 @@ What exists today, and what each one wants.
 | Shot | one-shot | 2 | **4** | load → rise → release (A3) → follow-through. Today it is just release + follow, so the throw has no build. |
 | Run without the ball | loop | reuses dribble | **2 × 2** | Chasing a loose ball. Distinct from run-dribble: no hand pushing down, arms pumping. Left and right. |
 | Made basket | one-shot | 0 | **2** | Ends on A1. |
+| Shot-clock panic | loop | 0 | **4** | Grimacing and jabbing a finger at the clock, under 2 seconds. Built like an idle break — the dribbling hand keeps its cycle, the other hand does the business — so it needs no handover. |
 | Game over | loop | 0 | **2** | Hands on knees, panting, when the clock hits zero — feet and hands pinned, only the shoulders and head move, at about 2.5 fps. Right now the overlay just appears over a dribbling character. |
 
 Roughly 40 frames per character, against today's 8.

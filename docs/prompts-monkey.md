@@ -740,6 +740,80 @@ keeping it.
 
 ===============================================================================
 
+# 15 — Shot-clock panic · loop · 4 frames · attach Monkey 001.png
+
+Plays on a loop while the shot clock is at 2 seconds or less and he is standing
+still with the ball. Save as `Monkey_sequence_015.png`.
+
+Two things make this fit the existing set. The dribbling hand keeps the same
+four positions as the stationary dribble, so the ball carries on bouncing and
+the loop drops in and out without a handover — same trick as the idle breaks.
+And the dribbling hand is specified on the **viewer's left**, which is where the
+generator actually drew it in prompt 1, rather than the right that prompt asked
+for and did not get.
+
+The shot clock lives in the top-right corner of the screen, so he points up and
+to the viewer's right.
+
+```
+Pixel-art sprite sheet, single image, fully transparent background.
+
+SUBJECT: the anthropomorphic monkey basketball player in the attached reference
+image. Match that character exactly: brown fur, shaggy darker head fur, a long
+curling tail, a blue sleeveless basketball jersey with a yellow number 7, blue
+shorts with white and yellow trim, blue-and-white high-top sneakers. Identical
+colours, identical proportions, identical build and identical height as the
+reference, in every frame.
+
+LAYOUT: one horizontal row of 4 frames of equal width, evenly spaced.
+No borders, no frame numbers, no labels, no background, no drop shadows.
+
+CAMERA: locked off. Identical distance and eye level in every frame. The
+character must be exactly the same height in every frame, and the same height as
+in the reference image — do not zoom, crop, recompose or rescale between frames.
+All frames share one ground line: the soles of the feet touch the same
+horizontal line in every frame. The feet stay planted throughout.
+
+VIEW: front view, facing the viewer, squared to camera, in a low athletic stance
+with the knees bent.
+
+He has just noticed the clock running out and he is losing his mind about it.
+His head is turned up and to the VIEWER'S RIGHT in all four frames, staring
+off-screen at a clock above him, face contorted in panic: eyes wide and bulging,
+brows up, teeth bared in a grimace, beads of sweat flying off his brow.
+
+The hand on the VIEWER'S LEFT is dribbling and cycles through four fixed
+positions. The arm on the VIEWER'S RIGHT is flung up and out, index finger
+extended, jabbing repeatedly up toward the clock.
+
+FRAMES, left to right:
+1. Dribbling hand pushed all the way down at knee height, palm to the floor.
+   Pointing arm half-raised, finger just coming up, mouth open in a yelp.
+2. Dribbling hand risen to hip height, palm still down. Pointing arm snapped out
+   straight up toward the viewer's upper right, finger jabbing hard, grimace at
+   its widest, sweat flying.
+3. Dribbling hand at its highest, just below chest height, wrist cocked.
+   Pointing arm pulled back slightly, elbow bent, still aimed at the clock,
+   cheeks puffed, eyes screwed up.
+4. Dribbling hand dropping back toward the hip. Pointing arm snapped straight
+   out again in a second jab, teeth bared, head craned further toward the clock.
+
+This row is a seamless loop: frame 4 must flow back into frame 1 with no jump.
+The feet do not move at any point, and the dribbling hand's four positions must
+exactly match a normal dribbling cycle so the motion is continuous.
+
+STYLE: 16-bit arcade pixel art, bold dark outline, flat cel shading, limited
+palette, crisp hard pixel edges. The background must be fully transparent
+(alpha 0) with no haze, glow or soft fringe around the silhouette. Output a wide
+landscape image.
+
+Sweat beads are the only extra element, and they stay close to his head. The
+character is NOT holding a basketball in any frame — the ball is drawn
+separately by the game.
+```
+
+===============================================================================
+
 # Re-rolls
 
 Three problems across four strips. The other ten are good and sliced cleanly.

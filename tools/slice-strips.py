@@ -48,6 +48,7 @@ STRIPS = {
         ("gameover",        "Monkey_sequence_012.png", 2),
         ("break_banana",    "Monkey_sequence_013.png", 4),
         ("break_wave",      "Monkey_sequence_014.png", 4),
+        ("panic",           "Monkey_sequence_015.png", 4),
     ],
 }
 
