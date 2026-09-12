@@ -3,6 +3,12 @@
 How to think about the character animation, what to generate next, and how to
 ask for it.
 
+> **Using this document.** It is a plan, not a prompt. The only part you paste
+> into an image generator is the fenced block under [The prompt](#the-prompt),
+> with the bracketed parts filled in — **one sequence per prompt**, producing
+> one strip image. The sequence table says what to ask for; the worked examples
+> show what a filled-in FRAMES list looks like.
+
 ## The structural idea: anchors, loops and one-shots
 
 Every sequence is one of two kinds, and they have different rules.
@@ -208,6 +214,72 @@ For a one-shot, add:
 ```
 Frame 1 must match [the character's neutral front stance, arms down]; frame [N]
 must settle back into that same stance.
+```
+
+### Working with it in practice
+
+- **One sequence per prompt.** Never ask for the whole plan at once. Each
+  generation produces one strip; the sequence table is a list of generations to
+  run, not a single request.
+- **Keep the strip short.** Four frames in a row is reliable. Past six, quality
+  falls off and frames start drifting in scale — the exact problem the strip is
+  there to avoid.
+- **The SUBJECT block is fixed per character.** Write it once, paste the
+  identical text into every prompt for that character. Any rewording is a chance
+  for the jersey number, skin tone or build to drift between sequences.
+- **Attach a reference image if the tool accepts one.** Handing it an existing
+  frame of that character holds identity far better than describing them, and
+  lets the SUBJECT line stay short.
+- **Expect to re-roll.** Scale drift and a wandering ground line are the usual
+  failures. Both are obvious in the check described at the end of this document,
+  and neither is worth fixing by hand — regenerate.
+- **Generate one character's sequence first and wire it in** before doing the
+  other three. A problem found after 160 frames is expensive.
+
+### A complete, ready-to-send example
+
+The monkey's stationary dribble, with every bracket filled in:
+
+```
+Pixel-art sprite sheet, single image, fully transparent background.
+
+SUBJECT: an anthropomorphic monkey basketball player with brown fur, shaggy
+darker head fur, a long curling tail, wearing a blue sleeveless basketball
+jersey with a yellow number 7, blue shorts with white and yellow trim, and
+blue-and-white high-top sneakers. The same character in every frame: identical
+colours, identical proportions, identical build. The tail curls clear of the
+body and stays roughly the same shape in every frame.
+
+LAYOUT: one horizontal row of 4 frames of equal width, evenly spaced.
+No borders, no frame numbers, no labels, no background, no drop shadows.
+
+CAMERA: locked off. Identical distance and eye level in every frame. The
+character must be exactly the same height in every frame — do not zoom, crop,
+recompose or rescale between frames. All frames share one ground line: the
+soles of the feet touch the same horizontal line in every frame.
+
+VIEW: front view, facing the viewer, squared to camera.
+
+FRAMES, left to right:
+1. Standing low in an athletic stance, knees bent, feet planted shoulder-width
+   apart, right hand pushed all the way down at about hip height, palm facing
+   the floor, fingers spread.
+2. The same planted stance, weight rising slightly, right hand halfway between
+   hip and chest, palm still down, elbow bending.
+3. The same planted stance, standing tallest, right hand at its highest just
+   below chest height, wrist cocked.
+4. The same planted stance, settling back down, right hand dropping toward the
+   hip, palm down.
+
+This row is a seamless loop: frame 4 must flow back into frame 1 with no jump.
+The feet do not move at any point.
+
+STYLE: 16-bit arcade pixel art, bold dark outline, flat cel shading, limited
+palette, crisp hard pixel edges. The background must be fully transparent
+(alpha 0) with no haze, glow or soft fringe around the silhouette.
+
+The character is NOT holding a basketball in any frame — the ball is drawn
+separately by the game.
 ```
 
 ### Why each clause is there
