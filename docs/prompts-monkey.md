@@ -937,6 +937,20 @@ separately by the game.
 
 ===============================================================================
 
+# Which take is in use
+
+Several sequences have more than one generated take. `tools/slice-strips.py` is
+the record of which one the game actually uses — `run_dribble_r`,
+`run_dribble_l` and `gameover` point at the `b` files, the rest at the
+originals.
+
+Worth knowing if you are tempted to build a sequence out of the best frames
+from two takes: **don't**. Separate generations differ in scale by 5–10%, so a
+mixed loop makes the character change size mid-cycle, which is the most visible
+place a size change can happen. Swapping a *whole* sequence between takes is
+free — each one gets its own `SEQ_SCALE` entry — but mixing frames inside one
+is not.
+
 # Re-rolls
 
 Three problems across four strips. The other ten are good and sliced cleanly.

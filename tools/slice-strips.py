@@ -36,8 +36,10 @@ SNAP_WINDOW = 0.12          # search +/- this share of a cell width for the cut
 STRIPS = {
     "Monkey": [
         ("dribble_idle",    "Monkey_sequence_001.png", 4),
-        ("run_dribble_r",   "Monkey_sequence_002.png", 4),
-        ("run_dribble_l",   "Monkey_sequence_003.png", 4),
+        # 002b/003b keep the hand low and open in all four frames; 002/003
+        # alternate it with a running fist, which breaks the dribble.
+        ("run_dribble_r",   "Monkey_sequence_002b.png", 4),
+        ("run_dribble_l",   "Monkey_sequence_003b.png", 4),
         ("pickup",          "Monkey_sequence_004.png", 3),
         ("turn",            "Monkey_sequence_005.png", 2),
         ("aim",             "Monkey_sequence_006.png", 2),
@@ -46,7 +48,9 @@ STRIPS = {
         ("run_r",           "Monkey_sequence_009.png", 2),
         ("run_l",           "Monkey_sequence_010.png", 2),
         ("celebrate",       "Monkey_sequence_011.png", 2),
-        ("gameover",        "Monkey_sequence_012.png", 2),
+        # 012b is far more doubled-over, so the heave between the two frames
+        # reads at game size where 012's barely did.
+        ("gameover",        "Monkey_sequence_012b.png", 2),
         ("break_banana",    "Monkey_sequence_013.png", 4),
         ("break_wave",      "Monkey_sequence_014.png", 4),
         ("panic",           "Monkey_sequence_015.png", 4),

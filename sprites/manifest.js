@@ -222,17 +222,17 @@ window.SPRITE_MANIFEST = {
     "gameover": [
      {
       "src": "sprites/monkey/gameover/01.png",
-      "w": 109.59,
-      "h": 123.11,
-      "footX": 54.71,
-      "footY": 123.11
+      "w": 128.94,
+      "h": 112.35,
+      "footX": 54.84,
+      "footY": 112.35
      },
      {
       "src": "sprites/monkey/gameover/02.png",
-      "w": 109.41,
-      "h": 130.4,
-      "footX": 54.62,
-      "footY": 130.4
+      "w": 132.75,
+      "h": 130.85,
+      "footX": 55.41,
+      "footY": 130.85
      }
     ],
     "panic": [
@@ -291,61 +291,61 @@ window.SPRITE_MANIFEST = {
     "run_dribble_l": [
      {
       "src": "sprites/monkey/run_dribble_l/01.png",
-      "w": 118.56,
-      "h": 133.73,
-      "footX": 57.55,
-      "footY": 133.73
+      "w": 117.68,
+      "h": 133.61,
+      "footX": 56.61,
+      "footY": 133.61
      },
      {
       "src": "sprites/monkey/run_dribble_l/02.png",
-      "w": 109.67,
-      "h": 132.43,
-      "footX": 59.28,
-      "footY": 133.73
+      "w": 108.97,
+      "h": 132.76,
+      "footX": 60.64,
+      "footY": 133.4
      },
      {
       "src": "sprites/monkey/run_dribble_l/03.png",
-      "w": 116.39,
-      "h": 133.73,
-      "footX": 57.55,
-      "footY": 133.73
+      "w": 113.0,
+      "h": 133.61,
+      "footX": 61.07,
+      "footY": 133.61
      },
      {
       "src": "sprites/monkey/run_dribble_l/04.png",
-      "w": 102.52,
-      "h": 132.22,
-      "footX": 55.16,
-      "footY": 133.52
+      "w": 103.87,
+      "h": 133.61,
+      "footX": 52.57,
+      "footY": 133.61
      }
     ],
     "run_dribble_r": [
      {
       "src": "sprites/monkey/run_dribble_r/01.png",
-      "w": 111.84,
-      "h": 137.2,
-      "footX": 51.48,
-      "footY": 138.07
+      "w": 111.6,
+      "h": 137.34,
+      "footX": 52.3,
+      "footY": 137.96
      },
      {
       "src": "sprites/monkey/run_dribble_r/02.png",
-      "w": 107.72,
-      "h": 136.77,
-      "footX": 58.85,
-      "footY": 138.07
+      "w": 102.96,
+      "h": 137.34,
+      "footX": 59.1,
+      "footY": 137.96
      },
      {
       "src": "sprites/monkey/run_dribble_r/03.png",
-      "w": 118.56,
-      "h": 138.07,
-      "footX": 57.76,
-      "footY": 138.07
+      "w": 101.31,
+      "h": 137.34,
+      "footX": 54.77,
+      "footY": 137.96
      },
      {
       "src": "sprites/monkey/run_dribble_r/04.png",
-      "w": 111.41,
-      "h": 138.07,
-      "footX": 60.15,
-      "footY": 138.07
+      "w": 104.4,
+      "h": 137.14,
+      "footX": 46.95,
+      "footY": 137.14
      }
     ],
     "run_l": [

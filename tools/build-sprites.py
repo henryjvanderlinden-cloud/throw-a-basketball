@@ -68,9 +68,10 @@ LEGACY_IDLE_POSE = 1        # the plain standing pose, used to set the scale
 SEQ_SCALE = {
     "monkey": {
         "aim": 0.72, "turn": 0.87, "charge": 0.86, "shot": 0.94,
-        "pickup": 0.85, "celebrate": 0.88, "gameover": 0.80,
+        "pickup": 0.85, "celebrate": 0.88, "gameover": 0.88,
         "run_r": 0.78, "run_l": 0.73, "break_wave": 0.95,
         "panic": 0.95, "celebrate_flip": 1.16,
+        "run_dribble_r": 0.95, "run_dribble_l": 0.98,
     },
 }
 
