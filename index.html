@@ -313,39 +313,55 @@ const CHARS = (window.SPRITE_MANIFEST && Array.isArray(window.SPRITE_MANIFEST.ch
   ? window.SPRITE_MANIFEST.characters : [];
 const HAS_SPRITES = CHARS.length > 0;
 
-// How fast each animation alternates, in frames per second. Dribbling is the
-// exception: it is driven by the ball's own bounce, not by a rate. This figure
-// covers walking after a loose ball, when there is no bounce to follow.
-const ANIM_HZ = { dribble: 6.5, aim: 2.6, charge: 9, release: 0, follow: 0 };
-const RELEASE_HOLD = 0.22;      // seconds the throw pose stays up
+// Frames per second for the sequences that run on a clock. Dribbling is the
+// exception -- it is driven by the ball's own bounce. RUN covers chasing a
+// loose ball, where there is no bounce to follow.
+const ANIM_HZ = { aim: 2.6, charge: 9, run: 7, gameover: 2.5, celebrate: 5 };
+const RISE_HOLD = 0.05;         // the shot's rising frame, if the art has one
+const RELEASE_HOLD = 0.27;      // ...then the release
 const FOLLOW_HOLD = 0.5;        // ...then the follow-through
+const TURN_TIME = 0.18;         // front stance -> back stance
+const PICKUP_TIME = 0.30;       // gathering the ball off the floor
+const CELEBRATE_TIME = 0.9;
+const BREAK_MIN = 8, BREAK_MAX = 15;   // seconds of still dribbling between breaks
+const BREAK_CLOCK_FLOOR = 4;    // never mug for the crowd under this much time
 
-let charIdx = 0, curChar = null, charFrames = [], shownFrame = -1;
+let charIdx = 0, curChar = null;
+let frameEls = {};              // sequence name -> [<image>]
+let shown = null;               // [sequence, index] currently visible
 
 function buildCharacter(i) {
   curChar = CHARS[i] || null;
   el.psprite.textContent = '';
-  charFrames = []; shownFrame = -1;
+  frameEls = {}; shown = null;
   el.pvector.setAttribute('opacity', curChar ? '0' : '1');
   if (!curChar) return;
-  for (const f of curChar.frames) {
-    const im = document.createElementNS(SVGNS, 'image');
-    im.setAttribute('href', f.src);
-    im.setAttribute('width', f.w); im.setAttribute('height', f.h);
-    im.setAttribute('x', -f.footX); im.setAttribute('y', -f.footY);
-    im.setAttribute('opacity', '0');
-    el.psprite.appendChild(im);
-    charFrames.push(im);
+  for (const [name, frames] of Object.entries(curChar.sequences)) {
+    frameEls[name] = frames.map(f => {
+      const im = document.createElementNS(SVGNS, 'image');
+      im.setAttribute('href', f.src);
+      im.setAttribute('width', f.w); im.setAttribute('height', f.h);
+      im.setAttribute('x', -f.footX); im.setAttribute('y', -f.footY);
+      im.setAttribute('opacity', '0');
+      el.psprite.appendChild(im);
+      return im;
+    });
   }
   try { localStorage.setItem('hoop.char', curChar.key); } catch (e) {}
 }
 
-function showFrame(pose1based) {
-  const i = pose1based - 1;
-  if (i === shownFrame || !charFrames[i]) return;
-  if (charFrames[shownFrame]) charFrames[shownFrame].setAttribute('opacity', '0');
-  charFrames[i].setAttribute('opacity', '1');
-  shownFrame = i;
+const seqOf = name => (curChar && curChar.sequences[name]) || null;
+// Fall back to the first sequence in the list that the character actually has.
+const firstSeq = (...names) => names.find(n => seqOf(n)) || 'dribble_idle';
+
+function showFrame(name, idx) {
+  const list = frameEls[name];
+  if (!list || !list.length) return;
+  idx = Math.max(0, Math.min(list.length - 1, idx));
+  if (shown && shown[0] === name && shown[1] === idx) return;
+  if (shown && frameEls[shown[0]]) frameEls[shown[0]][shown[1]].setAttribute('opacity', '0');
+  list[idx].setAttribute('opacity', '1');
+  shown = [name, idx];
 }
 
 // where the ball sits when the character is holding it
@@ -374,7 +390,7 @@ function buildSelectCards() {
     card.setAttribute('stroke-width', '3');
     grp.appendChild(card);
 
-    const f = c.frames[0], k = 250 / f.h;
+    const f = c.sequences.dribble_idle[0], k = 250 / f.h;
     const im = document.createElementNS(SVGNS, 'image');
     im.setAttribute('href', f.src);
     im.setAttribute('width', f.w * k); im.setAttribute('height', f.h * k);
@@ -431,7 +447,14 @@ function reset() {
     clock: CLOCK_BASE,
     flash: 0,
     animT: 0,
-    throwT: 99                  // time since the release, for the throw poses
+    throwT: 99,                 // time since the release, for the throw poses
+    turnT: 0,                   // one-shots, counting down
+    pickupT: 0,
+    celebT: 0,
+    breakSeq: null,             // the idle break currently playing, if any
+    breakT: 0,
+    breakAt: BREAK_MIN + Math.random() * (BREAK_MAX - BREAK_MIN),
+    stillT: 0                   // how long he has stood dribbling on the spot
   };
   el.overlay.setAttribute('opacity', '0');
   el.select.setAttribute('opacity', g.state === STATE.SELECT ? '1' : '0');
@@ -458,7 +481,7 @@ function clockLimitFor(points) {
   return Math.max(CLOCK_FLOOR, CLOCK_BASE - CLOCK_STEP * Math.floor(points / PTS_PER_STEP));
 }
 // how tall the current character is, for shadow and pickup sizing
-const bodyH = () => curChar ? curChar.frames[0].h : 70;
+const bodyH = () => curChar ? curChar.sequences.dribble_idle[0].h : 70;
 
 // ---------------------------------------------------------------- input
 const keys = Object.create(null);
@@ -494,6 +517,8 @@ function onSpaceDown() {
   if (g.state === STATE.DRIBBLE) {
     g.state = STATE.AIM;                 // grab the ball, start aiming
     g.held = true;
+    g.turnT = TURN_TIME;                 // pivot from the front stance
+    g.breakSeq = null; g.breakT = 0;     // a break never costs you control
   } else if (g.state === STATE.AIM) {
     g.state = STATE.CHARGE;              // second press: start charging
     g.power = 0;
@@ -571,6 +596,8 @@ function step(dt) {
   const left = !!keys.ArrowLeft, right = !!keys.ArrowRight;
   g.animT += dt;
   g.throwT += dt;
+  for (const k of ['turnT', 'pickupT', 'celebT', 'breakT']) g[k] = Math.max(0, g[k] - dt);
+  if (!g.breakT) g.breakSeq = null;
 
   if (g.state === STATE.SELECT) return;
 
@@ -616,6 +643,20 @@ function step(dt) {
     const peak = Math.max(6, bodyH() * DRIBBLE_HAND_H - 0.5 * BALL_R);
     const h = Math.abs(Math.sin(g.dribT)) * peak;
     b.x = g.px + bodyH() * 0.26 * g.facing;
+
+    // Idle breaks: after a while standing still, the character does something
+    // in character. Any movement cancels it, and they never run down the clock.
+    const still = !left && !right && g.pickupT <= 0;
+    g.stillT = still ? g.stillT + dt : 0;
+    if (!still) { g.breakSeq = null; g.breakT = 0; }
+    const breaks = Object.keys(curChar ? curChar.sequences : {}).filter(n => n.startsWith('break_'));
+    if (still && !g.breakSeq && breaks.length && g.stillT > g.breakAt &&
+        (!g.clockOn || g.clock > BREAK_CLOCK_FLOOR)) {
+      g.breakSeq = breaks[Math.floor(Math.random() * breaks.length)];
+      g.breakT = Math.PI * 2 / 7;        // two bounces, the length of one loop
+      g.stillT = 0;
+      g.breakAt = BREAK_MIN + Math.random() * (BREAK_MAX - BREAK_MIN);
+    }
     b.y = GROUND - BALL_R - h;
     b.spin += dt * 300 * g.facing;
     b.vx = 0; b.vy = 0;
@@ -664,6 +705,7 @@ function step(dt) {
         g.clockLimit = clockLimitFor(g.points);
         g.clock = g.clockLimit;              // a make also refreshes the clock
         g.flash = 0.5;
+        g.celebT = CELEBRATE_TIME;
       }
     }
 
@@ -674,6 +716,8 @@ function step(dt) {
         g.state = STATE.DRIBBLE;
         g.held = true;
         g.dribT = 0;
+        g.pickupT = PICKUP_TIME;       // scoop it up off the floor
+        g.stillT = 0;
       }
     }
   }
@@ -691,41 +735,87 @@ function powerColor(p) {
   return `rgb(${c(0)},${c(1)},${c(2)})`;
 }
 
-// Pick the pose for this frame. Two-frame loops at a handful of frames per
-// second -- the heave that old DOS sports games ran on.
+// The dribble frames are indexed off the ball's own bounce phase, so the hand
+// always meets the ball. One bounce is dribT advancing by PI. The hand is at its
+// LOWEST (frame 1) when the ball is up at the hand, and at its HIGHEST (the
+// middle of the sequence) when the ball is down at the floor.
+function dribbleFrame(n) {
+  const u = (((g.dribT % Math.PI) + Math.PI) % Math.PI) / Math.PI;
+  return Math.floor(((((u - 0.5) % 1) + 1) % 1) * n) % n;
+}
+
+// Ping-pong, so a three-frame coil reads going in and coming back out.
+function pingPong(i, n) {
+  if (n < 3) return i % n;
+  const period = 2 * n - 2, k = i % period;
+  return k < n ? k : period - k;
+}
+
+// Pick the sequence and frame for this tick. Loops run at a handful of frames
+// per second -- the heave that old DOS sports games ran on -- except dribbling,
+// which follows the ball.
 function animatePlayer() {
   g.mirrorPose = false;
   if (!curChar) return;
-  const p = curChar.poses;
-  let list, hz;
+
+  const moving = !!keys.ArrowLeft || !!keys.ArrowRight;
+  const right = g.facing >= 0;
+
+  if (g.state === STATE.OVER) {
+    const name = firstSeq('gameover', 'dribble_idle');
+    return showFrame(name, Math.floor(g.animT * ANIM_HZ.gameover) % seqOf(name).length);
+  }
+
+  if (g.state === STATE.LIVE) {
+    const shot = seqOf('shot');
+    if (g.throwT < RISE_HOLD && shot.length >= 3) return showFrame('shot', shot.length - 3);
+    if (g.throwT < RELEASE_HOLD) return showFrame('shot', shot.length - 2);
+    if (g.throwT < RELEASE_HOLD + FOLLOW_HOLD) return showFrame('shot', shot.length - 1);
+    if (g.celebT > 0 && seqOf('celebrate')) {
+      const n = seqOf('celebrate').length;
+      const k = Math.floor((CELEBRATE_TIME - g.celebT) * ANIM_HZ.celebrate);
+      return showFrame('celebrate', Math.min(n - 1, k));
+    }
+    if (moving) {
+      const name = firstSeq(right ? 'run_r' : 'run_l', 'dribble_idle');
+      g.mirrorPose = curChar.mirror;
+      return showFrame(name, Math.floor(g.animT * ANIM_HZ.run) % seqOf(name).length);
+    }
+    g.mirrorPose = curChar.mirror;
+    return showFrame('dribble_idle', 0);
+  }
 
   if (g.state === STATE.CHARGE) {
-    list = p.charge; hz = ANIM_HZ.charge * (0.6 + 0.7 * g.power);   // tenses up
-  } else if (g.state === STATE.AIM) {
-    list = p.aim; hz = ANIM_HZ.aim;
-  } else if (g.state === STATE.LIVE && g.throwT < RELEASE_HOLD) {
-    list = p.release; hz = 0;
-  } else if (g.state === STATE.LIVE && g.throwT < RELEASE_HOLD + FOLLOW_HOLD) {
-    list = p.follow; hz = 0;
-  } else if (g.state === STATE.DRIBBLE) {
-    // Locked to the ball rather than free-running: the low-handed stance shows
-    // while the ball is up at the hand, the recoiled one while it is down at
-    // the floor. Both poses come off the same dribT the bounce is drawn from,
-    // so they cannot drift apart -- and a faster dribble drives a faster heave.
-    g.mirrorPose = true;
-    showFrame(p.dribble[Math.abs(Math.sin(g.dribT)) > 0.5 ? 0 : 1]);
-    return;
-  } else {
-    // ball is loose: idle, and only heave while actually walking
-    list = p.dribble;
-    hz = (keys.ArrowLeft || keys.ArrowRight) ? ANIM_HZ.dribble : 0;
+    const n = seqOf('charge').length;
+    const hz = ANIM_HZ.charge * (0.6 + 0.7 * g.power);   // tenses as it fills
+    return showFrame('charge', pingPong(Math.floor(g.animT * hz), n));
   }
-  // The front-facing stances are drawn with the free hand on the far side, so
-  // they get mirrored: that puts the dribbling hand over the bouncing ball.
-  g.mirrorPose = list === p.dribble;
 
-  const i = hz > 0 ? Math.floor(g.animT * hz) % list.length : 0;
-  showFrame(list[i]);
+  if (g.state === STATE.AIM) {
+    const turn = seqOf('turn');
+    if (g.turnT > 0 && turn) {
+      const k = Math.floor((TURN_TIME - g.turnT) / TURN_TIME * turn.length);
+      return showFrame('turn', Math.min(turn.length - 1, k));
+    }
+    const n = seqOf('aim').length;
+    return showFrame('aim', Math.floor(g.animT * ANIM_HZ.aim) % n);
+  }
+
+  // dribbling
+  const pickup = seqOf('pickup');
+  if (g.pickupT > 0 && pickup) {
+    const k = Math.floor((PICKUP_TIME - g.pickupT) / PICKUP_TIME * pickup.length);
+    return showFrame('pickup', Math.min(pickup.length - 1, k));
+  }
+  // The old-style characters have no left/right art, so their front stance is
+  // mirrored to keep the dribbling hand over the ball.
+  g.mirrorPose = curChar.mirror;
+  if (moving) {
+    const name = firstSeq(right ? 'run_dribble_r' : 'run_dribble_l', 'dribble_idle');
+    return showFrame(name, dribbleFrame(seqOf(name).length));
+  }
+  const name = (g.breakSeq && seqOf(g.breakSeq)) ? g.breakSeq : 'dribble_idle';
+  showFrame(name, dribbleFrame(seqOf(name).length));
 }
 
 // ---------------------------------------------------------------- render
@@ -818,6 +908,7 @@ requestAnimationFrame(frame);
 // expose for debugging / future sprite work
 window.__hoop = { get state(){ return g; }, reset, step, render, keys, STATE, HOOP,
                   startRun, get chars(){ return CHARS; },
+                  get shown(){ return shown; }, get char(){ return curChar; },
                   get charIdx(){ return charIdx; }, set charIdx(v){ charIdx = v; } };
 })();
 </script>

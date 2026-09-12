@@ -59,75 +59,61 @@ def ink_columns(im: Image.Image) -> np.ndarray:
     return (np.array(im.getchannel("A")) > ALPHA_CUT).sum(axis=0)
 
 
-def components(mask: np.ndarray):
-    """Label 4-connected blobs. Row-wise union-find; no scipy needed."""
+def flood_from(mask: np.ndarray, seeds, budget: int):
+    """4-connected flood from `seeds`, abandoned once it exceeds `budget`.
+
+    Returns the filled pixels, or None if the blob turned out to be big -- which
+    means we walked into the character rather than a stray fragment. Bailing out
+    early is what keeps this cheap: a real fragment is a few thousand pixels, and
+    the main body is abandoned almost immediately.
+    """
     h, w = mask.shape
-    parent: dict[int, int] = {}
-
-    def find(a):
-        while parent[a] != a:
-            parent[a] = parent[parent[a]]
-            a = parent[a]
-        return a
-
-    def union(a, b):
-        ra, rb = find(a), find(b)
-        if ra != rb:
-            parent[max(ra, rb)] = min(ra, rb)
-
-    labels = np.zeros((h, w), dtype=np.int32)
-    nxt = 1
-    for y in range(h):
-        row = mask[y]
-        if not row.any():
-            continue
-        for x in np.where(row)[0]:
-            up = labels[y - 1, x] if y else 0
-            left = labels[y, x - 1] if x else 0
-            if up and left:
-                labels[y, x] = min(up, left)
-                union(up, left)
-            elif up or left:
-                labels[y, x] = up or left
-            else:
-                labels[y, x] = nxt
-                parent[nxt] = nxt
-                nxt += 1
-    for lab in range(1, nxt):
-        find(lab)
-    flat = np.zeros(nxt, dtype=np.int32)
-    for lab in range(1, nxt):
-        flat[lab] = find(lab)
-    return flat[labels]
+    seen = np.zeros((h, w), dtype=bool)
+    stack = [s for s in seeds if mask[s[0], s[1]]]
+    for y, x in stack:
+        seen[y, x] = True
+    filled = 0
+    while stack:
+        y, x = stack.pop()
+        filled += 1
+        if filled > budget:
+            return None
+        for ny, nx in ((y - 1, x), (y + 1, x), (y, x - 1), (y, x + 1)):
+            if 0 <= ny < h and 0 <= nx < w and mask[ny, nx] and not seen[ny, nx]:
+                seen[ny, nx] = True
+                stack.append((ny, nx))
+    return seen
 
 
 def drop_bleed(cell: Image.Image, touch_left: bool, touch_right: bool) -> int:
     """Erase small blobs that lean on an internal cut -- a neighbour's tail.
 
-    Only blobs touching a cut are removed, so genuinely detached parts of the
-    pose (the thrown banana peel, for instance) survive.
+    Seeded only from the cut edges, so genuinely detached parts of the pose that
+    sit inside the frame (the thrown banana peel, for instance) are never
+    considered.
     """
     if not (touch_left or touch_right):
         return 0
     arr = np.array(cell)
     mask = arr[:, :, 3] > ALPHA_CUT
-    if not mask.any():
+    total = int(mask.sum())
+    if not total:
         return 0
-    lab = components(mask)
-    ids, counts = np.unique(lab[lab > 0], return_counts=True)
-    if len(ids) < 2:
-        return 0
-    biggest = counts.max()
+    budget = int(total * BLEED_MAX_SHARE)
+
     removed = 0
-    for i, c in zip(ids, counts):
-        if c >= biggest * BLEED_MAX_SHARE:
+    for edge, active in ((0, touch_left), (mask.shape[1] - 1, touch_right)):
+        if not active:
             continue
-        blob = lab == i
-        on_left = touch_left and blob[:, 0].any()
-        on_right = touch_right and blob[:, -1].any()
-        if on_left or on_right:
-            arr[:, :, 3][blob] = 0
-            removed += 1
+        seeds = [(y, edge) for y in np.where(mask[:, edge])[0]]
+        if not seeds:
+            continue
+        blob = flood_from(mask, seeds, budget)
+        if blob is None:          # ran into the character; leave it be
+            continue
+        arr[:, :, 3][blob] = 0
+        mask &= ~blob
+        removed += 1
     if removed:
         cell.paste(Image.fromarray(arr), (0, 0))
     return removed

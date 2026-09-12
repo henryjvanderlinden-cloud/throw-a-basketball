@@ -77,41 +77,72 @@ Widening `HOOP.halfW` or raising `SPEED_MIN` makes the game noticeably easier.
 
 ## Characters
 
-Four playable characters, each with eight poses: **NBA Player**, **High
-Schooler**, **Monkey**, **Zombie**. Animation is deliberately two frames at a
-handful of frames per second — the heave that old DOS sports games ran on.
+Four playable characters: **Monkey**, **NBA Player**, **High Schooler**,
+**Zombie**. Animation is deliberately a few frames at a handful of frames per
+second — the heave that old DOS sports games ran on.
 
-| State | Frames | Rate |
+The **Monkey** is fully animated, with fourteen sequences:
+
+| Sequence | Kind | Rate |
 | --- | --- | --- |
-| dribbling | two front-facing stances | locked to the ball's bounce |
-| aiming | two back-facing stances | 2.6 fps |
-| charging | the wind-up | 5.4–11.7 fps, rising with power |
-| release | held at the throw | 0.22 s |
-| follow-through | after the release | 0.5 s |
+| `dribble_idle` | loop | locked to the ball's bounce |
+| `run_dribble_r` / `run_dribble_l` | loop | locked to the bounce; drawn per direction, never mirrored |
+| `run_r` / `run_l` | loop | 7 fps, chasing a loose ball |
+| `pickup` | one-shot | 0.30 s, scooping it off the floor |
+| `turn` | one-shot | 0.18 s, front stance → shooting stance |
+| `aim` | loop | 2.6 fps |
+| `charge` | loop | ping-pong, 5.4–11.7 fps rising with power |
+| `shot` | one-shot | rise 0.05 s → release 0.27 s → follow-through 0.5 s |
+| `celebrate` | one-shot | 0.9 s on a made basket |
+| `gameover` | loop | 2.5 fps, panting |
+| `break_banana`, `break_wave` | one-shot | idle breaks, see below |
+
+The other three still run on the original eight poses, which the build script
+maps onto the same sequence names — so the game has one code path, and they get
+mirrored for facing while the Monkey never is. Replacing them is a matter of
+generating strips; nothing in the game needs to change.
+
+### Idle breaks
+
+Stand still and dribble for 8–15 seconds and the character does something in
+character — the Monkey peels a banana, or waves to the crowd. The dribbling hand
+keeps the same four positions as the stationary loop throughout, so the ball
+never stops bouncing and the break needs no handover frames. Any input cancels
+it instantly, and breaks are suppressed under 4 seconds on the shot clock.
 
 ### The sprite pipeline
 
-Source art lives in `artwork/basketball-players/<Name> poses/` at 1086×1448.
-`tools/build-sprites.py` turns it into `sprites/<key>/01..08.png` plus
-`sprites/manifest.js`:
+Two stages. Generated strips (one image per sequence, frames side by side — see
+[docs/ANIMATION.md](docs/ANIMATION.md)) go in
+`artwork/basketball-players/<Name> poses/`:
 
 ```
-python tools/build-sprites.py
+python tools/slice-strips.py     # strips  -> <Name> frames/<sequence>/NN.png
+python tools/build-sprites.py    # frames  -> sprites/ + manifest.js
 ```
 
-Two things about the source art shape the pipeline. It carries a faint alpha
-haze over the whole canvas, so silhouettes are found with an alpha cut-off
-rather than a plain bounding box. And each pose was drawn to fill its own
-canvas, so the eight poses are **not** in register with one another — they are
-aligned on the feet instead, and the manifest records where each frame's feet
-sit so the game can plant them all on the same spot. Poses with the arms
-overhead come out slightly smaller; because every animation pair is two poses
-of the same kind, that only ever shows on a state change, never inside a loop.
+`slice-strips.py` cuts at equal divisions of the width, nudging each cut to the
+emptiest nearby column. Cutting on *empty* columns does not work: tails and
+swinging arms cross the gaps, and whole frames merge. Where a neighbour still
+bleeds across a cut, the fragment is erased by flood-filling from the cut edge
+and discarding small blobs — scoped to blobs touching a cut, so a genuinely
+detached part of the pose like a thrown banana peel survives.
 
-To add a character: drop a folder of eight poses in, add a row to `CHARACTERS`
-and a mapping to `POSES` in the build script, and re-run it. In `POSES` the
-order of the two `dribble` entries matters — the lower-handed stance goes
-first, because it is the one shown while the ball is up at the hand.
+`build-sprites.py` trims, scales every character to the same standing height,
+quantises, and writes the manifest. Frames from strips are anchored on the
+cell's midpoint and the strip's shared ground line, which is far steadier than
+per-frame foot detection — that wanders on running poses and makes the character
+jitter sideways. The old eight-pose art has no such shared frame, so it is
+anchored on the feet instead.
+
+Two quirks of the source art shape both tools: a faint alpha haze over the whole
+canvas, so silhouettes need an alpha cut-off rather than a plain bounding box;
+and, in the old eight-pose sets, each pose drawn to fill its own canvas, so
+those are not in register with one another.
+
+To add a sequence: generate the strip, add a row to `STRIPS` in
+`slice-strips.py`, re-run both tools. The game picks up any sequence it
+recognises and falls back gracefully when one is missing.
 
 If `sprites/manifest.js` is missing the game skips the picker and falls back to
 a plain vector figure, so `index.html` still runs on its own.

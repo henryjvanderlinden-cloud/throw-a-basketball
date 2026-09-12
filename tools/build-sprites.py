@@ -1,20 +1,18 @@
 #!/usr/bin/env python3
 """Turn the source pose art into game-ready sprites.
 
-Reads   artwork/basketball-players/<Name> poses/*.png   (1086x1448, 8 poses)
-Writes  sprites/<key>/01..08.png                        (trimmed, scaled, quantised)
-        sprites/manifest.js                             (window.SPRITE_MANIFEST)
+Two kinds of input, one kind of output.
 
-Each source pose was drawn to fill its own canvas, so the eight poses of a
-character are NOT in register with one another. They are aligned here on the
-one landmark that is reliable in every pose: the feet. Each pose is trimmed to
-its own silhouette, and the manifest records where that pose's feet sit inside
-the trimmed frame, so the game can plant every frame on the same spot.
+NEW: artwork/basketball-players/<Name> frames/<sequence>/NN.png
+     -- produced by tools/slice-strips.py from generated strips. One folder per
+     animation sequence, left and right facings drawn separately.
 
-A single scale per character keeps things simple. Poses with the arms overhead
-are drawn slightly smaller by the artist, but each animation *pair* is two
-poses of the same kind, so the small difference only ever shows up on a state
-change, never inside a loop.
+OLD: artwork/basketball-players/<Name> poses/*.png
+     -- the original eight single poses, which the game maps onto sequences and
+     still mirrors for facing.
+
+Both become sprites/<key>/<sequence>/NN.png plus sprites/manifest.js, so the
+game only ever sees named sequences and has one code path.
 
 Run from anywhere:  python tools/build-sprites.py
 """
@@ -22,6 +20,7 @@ Run from anywhere:  python tools/build-sprites.py
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 
 import numpy as np
@@ -36,110 +35,180 @@ OUT = ROOT / "sprites"
 STANDING_H = 132
 SUPERSAMPLE = 2
 
-# The source art has a faint alpha haze over the whole canvas; anything below
-# this is background.
+# The source art has a faint alpha haze over the whole canvas; below this is
+# background.
 ALPHA_CUT = 128
 
 CHARACTERS = [
-    # key,            source folder,        label,           idle pose (1-based)
-    ("nba",          "NBA player poses",    "NBA Player",    1),
-    ("highschooler", "Higschooler poses",   "High Schooler", 1),
-    ("monkey",       "Monkey poses",        "Monkey",        1),
-    ("zombie",       "Zombie poses",        "Zombie",        1),
+    # key,            source folder stem,  label
+    ("monkey",       "Monkey",             "Monkey"),
+    ("nba",          "NBA player",         "NBA Player"),
+    ("highschooler", "Higschooler",        "High Schooler"),
+    ("zombie",       "Zombie",             "Zombie"),
 ]
 
-# Which pose plays when. Numbers are 1-based pose indices.
-#   dribble : two front-facing stances, driven by the ball's bounce. ORDER
-#             MATTERS: the first must be the one with the LOWER hands -- it is
-#             shown while the ball is up at the hand, the second while the ball
-#             is down at the floor.
-#   aim     : two back-facing stances, alternated slowly
-#   charge  : the wind-up, alternated fast so it reads as tensing
-#   release : held for a moment at the instant of the throw
-#   follow  : the follow-through, straight after the release
-POSES = {
-    "nba":          {"dribble": [1, 5], "aim": [2, 6], "charge": [7, 6], "release": [8], "follow": [4]},
-    "highschooler": {"dribble": [1, 2], "aim": [3, 4], "charge": [6, 5], "release": [7], "follow": [8]},
-    "monkey":       {"dribble": [1, 2], "aim": [3, 4], "charge": [6, 8], "release": [7], "follow": [5]},
-    "zombie":       {"dribble": [1, 2], "aim": [3, 4], "charge": [6, 5], "release": [7], "follow": [8]},
+# --- old-style characters -----------------------------------------------
+# Which of the eight poses stands in for which sequence. Numbers are 1-based.
+# In `dribble_idle` the LOWER-handed pose goes first: it is shown while the ball
+# is up at the hand.
+LEGACY_POSES = {
+    "nba":          {"dribble": [1, 5], "aim": [2, 6], "charge": [7, 6], "shot": [8, 4]},
+    "highschooler": {"dribble": [1, 2], "aim": [3, 4], "charge": [6, 5], "shot": [7, 8]},
+    "zombie":       {"dribble": [1, 2], "aim": [3, 4], "charge": [6, 5], "shot": [7, 8]},
 }
+LEGACY_IDLE_POSE = 1        # the plain standing pose, used to set the scale
 
 
-def mask(im: Image.Image) -> np.ndarray:
+def mask_of(im: Image.Image) -> np.ndarray:
     return np.array(im.getchannel("A")) > ALPHA_CUT
 
 
-def silhouette_box(m: np.ndarray) -> tuple[int, int, int, int]:
+def bbox(m: np.ndarray) -> tuple[int, int, int, int]:
     ys, xs = np.where(m)
     return int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1
 
 
-def foot_centre(m: np.ndarray, y1: int, band: int) -> float:
-    """Horizontal centre of whatever is touching the ground."""
-    strip = m[max(0, y1 - band):y1, :]
-    xs = np.where(strip.any(axis=0))[0]
-    return float((xs.min() + xs.max()) / 2) if len(xs) else m.shape[1] / 2
+def write_frame(im: Image.Image, box, scale: float, dest: Path) -> tuple[float, float]:
+    """Crop to `box`, scale, quantise, save. Returns display width/height."""
+    crop = im.crop(box)
+    w = max(1, round(crop.width * scale * SUPERSAMPLE))
+    h = max(1, round(crop.height * scale * SUPERSAMPLE))
+    frame = crop.resize((w, h), Image.LANCZOS)
+    alpha = frame.getchannel("A").point(lambda v: 255 if v > ALPHA_CUT else 0)
+    q = frame.convert("RGB").quantize(colors=128, method=Image.MEDIANCUT,
+                                      dither=Image.NONE).convert("RGBA")
+    q.putalpha(alpha)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    q.save(dest, optimize=True)
+    return round(crop.width * scale, 2), round(crop.height * scale, 2)
 
 
-def build_character(key: str, folder: str, label: str, idle_pose: int) -> dict:
-    files = sorted((SRC / folder).glob("*.png"))
-    if len(files) != 8:
-        raise SystemExit(f"{folder}: expected 8 poses, found {len(files)}")
+# ---------------------------------------------------------------- new style
+def build_from_sequences(key: str, stem: str, label: str) -> dict | None:
+    src = SRC / f"{stem} frames"
+    if not src.is_dir():
+        return None
+    seq_dirs = sorted(d for d in src.iterdir() if d.is_dir())
+    if not seq_dirs:
+        return None
 
+    # Scale from the standing dribble, so every character stands the same height.
+    ref_dir = src / "dribble_idle"
+    ref = Image.open(sorted(ref_dir.glob("*.png"))[0]).convert("RGBA")
+    rx0, ry0, rx1, ry1 = bbox(mask_of(ref))
+    scale = STANDING_H / (ry1 - ry0)
+
+    sequences = {}
+    for d in seq_dirs:
+        files = sorted(d.glob("*.png"))
+        if not files:
+            continue
+        ims = [Image.open(f).convert("RGBA") for f in files]
+        masks = [mask_of(im) for im in ims]
+        boxes = [bbox(m) for m in masks]
+
+        # Anchor on the cell, not on the feet. The generator centres the figure
+        # in each equal-width cell and holds one ground line across the strip,
+        # so the cell's midpoint and the strip's lowest foot are far steadier
+        # than per-frame foot detection -- which wanders on running poses and
+        # makes the character jitter sideways.
+        cell_cx = ims[0].width / 2
+        ground = max(b[3] for b in boxes)
+
+        frames = []
+        for i, (im, box) in enumerate(zip(ims, boxes), start=1):
+            dest = OUT / key / d.name / f"{i:02d}.png"
+            w, h = write_frame(im, box, scale, dest)
+            frames.append({
+                "src": f"sprites/{key}/{d.name}/{i:02d}.png",
+                "w": w, "h": h,
+                "footX": round((cell_cx - box[0]) * scale, 2),
+                "footY": round((ground - box[1]) * scale, 2),
+            })
+        sequences[d.name] = frames
+
+    return {"key": key, "label": label, "mirror": False, "sequences": sequences}
+
+
+# ---------------------------------------------------------------- old style
+def build_from_poses(key: str, stem: str, label: str) -> dict | None:
+    src = SRC / f"{stem} poses"
+    files = sorted(p for p in src.glob("*.png") if "_sequence_" not in p.name)
+    if len(files) < 8:
+        return None
     ims = [Image.open(f).convert("RGBA") for f in files]
-    masks = [mask(im) for im in ims]
-    boxes = [silhouette_box(m) for m in masks]
+    masks = [mask_of(im) for im in ims]
+    boxes = [bbox(m) for m in masks]
 
-    idle_box = boxes[idle_pose - 1]
-    scale = STANDING_H / (idle_box[3] - idle_box[1])
+    idle = boxes[LEGACY_IDLE_POSE - 1]
+    scale = STANDING_H / (idle[3] - idle[1])
 
-    out_dir = OUT / key
-    out_dir.mkdir(parents=True, exist_ok=True)
+    def foot_centre(m, box):
+        y1 = box[3]
+        band = m[max(0, y1 - max(4, (y1 - box[1]) // 30)):y1, :]
+        xs = np.where(band.any(axis=0))[0]
+        return float((xs.min() + xs.max()) / 2) if len(xs) else m.shape[1] / 2
 
-    frames = []
-    for i, (im, m, box) in enumerate(zip(ims, masks, boxes), start=1):
-        x0, y0, x1, y1 = box
-        band = max(4, (y1 - y0) // 30)
-        fx = foot_centre(m, y1, band) - x0        # feet, relative to the crop
-        fy = y1 - y0                              # ground line = bottom of crop
+    def frame_for(pose: int, seq: str, idx: int) -> dict:
+        im, m, box = ims[pose - 1], masks[pose - 1], boxes[pose - 1]
+        dest = OUT / key / seq / f"{idx:02d}.png"
+        w, h = write_frame(im, box, scale, dest)
+        return {
+            "src": f"sprites/{key}/{seq}/{idx:02d}.png",
+            "w": w, "h": h,
+            "footX": round((foot_centre(m, box) - box[0]) * scale, 2),
+            "footY": round((box[3] - box[1]) * scale, 2),
+        }
 
-        crop = im.crop(box)
-        w = max(1, round(crop.width * scale * SUPERSAMPLE))
-        h = max(1, round(crop.height * scale * SUPERSAMPLE))
-        frame = crop.resize((w, h), Image.LANCZOS)
-
-        alpha = frame.getchannel("A").point(lambda v: 255 if v > ALPHA_CUT else 0)
-        q = frame.convert("RGB").quantize(colors=128, method=Image.MEDIANCUT,
-                                          dither=Image.NONE).convert("RGBA")
-        q.putalpha(alpha)
-        q.save(out_dir / f"{i:02d}.png", optimize=True)
-
-        frames.append({
-            "src": f"sprites/{key}/{i:02d}.png",
-            "w": round(crop.width * scale, 2),     # display units
-            "h": round(crop.height * scale, 2),
-            "footX": round(fx * scale, 2),         # where to plant it, within the frame
-            "footY": round(fy * scale, 2),
-        })
-
-    # Where the raised hands land on the release pose -- the ball is drawn there.
-    rel_i = POSES[key]["release"][0] - 1
-    rel_m, rel_box, rel = masks[rel_i], boxes[rel_i], frames[POSES[key]["release"][0] - 1]
-    x0, y0, x1, y1 = rel_box
-    hand_band = rel_m[y0:y0 + max(4, (y1 - y0) // 14), :]
-    hxs = np.where(hand_band.any(axis=0))[0]
-    hand_x = (float((hxs.min() + hxs.max()) / 2) - x0) * scale - rel["footX"]
-    hand_y = -rel["footY"]                        # top of the release pose
-
-    return {
-        "key": key, "label": label, "frames": frames, "poses": POSES[key],
-        "handX": round(hand_x, 2), "handY": round(hand_y, 2),
+    p = LEGACY_POSES[key]
+    plan = {
+        "dribble_idle": p["dribble"],
+        "run_dribble_r": p["dribble"],
+        "run_dribble_l": p["dribble"],
+        "run_r": p["dribble"],
+        "run_l": p["dribble"],
+        "aim": p["aim"],
+        "charge": p["charge"],
+        "shot": p["shot"],
     }
+    sequences = {name: [frame_for(pose, name, i) for i, pose in enumerate(poses, 1)]
+                 for name, poses in plan.items()}
+    return {"key": key, "label": label, "mirror": True, "sequences": sequences}
+
+
+def hand_point(char: dict) -> tuple[float, float]:
+    """Where the ball leaves the hand: the top of the release frame.
+
+    The release is the second-to-last frame of `shot` for a full four-frame
+    sequence, and the first of two for the old-style characters -- in both cases
+    frames[-2].
+    """
+    shot = char["sequences"]["shot"]
+    rel = shot[-2] if len(shot) >= 2 else shot[-1]
+    im = Image.open(ROOT / rel["src"]).convert("RGBA")
+    m = mask_of(im)
+    x0, y0, x1, y1 = bbox(m)
+    band = m[y0:y0 + max(2, (y1 - y0) // 14), :]
+    xs = np.where(band.any(axis=0))[0]
+    k = rel["w"] / im.width
+    hand_x = float((xs.min() + xs.max()) / 2) * k - rel["footX"]
+    return round(hand_x, 2), round(-rel["footY"], 2)
 
 
 def main() -> None:
-    OUT.mkdir(exist_ok=True)
-    chars = [build_character(k, f, l, i) for k, f, l, i in CHARACTERS]
+    if OUT.exists():
+        shutil.rmtree(OUT)
+    OUT.mkdir()
+
+    chars = []
+    for key, stem, label in CHARACTERS:
+        char = build_from_sequences(key, stem, label) or build_from_poses(key, stem, label)
+        if not char:
+            print(f"{key:<14} SKIPPED (no art found)")
+            continue
+        char["handX"], char["handY"] = hand_point(char)
+        chars.append(char)
+
     js = ("// Generated by tools/build-sprites.py -- do not edit by hand.\n"
           "window.SPRITE_MANIFEST = "
           + json.dumps({"standingHeight": STANDING_H, "characters": chars}, indent=1)
@@ -147,9 +216,10 @@ def main() -> None:
     (OUT / "manifest.js").write_text(js, encoding="utf-8")
 
     for c in chars:
-        hs = [f["h"] for f in c["frames"]]
-        print(f"{c['key']:<14} heights {min(hs):.0f}-{max(hs):.0f}  "
-              f"hand ({c['handX']:+.0f},{c['handY']:+.0f})")
+        n = sum(len(f) for f in c["sequences"].values())
+        kind = "strips" if not c["mirror"] else "poses"
+        print(f"{c['key']:<14} {len(c['sequences']):>2} sequences, {n:>2} frames "
+              f"({kind})  hand ({c['handX']:+.0f},{c['handY']:+.0f})")
     pngs = list(OUT.rglob("*.png"))
     print(f"\n{len(pngs)} frames, {sum(f.stat().st_size for f in pngs)/1024:.0f} KB total")
 

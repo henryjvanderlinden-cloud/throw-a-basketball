@@ -3,339 +3,745 @@ window.SPRITE_MANIFEST = {
  "standingHeight": 132,
  "characters": [
   {
-   "key": "nba",
-   "label": "NBA Player",
-   "frames": [
-    {
-     "src": "sprites/nba/01.png",
-     "w": 88.25,
-     "h": 132.0,
-     "footX": 45.85,
-     "footY": 132.0
-    },
-    {
-     "src": "sprites/nba/02.png",
-     "w": 93.01,
-     "h": 127.34,
-     "footX": 46.13,
-     "footY": 127.34
-    },
-    {
-     "src": "sprites/nba/03.png",
-     "w": 80.41,
-     "h": 131.81,
-     "footX": 40.16,
-     "footY": 131.81
-    },
-    {
-     "src": "sprites/nba/04.png",
-     "w": 82.74,
-     "h": 130.51,
-     "footX": 41.47,
-     "footY": 130.51
-    },
-    {
-     "src": "sprites/nba/05.png",
-     "w": 84.24,
-     "h": 128.36,
-     "footX": 42.45,
-     "footY": 128.36
-    },
-    {
-     "src": "sprites/nba/06.png",
-     "w": 86.94,
-     "h": 127.06,
-     "footX": 15.25,
-     "footY": 127.06
-    },
-    {
-     "src": "sprites/nba/07.png",
-     "w": 75.56,
-     "h": 132.47,
-     "footX": 37.73,
-     "footY": 132.47
-    },
-    {
-     "src": "sprites/nba/08.png",
-     "w": 53.45,
-     "h": 129.01,
-     "footX": 19.08,
-     "footY": 129.01
-    }
-   ],
-   "poses": {
-    "dribble": [
-     1,
-     5
-    ],
+   "key": "monkey",
+   "label": "Monkey",
+   "mirror": false,
+   "sequences": {
     "aim": [
-     2,
-     6
+     {
+      "src": "sprites/monkey/aim/01.png",
+      "w": 125.5,
+      "h": 183.37,
+      "footX": 37.17,
+      "footY": 183.37
+     },
+     {
+      "src": "sprites/monkey/aim/02.png",
+      "w": 130.05,
+      "h": 177.08,
+      "footX": 60.36,
+      "footY": 177.08
+     }
+    ],
+    "break_banana": [
+     {
+      "src": "sprites/monkey/break_banana/01.png",
+      "w": 116.61,
+      "h": 138.5,
+      "footX": 58.09,
+      "footY": 138.5
+     },
+     {
+      "src": "sprites/monkey/break_banana/02.png",
+      "w": 110.11,
+      "h": 138.5,
+      "footX": 52.24,
+      "footY": 138.5
+     },
+     {
+      "src": "sprites/monkey/break_banana/03.png",
+      "w": 108.59,
+      "h": 138.29,
+      "footX": 54.4,
+      "footY": 138.29
+     },
+     {
+      "src": "sprites/monkey/break_banana/04.png",
+      "w": 123.55,
+      "h": 137.42,
+      "footX": 58.09,
+      "footY": 137.42
+     }
+    ],
+    "break_wave": [
+     {
+      "src": "sprites/monkey/break_wave/01.png",
+      "w": 112.06,
+      "h": 151.94,
+      "footX": 55.7,
+      "footY": 151.94
+     },
+     {
+      "src": "sprites/monkey/break_wave/02.png",
+      "w": 115.09,
+      "h": 132.65,
+      "footX": 49.64,
+      "footY": 132.65
+     },
+     {
+      "src": "sprites/monkey/break_wave/03.png",
+      "w": 118.78,
+      "h": 134.82,
+      "footX": 53.97,
+      "footY": 134.82
+     },
+     {
+      "src": "sprites/monkey/break_wave/04.png",
+      "w": 110.33,
+      "h": 130.05,
+      "footX": 56.35,
+      "footY": 130.05
+     }
+    ],
+    "celebrate": [
+     {
+      "src": "sprites/monkey/celebrate/01.png",
+      "w": 121.38,
+      "h": 198.76,
+      "footX": 31.43,
+      "footY": 198.76
+     },
+     {
+      "src": "sprites/monkey/celebrate/02.png",
+      "w": 124.63,
+      "h": 157.14,
+      "footX": 82.58,
+      "footY": 157.14
+     }
     ],
     "charge": [
-     7,
-     6
+     {
+      "src": "sprites/monkey/charge/01.png",
+      "w": 119.65,
+      "h": 152.81,
+      "footX": 48.01,
+      "footY": 152.81
+     },
+     {
+      "src": "sprites/monkey/charge/02.png",
+      "w": 110.54,
+      "h": 135.03,
+      "footX": 30.67,
+      "footY": 135.03
+     },
+     {
+      "src": "sprites/monkey/charge/03.png",
+      "w": 110.98,
+      "h": 114.66,
+      "footX": 24.82,
+      "footY": 114.66
+     }
     ],
-    "release": [
-     8
+    "dribble_idle": [
+     {
+      "src": "sprites/monkey/dribble_idle/01.png",
+      "w": 111.41,
+      "h": 132.0,
+      "footX": 51.8,
+      "footY": 132.0
+     },
+     {
+      "src": "sprites/monkey/dribble_idle/02.png",
+      "w": 108.59,
+      "h": 133.08,
+      "footX": 53.75,
+      "footY": 133.08
+     },
+     {
+      "src": "sprites/monkey/dribble_idle/03.png",
+      "w": 108.59,
+      "h": 134.6,
+      "footX": 54.4,
+      "footY": 134.6
+     },
+     {
+      "src": "sprites/monkey/dribble_idle/04.png",
+      "w": 109.89,
+      "h": 132.43,
+      "footX": 53.75,
+      "footY": 132.43
+     }
     ],
-    "follow": [
-     4
+    "gameover": [
+     {
+      "src": "sprites/monkey/gameover/01.png",
+      "w": 136.99,
+      "h": 153.89,
+      "footX": 48.66,
+      "footY": 153.89
+     },
+     {
+      "src": "sprites/monkey/gameover/02.png",
+      "w": 136.77,
+      "h": 163.0,
+      "footX": 56.9,
+      "footY": 163.0
+     }
+    ],
+    "pickup": [
+     {
+      "src": "sprites/monkey/pickup/01.png",
+      "w": 130.05,
+      "h": 136.12,
+      "footX": 62.64,
+      "footY": 136.77
+     },
+     {
+      "src": "sprites/monkey/pickup/02.png",
+      "w": 130.27,
+      "h": 150.64,
+      "footX": 60.91,
+      "footY": 150.64
+     },
+     {
+      "src": "sprites/monkey/pickup/03.png",
+      "w": 131.13,
+      "h": 154.11,
+      "footX": 62.21,
+      "footY": 154.76
+     }
+    ],
+    "run_dribble_l": [
+     {
+      "src": "sprites/monkey/run_dribble_l/01.png",
+      "w": 118.56,
+      "h": 133.73,
+      "footX": 57.55,
+      "footY": 133.73
+     },
+     {
+      "src": "sprites/monkey/run_dribble_l/02.png",
+      "w": 109.67,
+      "h": 132.43,
+      "footX": 59.28,
+      "footY": 133.73
+     },
+     {
+      "src": "sprites/monkey/run_dribble_l/03.png",
+      "w": 116.39,
+      "h": 133.73,
+      "footX": 57.55,
+      "footY": 133.73
+     },
+     {
+      "src": "sprites/monkey/run_dribble_l/04.png",
+      "w": 102.52,
+      "h": 132.22,
+      "footX": 55.16,
+      "footY": 133.52
+     }
+    ],
+    "run_dribble_r": [
+     {
+      "src": "sprites/monkey/run_dribble_r/01.png",
+      "w": 111.84,
+      "h": 137.2,
+      "footX": 51.48,
+      "footY": 138.07
+     },
+     {
+      "src": "sprites/monkey/run_dribble_r/02.png",
+      "w": 107.72,
+      "h": 136.77,
+      "footX": 58.85,
+      "footY": 138.07
+     },
+     {
+      "src": "sprites/monkey/run_dribble_r/03.png",
+      "w": 118.56,
+      "h": 138.07,
+      "footX": 57.76,
+      "footY": 138.07
+     },
+     {
+      "src": "sprites/monkey/run_dribble_r/04.png",
+      "w": 111.41,
+      "h": 138.07,
+      "footX": 60.15,
+      "footY": 138.07
+     }
+    ],
+    "run_l": [
+     {
+      "src": "sprites/monkey/run_l/01.png",
+      "w": 184.24,
+      "h": 174.27,
+      "footX": 88.22,
+      "footY": 174.27
+     },
+     {
+      "src": "sprites/monkey/run_l/02.png",
+      "w": 179.25,
+      "h": 174.27,
+      "footX": 88.65,
+      "footY": 174.27
+     }
+    ],
+    "run_r": [
+     {
+      "src": "sprites/monkey/run_r/01.png",
+      "w": 169.71,
+      "h": 162.34,
+      "footX": 78.57,
+      "footY": 162.34
+     },
+     {
+      "src": "sprites/monkey/run_r/02.png",
+      "w": 159.74,
+      "h": 162.34,
+      "footX": 80.09,
+      "footY": 162.34
+     }
+    ],
+    "shot": [
+     {
+      "src": "sprites/monkey/shot/01.png",
+      "w": 93.64,
+      "h": 105.99,
+      "footX": 40.97,
+      "footY": 105.99
+     },
+     {
+      "src": "sprites/monkey/shot/02.png",
+      "w": 105.34,
+      "h": 146.31,
+      "footX": 52.02,
+      "footY": 146.52
+     },
+     {
+      "src": "sprites/monkey/shot/03.png",
+      "w": 94.72,
+      "h": 174.7,
+      "footX": 51.8,
+      "footY": 176.22
+     },
+     {
+      "src": "sprites/monkey/shot/04.png",
+      "w": 82.36,
+      "h": 165.81,
+      "footX": 40.97,
+      "footY": 166.03
+     }
+    ],
+    "turn": [
+     {
+      "src": "sprites/monkey/turn/01.png",
+      "w": 124.63,
+      "h": 151.72,
+      "footX": 11.7,
+      "footY": 151.72
+     },
+     {
+      "src": "sprites/monkey/turn/02.png",
+      "w": 115.53,
+      "h": 150.64,
+      "footX": 78.25,
+      "footY": 150.64
+     }
     ]
    },
-   "handX": 13.57,
+   "handX": 23.88,
+   "handY": -176.22
+  },
+  {
+   "key": "nba",
+   "label": "NBA Player",
+   "mirror": true,
+   "sequences": {
+    "dribble_idle": [
+     {
+      "src": "sprites/nba/dribble_idle/01.png",
+      "w": 88.25,
+      "h": 132.0,
+      "footX": 45.85,
+      "footY": 132.0
+     },
+     {
+      "src": "sprites/nba/dribble_idle/02.png",
+      "w": 84.24,
+      "h": 128.36,
+      "footX": 42.45,
+      "footY": 128.36
+     }
+    ],
+    "run_dribble_r": [
+     {
+      "src": "sprites/nba/run_dribble_r/01.png",
+      "w": 88.25,
+      "h": 132.0,
+      "footX": 45.85,
+      "footY": 132.0
+     },
+     {
+      "src": "sprites/nba/run_dribble_r/02.png",
+      "w": 84.24,
+      "h": 128.36,
+      "footX": 42.45,
+      "footY": 128.36
+     }
+    ],
+    "run_dribble_l": [
+     {
+      "src": "sprites/nba/run_dribble_l/01.png",
+      "w": 88.25,
+      "h": 132.0,
+      "footX": 45.85,
+      "footY": 132.0
+     },
+     {
+      "src": "sprites/nba/run_dribble_l/02.png",
+      "w": 84.24,
+      "h": 128.36,
+      "footX": 42.45,
+      "footY": 128.36
+     }
+    ],
+    "run_r": [
+     {
+      "src": "sprites/nba/run_r/01.png",
+      "w": 88.25,
+      "h": 132.0,
+      "footX": 45.85,
+      "footY": 132.0
+     },
+     {
+      "src": "sprites/nba/run_r/02.png",
+      "w": 84.24,
+      "h": 128.36,
+      "footX": 42.45,
+      "footY": 128.36
+     }
+    ],
+    "run_l": [
+     {
+      "src": "sprites/nba/run_l/01.png",
+      "w": 88.25,
+      "h": 132.0,
+      "footX": 45.85,
+      "footY": 132.0
+     },
+     {
+      "src": "sprites/nba/run_l/02.png",
+      "w": 84.24,
+      "h": 128.36,
+      "footX": 42.45,
+      "footY": 128.36
+     }
+    ],
+    "aim": [
+     {
+      "src": "sprites/nba/aim/01.png",
+      "w": 93.01,
+      "h": 127.34,
+      "footX": 46.13,
+      "footY": 127.34
+     },
+     {
+      "src": "sprites/nba/aim/02.png",
+      "w": 86.94,
+      "h": 127.06,
+      "footX": 15.25,
+      "footY": 127.06
+     }
+    ],
+    "charge": [
+     {
+      "src": "sprites/nba/charge/01.png",
+      "w": 75.56,
+      "h": 132.47,
+      "footX": 37.73,
+      "footY": 132.47
+     },
+     {
+      "src": "sprites/nba/charge/02.png",
+      "w": 86.94,
+      "h": 127.06,
+      "footX": 15.25,
+      "footY": 127.06
+     }
+    ],
+    "shot": [
+     {
+      "src": "sprites/nba/shot/01.png",
+      "w": 53.45,
+      "h": 129.01,
+      "footX": 19.08,
+      "footY": 129.01
+     },
+     {
+      "src": "sprites/nba/shot/02.png",
+      "w": 82.74,
+      "h": 130.51,
+      "footX": 41.47,
+      "footY": 130.51
+     }
+    ]
+   },
+   "handX": 13.39,
    "handY": -129.01
   },
   {
    "key": "highschooler",
    "label": "High Schooler",
-   "frames": [
-    {
-     "src": "sprites/highschooler/01.png",
-     "w": 81.97,
-     "h": 132.0,
-     "footX": 75.0,
-     "footY": 132.0
-    },
-    {
-     "src": "sprites/highschooler/02.png",
-     "w": 82.35,
-     "h": 131.91,
-     "footX": 43.49,
-     "footY": 131.91
-    },
-    {
-     "src": "sprites/highschooler/03.png",
-     "w": 85.95,
-     "h": 129.63,
-     "footX": 43.35,
-     "footY": 129.63
-    },
-    {
-     "src": "sprites/highschooler/04.png",
-     "w": 83.29,
-     "h": 126.6,
-     "footX": 76.09,
-     "footY": 126.6
-    },
-    {
-     "src": "sprites/highschooler/05.png",
-     "w": 56.95,
-     "h": 129.44,
-     "footX": 28.81,
-     "footY": 129.44
-    },
-    {
-     "src": "sprites/highschooler/06.png",
-     "w": 81.4,
-     "h": 125.37,
-     "footX": 40.65,
-     "footY": 125.37
-    },
-    {
-     "src": "sprites/highschooler/07.png",
-     "w": 45.11,
-     "h": 131.34,
-     "footX": 15.64,
-     "footY": 131.34
-    },
-    {
-     "src": "sprites/highschooler/08.png",
-     "w": 75.24,
-     "h": 131.72,
-     "footX": 36.39,
-     "footY": 131.72
-    }
-   ],
-   "poses": {
-    "dribble": [
-     1,
-     2
+   "mirror": true,
+   "sequences": {
+    "dribble_idle": [
+     {
+      "src": "sprites/highschooler/dribble_idle/01.png",
+      "w": 81.97,
+      "h": 132.0,
+      "footX": 75.0,
+      "footY": 132.0
+     },
+     {
+      "src": "sprites/highschooler/dribble_idle/02.png",
+      "w": 82.35,
+      "h": 131.91,
+      "footX": 43.49,
+      "footY": 131.91
+     }
+    ],
+    "run_dribble_r": [
+     {
+      "src": "sprites/highschooler/run_dribble_r/01.png",
+      "w": 81.97,
+      "h": 132.0,
+      "footX": 75.0,
+      "footY": 132.0
+     },
+     {
+      "src": "sprites/highschooler/run_dribble_r/02.png",
+      "w": 82.35,
+      "h": 131.91,
+      "footX": 43.49,
+      "footY": 131.91
+     }
+    ],
+    "run_dribble_l": [
+     {
+      "src": "sprites/highschooler/run_dribble_l/01.png",
+      "w": 81.97,
+      "h": 132.0,
+      "footX": 75.0,
+      "footY": 132.0
+     },
+     {
+      "src": "sprites/highschooler/run_dribble_l/02.png",
+      "w": 82.35,
+      "h": 131.91,
+      "footX": 43.49,
+      "footY": 131.91
+     }
+    ],
+    "run_r": [
+     {
+      "src": "sprites/highschooler/run_r/01.png",
+      "w": 81.97,
+      "h": 132.0,
+      "footX": 75.0,
+      "footY": 132.0
+     },
+     {
+      "src": "sprites/highschooler/run_r/02.png",
+      "w": 82.35,
+      "h": 131.91,
+      "footX": 43.49,
+      "footY": 131.91
+     }
+    ],
+    "run_l": [
+     {
+      "src": "sprites/highschooler/run_l/01.png",
+      "w": 81.97,
+      "h": 132.0,
+      "footX": 75.0,
+      "footY": 132.0
+     },
+     {
+      "src": "sprites/highschooler/run_l/02.png",
+      "w": 82.35,
+      "h": 131.91,
+      "footX": 43.49,
+      "footY": 131.91
+     }
     ],
     "aim": [
-     3,
-     4
+     {
+      "src": "sprites/highschooler/aim/01.png",
+      "w": 85.95,
+      "h": 129.63,
+      "footX": 43.35,
+      "footY": 129.63
+     },
+     {
+      "src": "sprites/highschooler/aim/02.png",
+      "w": 83.29,
+      "h": 126.6,
+      "footX": 76.09,
+      "footY": 126.6
+     }
     ],
     "charge": [
-     6,
-     5
+     {
+      "src": "sprites/highschooler/charge/01.png",
+      "w": 81.4,
+      "h": 125.37,
+      "footX": 40.65,
+      "footY": 125.37
+     },
+     {
+      "src": "sprites/highschooler/charge/02.png",
+      "w": 56.95,
+      "h": 129.44,
+      "footX": 28.81,
+      "footY": 129.44
+     }
     ],
-    "release": [
-     7
-    ],
-    "follow": [
-     8
+    "shot": [
+     {
+      "src": "sprites/highschooler/shot/01.png",
+      "w": 45.11,
+      "h": 131.34,
+      "footX": 15.64,
+      "footY": 131.34
+     },
+     {
+      "src": "sprites/highschooler/shot/02.png",
+      "w": 75.24,
+      "h": 131.72,
+      "footX": 36.39,
+      "footY": 131.72
+     }
     ]
    },
-   "handX": 14.83,
+   "handX": 14.68,
    "handY": -131.34
-  },
-  {
-   "key": "monkey",
-   "label": "Monkey",
-   "frames": [
-    {
-     "src": "sprites/monkey/01.png",
-     "w": 98.97,
-     "h": 132.0,
-     "footX": 91.13,
-     "footY": 132.0
-    },
-    {
-     "src": "sprites/monkey/02.png",
-     "w": 94.15,
-     "h": 138.26,
-     "footX": 47.38,
-     "footY": 138.26
-    },
-    {
-     "src": "sprites/monkey/03.png",
-     "w": 102.15,
-     "h": 138.67,
-     "footX": 90.15,
-     "footY": 138.67
-    },
-    {
-     "src": "sprites/monkey/04.png",
-     "w": 108.92,
-     "h": 133.54,
-     "footX": 57.64,
-     "footY": 133.54
-    },
-    {
-     "src": "sprites/monkey/05.png",
-     "w": 89.13,
-     "h": 137.03,
-     "footX": 52.0,
-     "footY": 137.03
-    },
-    {
-     "src": "sprites/monkey/06.png",
-     "w": 79.49,
-     "h": 142.67,
-     "footX": 48.51,
-     "footY": 142.67
-    },
-    {
-     "src": "sprites/monkey/07.png",
-     "w": 77.74,
-     "h": 140.41,
-     "footX": 35.44,
-     "footY": 140.41
-    },
-    {
-     "src": "sprites/monkey/08.png",
-     "w": 81.64,
-     "h": 139.69,
-     "footX": 67.54,
-     "footY": 139.69
-    }
-   ],
-   "poses": {
-    "dribble": [
-     1,
-     2
-    ],
-    "aim": [
-     3,
-     4
-    ],
-    "charge": [
-     6,
-     8
-    ],
-    "release": [
-     7
-    ],
-    "follow": [
-     5
-    ]
-   },
-   "handX": 24.51,
-   "handY": -140.41
   },
   {
    "key": "zombie",
    "label": "Zombie",
-   "frames": [
-    {
-     "src": "sprites/zombie/01.png",
-     "w": 91.96,
-     "h": 132.0,
-     "footX": 46.31,
-     "footY": 132.0
-    },
-    {
-     "src": "sprites/zombie/02.png",
-     "w": 92.63,
-     "h": 126.73,
-     "footX": 49.14,
-     "footY": 126.73
-    },
-    {
-     "src": "sprites/zombie/03.png",
-     "w": 90.62,
-     "h": 128.36,
-     "footX": 43.97,
-     "footY": 128.36
-    },
-    {
-     "src": "sprites/zombie/04.png",
-     "w": 86.31,
-     "h": 118.97,
-     "footX": 49.86,
-     "footY": 118.97
-    },
-    {
-     "src": "sprites/zombie/05.png",
-     "w": 58.62,
-     "h": 134.2,
-     "footX": 29.31,
-     "footY": 134.2
-    },
-    {
-     "src": "sprites/zombie/06.png",
-     "w": 61.79,
-     "h": 133.53,
-     "footX": 30.89,
-     "footY": 133.53
-    },
-    {
-     "src": "sprites/zombie/07.png",
-     "w": 77.49,
-     "h": 131.71,
-     "footX": 46.84,
-     "footY": 131.71
-    },
-    {
-     "src": "sprites/zombie/08.png",
-     "w": 76.92,
-     "h": 127.98,
-     "footX": 43.78,
-     "footY": 127.98
-    }
-   ],
-   "poses": {
-    "dribble": [
-     1,
-     2
+   "mirror": true,
+   "sequences": {
+    "dribble_idle": [
+     {
+      "src": "sprites/zombie/dribble_idle/01.png",
+      "w": 91.96,
+      "h": 132.0,
+      "footX": 46.31,
+      "footY": 132.0
+     },
+     {
+      "src": "sprites/zombie/dribble_idle/02.png",
+      "w": 92.63,
+      "h": 126.73,
+      "footX": 49.14,
+      "footY": 126.73
+     }
+    ],
+    "run_dribble_r": [
+     {
+      "src": "sprites/zombie/run_dribble_r/01.png",
+      "w": 91.96,
+      "h": 132.0,
+      "footX": 46.31,
+      "footY": 132.0
+     },
+     {
+      "src": "sprites/zombie/run_dribble_r/02.png",
+      "w": 92.63,
+      "h": 126.73,
+      "footX": 49.14,
+      "footY": 126.73
+     }
+    ],
+    "run_dribble_l": [
+     {
+      "src": "sprites/zombie/run_dribble_l/01.png",
+      "w": 91.96,
+      "h": 132.0,
+      "footX": 46.31,
+      "footY": 132.0
+     },
+     {
+      "src": "sprites/zombie/run_dribble_l/02.png",
+      "w": 92.63,
+      "h": 126.73,
+      "footX": 49.14,
+      "footY": 126.73
+     }
+    ],
+    "run_r": [
+     {
+      "src": "sprites/zombie/run_r/01.png",
+      "w": 91.96,
+      "h": 132.0,
+      "footX": 46.31,
+      "footY": 132.0
+     },
+     {
+      "src": "sprites/zombie/run_r/02.png",
+      "w": 92.63,
+      "h": 126.73,
+      "footX": 49.14,
+      "footY": 126.73
+     }
+    ],
+    "run_l": [
+     {
+      "src": "sprites/zombie/run_l/01.png",
+      "w": 91.96,
+      "h": 132.0,
+      "footX": 46.31,
+      "footY": 132.0
+     },
+     {
+      "src": "sprites/zombie/run_l/02.png",
+      "w": 92.63,
+      "h": 126.73,
+      "footX": 49.14,
+      "footY": 126.73
+     }
     ],
     "aim": [
-     3,
-     4
+     {
+      "src": "sprites/zombie/aim/01.png",
+      "w": 90.62,
+      "h": 128.36,
+      "footX": 43.97,
+      "footY": 128.36
+     },
+     {
+      "src": "sprites/zombie/aim/02.png",
+      "w": 86.31,
+      "h": 118.97,
+      "footX": 49.86,
+      "footY": 118.97
+     }
     ],
     "charge": [
-     6,
-     5
+     {
+      "src": "sprites/zombie/charge/01.png",
+      "w": 61.79,
+      "h": 133.53,
+      "footX": 30.89,
+      "footY": 133.53
+     },
+     {
+      "src": "sprites/zombie/charge/02.png",
+      "w": 58.62,
+      "h": 134.2,
+      "footX": 29.31,
+      "footY": 134.2
+     }
     ],
-    "release": [
-     7
-    ],
-    "follow": [
-     8
+    "shot": [
+     {
+      "src": "sprites/zombie/shot/01.png",
+      "w": 77.49,
+      "h": 131.71,
+      "footX": 46.84,
+      "footY": 131.71
+     },
+     {
+      "src": "sprites/zombie/shot/02.png",
+      "w": 76.92,
+      "h": 127.98,
+      "footX": 43.78,
+      "footY": 127.98
+     }
     ]
    },
-   "handX": 13.27,
+   "handX": 22.65,
    "handY": -131.71
   }
  ]
