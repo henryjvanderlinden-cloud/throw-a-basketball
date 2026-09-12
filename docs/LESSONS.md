@@ -110,6 +110,24 @@ because the figure sat at slightly different places inside its two cells.
 Anchoring everything on the feet breaks the poses that have no feet on the floor
 — the handspring is on its hands in one frame and airborne in two.
 
+**Read the feet from a band deep enough to hold both shoes.** Having decided to
+anchor on the feet, the first version measured a band a thirtieth of the
+figure's height at the bottom of the silhouette and took the middle of it. Most
+stances put one foot a little lower than the other, so that band saw one shoe
+and anchored the whole character on it: the High Schooler's standing pose came
+out anchored at 91% of his own width and the NBA player's charge at 18%. On the
+character select they stood outside their own cards; in play they jumped most of
+a body-width sideways on every dribble frame, because the two frames of the loop
+disagreed about where the feet were.
+
+The tell is in the data, not on the screen — a `footX / w` column, which should
+read about 0.5 for anyone standing on both feet. What makes it safe to fix by
+widening rather than by guessing is that the measurement *converges*: sweep the
+band from a thirtieth of the height to a sixth and every pose settles by a tenth
+and does not move after that. Anything in the stable range is right, so there is
+no knife edge to balance on. A leaning pose that stays off centre at every depth
+— the shot, at 0.32 — is telling you about the pose, not about the measurement.
+
 **Design an interruption as a variant of the loop it interrupts.** The idle
 breaks keep the dribbling hand on the same four positions as the stationary
 dribble, so the ball never stops bouncing and the break needs no handover frames

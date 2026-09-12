@@ -102,6 +102,27 @@ def bbox(m: np.ndarray) -> tuple[int, int, int, int]:
     return int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1
 
 
+# The point on the floor the character stands on -- the middle of the stance,
+# read off a band at the bottom of the silhouette.
+#
+# The band has to be deep enough to hold BOTH shoes. Most stances put one foot a
+# little lower than the other, and a shallow band then sees only that shoe and
+# anchors the whole character on it. At a thirtieth of the figure's height the
+# High Schooler's standing pose anchored at 91% of his own width and the NBA
+# player's charge at 18%, which drew both of them most of a body-width away from
+# where the game thought they were standing. A tenth clears every shoe in the
+# current art, and the measurement stops moving well before that depth -- from a
+# tenth to a sixth it does not change at all -- so it is not a knife edge.
+FOOT_BAND = 10
+
+
+def foot_centre(m: np.ndarray, box) -> float:
+    y1 = box[3]
+    band = m[max(0, y1 - max(4, (y1 - box[1]) // FOOT_BAND)):y1, :]
+    xs = np.where(band.any(axis=0))[0]
+    return float((xs.min() + xs.max()) / 2) if len(xs) else (box[0] + box[2]) / 2
+
+
 def write_frame(im: Image.Image, box, scale: float, dest: Path) -> tuple[float, float]:
     """Crop to `box`, scale, quantise, save. Returns display width/height."""
     crop = im.crop(box)
@@ -136,12 +157,6 @@ def build_from_sequences(key: str, stem: str, label: str) -> dict | None:
     ref = Image.open(ref_file).convert("RGBA")
     rx0, ry0, rx1, ry1 = bbox(mask_of(ref))
     scale = STANDING_H / (ry1 - ry0)
-
-    def foot_cx(m, box):
-        y1 = box[3]
-        band = m[max(0, y1 - max(4, (y1 - box[1]) // 12)):y1, :]
-        xs = np.where(band.any(axis=0))[0]
-        return float((xs.min() + xs.max()) / 2) if len(xs) else (box[0] + box[2]) / 2
 
     seq_scale = SEQ_SCALE.get(key, {})
     sequences = {}
@@ -180,7 +195,7 @@ def build_from_sequences(key: str, stem: str, label: str) -> dict | None:
             # A travelling pose anchors on the cell, because its feet are
             # mid-stride and move on purpose. A planted pose anchors on its own
             # feet, so the character cannot drift sideways through the loop.
-            ax = cell_cx if travelling else foot_cx(m, box)
+            ax = cell_cx if travelling else foot_centre(m, box)
             dest = OUT / key / d.name / f"{i:02d}.png"
             w, h = write_frame(im, box, s, dest)
             frames.append({
@@ -209,12 +224,6 @@ def build_from_poses(key: str, stem: str, label: str) -> dict | None:
 
     idle = boxes[LEGACY_IDLE_POSE - 1]
     scale = STANDING_H / (idle[3] - idle[1])
-
-    def foot_centre(m, box):
-        y1 = box[3]
-        band = m[max(0, y1 - max(4, (y1 - box[1]) // 30)):y1, :]
-        xs = np.where(band.any(axis=0))[0]
-        return float((xs.min() + xs.max()) / 2) if len(xs) else m.shape[1] / 2
 
     def frame_for(pose: int, seq: str, idx: int) -> dict:
         im, m, box = ims[pose - 1], masks[pose - 1], boxes[pose - 1]

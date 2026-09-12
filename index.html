@@ -186,6 +186,18 @@
     <rect id="pwFill" x="0" y="0" width="16" height="0" rx="8" fill="#3fbf5f"/>
   </g>
 
+  <!-- shot clock, back in the top right corner of the court -->
+  <g id="clockHud" opacity="0" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">
+    <rect x="726" y="16" width="158" height="60" rx="12" fill="var(--panel)"
+          stroke="var(--line)" stroke-width="2"/>
+    <g id="clockText">
+      <text id="sbClockLabel" x="805" y="38" text-anchor="middle" font-size="10"
+            fill="var(--muted)" letter-spacing="1.1">SHOT CLOCK</text>
+      <text id="sbClock" x="805" y="66" text-anchor="middle" font-size="28"
+            font-weight="700" fill="var(--ink)">10.0</text>
+    </g>
+  </g>
+
   <!-- court name / steal toast -->
   <g id="toast" opacity="0">
     <rect id="toastBox" x="20" y="20" width="150" height="30" rx="10" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>
@@ -199,22 +211,18 @@
     <line x1="0" y1="640" x2="960" y2="640" stroke="var(--line)" stroke-width="2"/>
     <g id="pads"></g>
     <g id="scoreboard" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">
-      <!-- left slot: player 2 -->
+      <!-- left slot: player 2, right-aligned into the middle -->
       <g id="sbL" opacity="0">
-        <text id="sbLName" x="300" y="686" font-size="11.5" fill="var(--p2)" letter-spacing="1.6" font-weight="700">PLAYER 2</text>
-        <text id="sbLPts" x="300" y="728" font-size="32" font-weight="700" fill="var(--ink)">0</text>
-        <text id="sbLMade" x="300" y="750" font-size="10.5" fill="var(--muted)" letter-spacing="1">0 MADE</text>
+        <text id="sbLName" x="452" y="686" text-anchor="end" font-size="11.5" fill="var(--p2)" letter-spacing="1.6" font-weight="700">PLAYER 2</text>
+        <text id="sbLPts" x="452" y="728" text-anchor="end" font-size="32" font-weight="700" fill="var(--ink)">0</text>
+        <text id="sbLMade" x="452" y="750" text-anchor="end" font-size="10.5" fill="var(--muted)" letter-spacing="1">0 MADE</text>
       </g>
-      <!-- centre: shot clock -->
-      <g id="sbC">
-        <text id="sbClockLabel" x="480" y="686" text-anchor="middle" font-size="11.5" fill="var(--muted)" letter-spacing="1.6">SHOT CLOCK</text>
-        <text id="sbClock" x="480" y="734" text-anchor="middle" font-size="42" font-weight="700" fill="var(--ink)">10.0</text>
-      </g>
-      <!-- right slot: player 1 -->
+      <line id="sbDiv" x1="480" y1="676" x2="480" y2="754" stroke="var(--line)" stroke-width="2" opacity="0"/>
+      <!-- right slot: player 1; centred on its own in a one-player game -->
       <g id="sbR" opacity="0">
-        <text id="sbRName" x="660" y="686" text-anchor="end" font-size="11.5" fill="var(--p1)" letter-spacing="1.6" font-weight="700">PLAYER 1</text>
-        <text id="sbRPts" x="660" y="728" text-anchor="end" font-size="32" font-weight="700" fill="var(--ink)">0</text>
-        <text id="sbRMade" x="660" y="750" text-anchor="end" font-size="10.5" fill="var(--muted)" letter-spacing="1">0 MADE</text>
+        <text id="sbRName" x="508" y="686" font-size="11.5" fill="var(--p1)" letter-spacing="1.6" font-weight="700">PLAYER 1</text>
+        <text id="sbRPts" x="508" y="728" font-size="32" font-weight="700" fill="var(--ink)">0</text>
+        <text id="sbRMade" x="508" y="750" font-size="10.5" fill="var(--muted)" letter-spacing="1">0 MADE</text>
       </g>
     </g>
   </g>
@@ -340,7 +348,8 @@ const el = {
   band: $('band'), pads: $('pads'),
   sbL: $('sbL'), sbLPts: $('sbLPts'), sbLMade: $('sbLMade'),
   sbR: $('sbR'), sbRPts: $('sbRPts'), sbRMade: $('sbRMade'), sbRName: $('sbRName'),
-  sbC: $('sbC'), sbClock: $('sbClock'), sbClockLabel: $('sbClockLabel'),
+  sbDiv: $('sbDiv'), clockHud: $('clockHud'), clockText: $('clockText'),
+  sbClock: $('sbClock'), sbClockLabel: $('sbClockLabel'),
   fsBtn: $('fsBtn'), fsIcon: $('fsIcon'), stagewrap: $('stagewrap'), stage: $('stage')
 };
 
@@ -903,7 +912,14 @@ function layoutBand() {
   }
   el.sbL.setAttribute('opacity', scoreOn && numPlayers > 1 ? '1' : '0');
   el.sbR.setAttribute('opacity', scoreOn ? '1' : '0');
-  // sbC's opacity is render's business -- it dims while the clock is stopped.
+  el.sbDiv.setAttribute('opacity', scoreOn && numPlayers > 1 ? '0.9' : '0');
+  // With the clock back up in the corner, the two scores close ranks around the
+  // middle of the band. On its own, a single score just takes the middle.
+  const solo = numPlayers === 1;
+  for (const n of [el.sbRName, el.sbRPts, el.sbRMade]) {
+    n.setAttribute('x', solo ? '480' : '508');
+    n.setAttribute('text-anchor', solo ? 'middle' : 'start');
+  }
   el.sbRName.textContent = numPlayers > 1 ? 'PLAYER 1' : 'SCORE';
   el.sbRName.setAttribute('fill', numPlayers > 1 ? 'var(--p1)' : 'var(--muted)');
 }
@@ -1531,9 +1547,11 @@ function render() {
   el.sbClock.textContent = g.clock.toFixed(1);
   el.sbClock.setAttribute('fill', g.clockOn && g.clock <= 3 ? '#e2572b' : 'var(--ink)');
   // A stopped clock says so by going quiet, rather than just sitting there
-  // looking like a clock that has frozen.
+  // looking like a clock that has frozen. The panel itself stays solid, so it
+  // does not go see-through over the painted courts.
   const scoreShown = (g.ms === MS.PLAY || g.ms === MS.OVER);
-  el.sbC.setAttribute('opacity', scoreShown ? (g.clockOn ? '1' : '0.45') : '0');
+  el.clockHud.setAttribute('opacity', scoreShown ? '1' : '0');
+  el.clockText.setAttribute('opacity', g.clockOn ? '1' : '0.45');
   el.sbClockLabel.textContent = (scoreShown && !g.clockOn) ? 'SHOT CLOCK · HELD' : 'SHOT CLOCK';
 
   // pads light up with whatever is held, keyboard included

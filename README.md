@@ -49,7 +49,9 @@ home screen instead and it opens without browser chrome.
 - The **shot clock** runs only while somebody has the ball. Every throw resets it
   *and holds it*; it starts again when anyone gathers the ball, so the scramble
   for the rebound is free time. Let it reach zero and the game is over. The
-  scoreboard says `SHOT CLOCK · HELD` and goes quiet while it is stopped.
+  clock sits in the top right corner of the court; it reads `SHOT CLOCK · HELD`
+  and goes quiet while it is stopped. The scores live in the control band, each
+  above its own player's pad.
 - The one exception is the opening possession, which waits for the first shoot
   press rather than starting at the tip-off — so the game does not begin ticking
   before anyone's hands are on the keys.

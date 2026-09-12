@@ -449,14 +449,14 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/nba/dribble_idle/01.png",
       "w": 88.25,
       "h": 132.0,
-      "footX": 45.85,
+      "footX": 45.48,
       "footY": 132.0
      },
      {
       "src": "sprites/nba/dribble_idle/02.png",
       "w": 84.24,
       "h": 128.36,
-      "footX": 42.45,
+      "footX": 42.07,
       "footY": 128.36
      }
     ],
@@ -465,14 +465,14 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/nba/run_dribble_r/01.png",
       "w": 88.25,
       "h": 132.0,
-      "footX": 45.85,
+      "footX": 45.48,
       "footY": 132.0
      },
      {
       "src": "sprites/nba/run_dribble_r/02.png",
       "w": 84.24,
       "h": 128.36,
-      "footX": 42.45,
+      "footX": 42.07,
       "footY": 128.36
      }
     ],
@@ -481,14 +481,14 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/nba/run_dribble_l/01.png",
       "w": 88.25,
       "h": 132.0,
-      "footX": 45.85,
+      "footX": 45.48,
       "footY": 132.0
      },
      {
       "src": "sprites/nba/run_dribble_l/02.png",
       "w": 84.24,
       "h": 128.36,
-      "footX": 42.45,
+      "footX": 42.07,
       "footY": 128.36
      }
     ],
@@ -497,14 +497,14 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/nba/run_r/01.png",
       "w": 88.25,
       "h": 132.0,
-      "footX": 45.85,
+      "footX": 45.48,
       "footY": 132.0
      },
      {
       "src": "sprites/nba/run_r/02.png",
       "w": 84.24,
       "h": 128.36,
-      "footX": 42.45,
+      "footX": 42.07,
       "footY": 128.36
      }
     ],
@@ -513,14 +513,14 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/nba/run_l/01.png",
       "w": 88.25,
       "h": 132.0,
-      "footX": 45.85,
+      "footX": 45.48,
       "footY": 132.0
      },
      {
       "src": "sprites/nba/run_l/02.png",
       "w": 84.24,
       "h": 128.36,
-      "footX": 42.45,
+      "footX": 42.07,
       "footY": 128.36
      }
     ],
@@ -529,14 +529,14 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/nba/aim/01.png",
       "w": 93.01,
       "h": 127.34,
-      "footX": 46.13,
+      "footX": 46.46,
       "footY": 127.34
      },
      {
       "src": "sprites/nba/aim/02.png",
       "w": 86.94,
       "h": 127.06,
-      "footX": 15.25,
+      "footX": 45.29,
       "footY": 127.06
      }
     ],
@@ -552,7 +552,7 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/nba/charge/02.png",
       "w": 86.94,
       "h": 127.06,
-      "footX": 15.25,
+      "footX": 45.29,
       "footY": 127.06
      }
     ],
@@ -561,7 +561,7 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/nba/shot/01.png",
       "w": 53.45,
       "h": 129.01,
-      "footX": 19.08,
+      "footX": 17.35,
       "footY": 129.01
      },
      {
@@ -574,7 +574,7 @@ window.SPRITE_MANIFEST = {
     ]
    },
    "ballSide": {},
-   "handX": 13.39,
+   "handX": 15.12,
    "handY": -129.01
   },
   {
@@ -587,14 +587,14 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/highschooler/dribble_idle/01.png",
       "w": 81.97,
       "h": 132.0,
-      "footX": 75.0,
+      "footX": 41.17,
       "footY": 132.0
      },
      {
       "src": "sprites/highschooler/dribble_idle/02.png",
       "w": 82.35,
       "h": 131.91,
-      "footX": 43.49,
+      "footX": 43.12,
       "footY": 131.91
      }
     ],
@@ -603,14 +603,14 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/highschooler/run_dribble_r/01.png",
       "w": 81.97,
       "h": 132.0,
-      "footX": 75.0,
+      "footX": 41.17,
       "footY": 132.0
      },
      {
       "src": "sprites/highschooler/run_dribble_r/02.png",
       "w": 82.35,
       "h": 131.91,
-      "footX": 43.49,
+      "footX": 43.12,
       "footY": 131.91
      }
     ],
@@ -619,14 +619,14 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/highschooler/run_dribble_l/01.png",
       "w": 81.97,
       "h": 132.0,
-      "footX": 75.0,
+      "footX": 41.17,
       "footY": 132.0
      },
      {
       "src": "sprites/highschooler/run_dribble_l/02.png",
       "w": 82.35,
       "h": 131.91,
-      "footX": 43.49,
+      "footX": 43.12,
       "footY": 131.91
      }
     ],
@@ -635,14 +635,14 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/highschooler/run_r/01.png",
       "w": 81.97,
       "h": 132.0,
-      "footX": 75.0,
+      "footX": 41.17,
       "footY": 132.0
      },
      {
       "src": "sprites/highschooler/run_r/02.png",
       "w": 82.35,
       "h": 131.91,
-      "footX": 43.49,
+      "footX": 43.12,
       "footY": 131.91
      }
     ],
@@ -651,14 +651,14 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/highschooler/run_l/01.png",
       "w": 81.97,
       "h": 132.0,
-      "footX": 75.0,
+      "footX": 41.17,
       "footY": 132.0
      },
      {
       "src": "sprites/highschooler/run_l/02.png",
       "w": 82.35,
       "h": 131.91,
-      "footX": 43.49,
+      "footX": 43.12,
       "footY": 131.91
      }
     ],
@@ -667,14 +667,14 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/highschooler/aim/01.png",
       "w": 85.95,
       "h": 129.63,
-      "footX": 43.35,
+      "footX": 42.93,
       "footY": 129.63
      },
      {
       "src": "sprites/highschooler/aim/02.png",
       "w": 83.29,
       "h": 126.6,
-      "footX": 76.09,
+      "footX": 45.82,
       "footY": 126.6
      }
     ],
@@ -690,7 +690,7 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/highschooler/charge/02.png",
       "w": 56.95,
       "h": 129.44,
-      "footX": 28.81,
+      "footX": 28.43,
       "footY": 129.44
      }
     ],
@@ -699,7 +699,7 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/highschooler/shot/01.png",
       "w": 45.11,
       "h": 131.34,
-      "footX": 15.64,
+      "footX": 14.36,
       "footY": 131.34
      },
      {
@@ -712,7 +712,7 @@ window.SPRITE_MANIFEST = {
     ]
    },
    "ballSide": {},
-   "handX": 14.68,
+   "handX": 15.96,
    "handY": -131.34
   },
   {
@@ -725,14 +725,14 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/zombie/dribble_idle/01.png",
       "w": 91.96,
       "h": 132.0,
-      "footX": 46.31,
+      "footX": 45.93,
       "footY": 132.0
      },
      {
       "src": "sprites/zombie/dribble_idle/02.png",
       "w": 92.63,
       "h": 126.73,
-      "footX": 49.14,
+      "footX": 48.76,
       "footY": 126.73
      }
     ],
@@ -741,14 +741,14 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/zombie/run_dribble_r/01.png",
       "w": 91.96,
       "h": 132.0,
-      "footX": 46.31,
+      "footX": 45.93,
       "footY": 132.0
      },
      {
       "src": "sprites/zombie/run_dribble_r/02.png",
       "w": 92.63,
       "h": 126.73,
-      "footX": 49.14,
+      "footX": 48.76,
       "footY": 126.73
      }
     ],
@@ -757,14 +757,14 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/zombie/run_dribble_l/01.png",
       "w": 91.96,
       "h": 132.0,
-      "footX": 46.31,
+      "footX": 45.93,
       "footY": 132.0
      },
      {
       "src": "sprites/zombie/run_dribble_l/02.png",
       "w": 92.63,
       "h": 126.73,
-      "footX": 49.14,
+      "footX": 48.76,
       "footY": 126.73
      }
     ],
@@ -773,14 +773,14 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/zombie/run_r/01.png",
       "w": 91.96,
       "h": 132.0,
-      "footX": 46.31,
+      "footX": 45.93,
       "footY": 132.0
      },
      {
       "src": "sprites/zombie/run_r/02.png",
       "w": 92.63,
       "h": 126.73,
-      "footX": 49.14,
+      "footX": 48.76,
       "footY": 126.73
      }
     ],
@@ -789,14 +789,14 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/zombie/run_l/01.png",
       "w": 91.96,
       "h": 132.0,
-      "footX": 46.31,
+      "footX": 45.93,
       "footY": 132.0
      },
      {
       "src": "sprites/zombie/run_l/02.png",
       "w": 92.63,
       "h": 126.73,
-      "footX": 49.14,
+      "footX": 48.76,
       "footY": 126.73
      }
     ],
@@ -812,7 +812,7 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/zombie/aim/02.png",
       "w": 86.31,
       "h": 118.97,
-      "footX": 49.86,
+      "footX": 51.06,
       "footY": 118.97
      }
     ],
@@ -821,14 +821,14 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/zombie/charge/01.png",
       "w": 61.79,
       "h": 133.53,
-      "footX": 30.89,
+      "footX": 30.84,
       "footY": 133.53
      },
      {
       "src": "sprites/zombie/charge/02.png",
       "w": 58.62,
       "h": 134.2,
-      "footX": 29.31,
+      "footX": 29.26,
       "footY": 134.2
      }
     ],
@@ -844,7 +844,7 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/zombie/shot/02.png",
       "w": 76.92,
       "h": 127.98,
-      "footX": 43.78,
+      "footX": 43.68,
       "footY": 127.98
      }
     ]
