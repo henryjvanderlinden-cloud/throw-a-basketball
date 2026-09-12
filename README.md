@@ -5,30 +5,73 @@ dependencies — open `index.html` in a browser and play.
 
 The basket hangs in the top middle. You control a small basketball guy on the
 baseline: dribble, set your angle, charge the throw, and let the physics decide.
+Two can play, sharing one keyboard and one ball.
 
 ## Controls
 
-Every run opens on the character select — pick with <kbd>←</kbd> <kbd>→</kbd> (or
-click a card) and start with <kbd>Space</kbd>.
+Every run opens on the mode select — one player or two — and then the character
+select. In a two-player game player 1 picks first, then player 2; they may pick
+the same character.
 
-| Key | Dribbling | Aiming |
+| | Player 1 | Player 2 |
 | --- | --- | --- |
-| <kbd>←</kbd> <kbd>→</kbd> | move along the baseline | set the throw angle |
-| <kbd>Space</kbd> | pick the ball up and start aiming | hold to charge, release to throw |
-| <kbd>R</kbd> | restart, back to character select | restart |
-| <kbd>C</kbd> / <kbd>1</kbd>–<kbd>4</kbd> | switch court | switch court |
+| move / set the angle | <kbd>←</kbd> <kbd>→</kbd> | <kbd>A</kbd> <kbd>D</kbd> |
+| pick up, aim, hold to charge, release to throw | <kbd>↑</kbd> | <kbd>W</kbd> |
+| steal | <kbd>↓</kbd> | <kbd>S</kbd> |
+
+<kbd>Space</kbd> is a second name for player 1's <kbd>↑</kbd>, but only in a
+one-player game: sharing a keyboard it sits far too close to player 2's hand.
+<kbd>R</kbd> restarts back to the mode select, <kbd>C</kbd> or
+<kbd>1</kbd>–<kbd>4</kbd> switches court, <kbd>F</kbd> toggles fullscreen.
 
 A dotted line shows where you are aiming. The power meter fills green → yellow →
-red while <kbd>Space</kbd> is held; release at the strength you want. After the
+red while the shoot key is held; release at the strength you want. After the
 shot the ball bounces around live — walk into it and you pick it up automatically.
+
+### On screen, for a tablet
+
+Both players also have a four-button pad along the bottom of the stage: player 2
+on the left, player 1 on the right, matching where <kbd>WASD</kbd> and the arrow
+keys sit on a keyboard. They work for the menus as well as the game, so an iPad
+needs no keyboard at all. The pads light up with whatever is held, keyboard
+included.
+
+The stage fits itself to the screen height in landscape, so the buttons stay
+thumb-sized. The fullscreen button sits top right; Safari on iPhone and iPad has
+no element fullscreen, so there the button hides itself — add the page to the
+home screen instead and it opens without browser chrome.
 
 ## Rules
 
 - **3 points** per made basket.
-- The **shot clock** starts on your first ever <kbd>Space</kbd> press and resets
-  on **every throw**. Let it reach zero and the game is over.
+- The **shot clock** starts on the first ever shoot press and resets on **every
+  throw** and every made basket. Let it reach zero and the game is over.
 - The clock starts at **10 seconds** and drops by **0.5 s for every 12 points**
-  scored, down to a floor of **3 seconds**.
+  scored, down to a floor of **3 seconds**. In a two-player game the ramp runs on
+  the two scores added together.
+
+### Two players
+
+One ball, one basket, one clock — the clock is shared, so stalling costs you as
+much as it costs the other one. Player 1 starts with it. Most points when the
+buzzer goes wins; equal is a draw.
+
+**Stealing** is the whole game. Press <kbd>↓</kbd> (or <kbd>S</kbd>) next to an
+opponent who is *dribbling* and the ball is yours. Three things bound it:
+
+- **Reach.** 70 px along the baseline, a little wider than the pickup radius.
+- **Only while dribbling.** The moment they start aiming they cannot be robbed,
+  and shots cannot be blocked. Winding up is safe; walking the ball around is not.
+- **No instant steal-back.** Every change of possession — steal, rebound,
+  tip-off — protects the ball for 0.9 s. A steal attempt costs the thief 0.5 s
+  before they can try again, whether or not it worked, so holding the button
+  down is not free. Holding it *does* keep trying, once per cooldown.
+
+A steal does **not** reset the shot clock. Taking the ball off someone late is
+supposed to leave you with their problem, not a fresh ten seconds.
+
+Players run through each other; there is no body contact. A loose ball goes to
+whoever is nearest, and a dead heat goes to whoever did *not* take the last shot.
 
 ## Courts
 
@@ -52,12 +95,25 @@ Everything lives in `index.html`:
 - **Rendering** is SVG, manipulated through the DOM each frame. The player is one
   `<g id="player">` moved by `transform`, the ball one `<g id="ballg">` moved by
   translate + rotate.
-- **State machine**: `DRIBBLE → AIM → CHARGE → LIVE → (DRIBBLE | OVER)`.
+- **State machine**: the match runs `MODE → SELECT → PLAY → OVER`, and inside a
+  match each player runs `IDLE → DRIBBLE → AIM → CHARGE → IDLE`. Exactly one
+  player is ever out of `IDLE`: `g.owner` says which, or `null` while the ball is
+  loose. Every change of possession goes through `giveBall()`, which is also the
+  one place steal immunity is armed.
 - **Physics** runs in three fixed sub-steps per frame so hard shots cannot tunnel
   through the rim. The ball collides with the floor, walls, ceiling beam, both
   backboard wings, and each rim nub, with separate restitution per surface.
 - **Scoring** is a swept test: a basket counts when the ball's centre crosses the
   rim plane downwards, inside the ring.
+- **Two rigs.** Each player gets its own clone of `#rigTemplate`, its own frame
+  `<image>` elements and its own "currently shown" cursor, which is what lets
+  both players wear the same character at once.
+- **Input** is two sources — keyboard and touch — feeding one set of held flags
+  per player, so releasing a pad button cannot cancel a key that is still down.
+  A direction counts its keys rather than holding a flag, because <kbd>Space</kbd>
+  and <kbd>↑</kbd> share one. Anything that changes the screen under the players'
+  hands calls `clearInput()`, and a charge nobody is holding any more winds back
+  to the aim rather than firing a throw nobody asked for.
 
 ### Tuning
 
@@ -72,6 +128,8 @@ The constants block near the top of the `<script>` is the place to change feel:
 | `HOOP.halfW` | ring width — the main difficulty dial |
 | `REST_*`, `FRICTION`, `AIR` | bounciness and damping |
 | `CLOCK_BASE`, `CLOCK_STEP`, `CLOCK_FLOOR` | shot-clock difficulty ramp |
+| `STEAL_DIST` | how close a steal needs |
+| `STEAL_IMMUNE`, `STEAL_CD` | protection after a change of possession, and the cost of trying |
 
 Widening `HOOP.halfW` or raising `SPEED_MIN` makes the game noticeably easier.
 
@@ -102,6 +160,19 @@ The other three still run on the original eight poses, which the build script
 maps onto the same sequence names — so the game has one code path, and they get
 mirrored for facing while the Monkey never is. Replacing them is a matter of
 generating strips; nothing in the game needs to change.
+
+### Player 2's kit
+
+Player 2 wears the same art in red. Nothing is regenerated and no second set of
+sprites is stored: the `#kitP2` SVG filter rotates the hue of blue-dominant
+pixels only, so the jersey, shorts and shoe flashes turn over while fur, skin,
+the gold trim and the white socks stay exactly as drawn. The mask is the alpha
+row of an `feColorMatrix` — blue, minus the red and green it beats — sharpened
+by a transfer function and clipped to the sprite's own alpha. It costs about a
+millisecond a frame.
+
+If the characters are ever regenerated with a second set of jerseys, drop the
+`filter` attribute in `makeRig()` and point player 2 at the new art instead.
 
 ### Idle breaks
 
@@ -169,8 +240,12 @@ The ball stays vector — it needs to rotate freely and scale with the physics.
 
 ## Development
 
-`window.__hoop` exposes `{ state, step, render, reset, keys, STATE, HOOP }` for
-poking at the game from the console or driving it from a headless test.
+`window.__hoop` exposes `{ state, players, numPlayers, step, render, reset, keys,
+STATE, MS, PS, HOOP, startMatch, press, release, setMode, pick, chars }` for
+poking at the game from the console or driving it from a headless test. `press`
+and `release` take `(playerIndex, 'left'|'right'|'up'|'down')` and go in through
+the same path as a real key, so a test can play the game rather than set its
+variables. `setMode(1|2)` and `pick(player, charIndex)` skip the menus.
 
 ## Layout
 

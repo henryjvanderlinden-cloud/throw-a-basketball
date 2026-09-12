@@ -1,30 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <title>Hoop Shooter</title>
 <style>
   :root{
     --bg:#f4efe6; --ink:#20232b; --muted:#6c7280; --line:#d8d0c2;
     --wood:#e3b579; --wood2:#d3a165; --panel:#ffffff; --accent:#e2572b;
+    --band:#eae3d6; --p1:#2f6fdc; --p2:#d8402c;
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
       --bg:#14161b; --ink:#eceff5; --muted:#98a0b0; --line:#2b3038;
       --wood:#7a5533; --wood2:#6a4829; --panel:#1d2027; --accent:#ff7a4d;
+      --band:#191c22; --p1:#5b91f5; --p2:#ff6a53;
     }
   }
   :root[data-theme="dark"]{
     --bg:#14161b; --ink:#eceff5; --muted:#98a0b0; --line:#2b3038;
     --wood:#7a5533; --wood2:#6a4829; --panel:#1d2027; --accent:#ff7a4d;
+    --band:#191c22; --p1:#5b91f5; --p2:#ff6a53;
   }
+  html,body{margin:0}
   body{background:var(--bg);color:var(--ink);font:14px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-       display:flex;flex-direction:column;align-items:center;gap:10px;padding:14px;min-height:100vh;box-sizing:border-box}
+       display:flex;flex-direction:column;align-items:center;gap:10px;padding:14px;min-height:100vh;box-sizing:border-box;
+       user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
   #stagewrap{width:100%;max-width:980px}
   svg#stage{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:12px;background:var(--panel);
-            touch-action:none;user-select:none}
-  .legend{color:var(--muted);font-size:12.5px;text-align:center;max-width:820px}
+            touch-action:none;user-select:none;-webkit-user-select:none}
+  /* Fullscreen: fit the whole stage, both dimensions, and lose the page chrome. */
+  #stagewrap:fullscreen{max-width:none;width:100%;height:100%;background:var(--bg);
+            display:flex;align-items:center;justify-content:center}
+  #stagewrap:fullscreen svg#stage{width:auto;height:100%;max-width:100%;border:0;border-radius:0}
+  #stagewrap:-webkit-full-screen{max-width:none;width:100%;height:100%;background:var(--bg);
+            display:flex;align-items:center;justify-content:center}
+  #stagewrap:-webkit-full-screen svg#stage{width:auto;height:100%;max-width:100%;border:0;border-radius:0}
+  /* On a tablet or phone held sideways the limit is height, not width. The
+     stage is 960x736, so fit it to whatever height is left and the touch pads
+     stay thumb-sized instead of shrinking to fit a wide viewport. */
+  @media (orientation:landscape) and (max-height:900px){
+    body{padding:6px;gap:6px}
+    #stagewrap{max-width:min(980px, calc((100vh - 104px) * 1.304))}
+  }
+  @media (orientation:landscape) and (max-height:620px){
+    body{padding:2px;gap:0}
+    #stagewrap{max-width:min(980px, calc((100vh - 8px) * 1.304))}
+    .legend{display:none}          /* the pads carry their own key labels */
+  }
+  .legend{color:var(--muted);font-size:12.5px;text-align:center;max-width:860px}
+  .legend b{color:var(--ink);font-weight:600}
   kbd{font:inherit;font-size:11.5px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:1px 5px;background:var(--bg);color:var(--ink)}
 </style>
+</head>
+<body>
 
 <div id="stagewrap">
-<svg id="stage" viewBox="0 0 960 640" xmlns="http://www.w3.org/2000/svg" aria-label="Basketball game">
+<svg id="stage" viewBox="0 0 960 736" xmlns="http://www.w3.org/2000/svg" aria-label="Basketball game">
   <defs>
     <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="var(--wood)"/><stop offset="1" stop-color="var(--wood2)"/>
@@ -33,6 +67,23 @@
       <stop offset="0" stop-color="#ff9f56"/><stop offset="1" stop-color="#d8541c"/>
     </radialGradient>
     <clipPath id="ballClip"><circle cx="0" cy="0" r="13"/></clipPath>
+
+    <!-- Player 2's kit. Rotates the hue of blue-dominant pixels only, so the
+         jersey, shorts and shoe flashes turn red while fur, skin, the gold trim
+         and the white socks stay exactly as drawn. The alpha row of the second
+         matrix is a "blueness" test (B minus the red and green it beats); the
+         transfer sharpens that into a mask, and the mask clips the rotated copy
+         before it is laid back over the original. -->
+    <filter id="kitP2" x="-6%" y="-6%" width="112%" height="112%" color-interpolation-filters="sRGB">
+      <feColorMatrix in="SourceGraphic" type="hueRotate" values="132" result="rot0"/>
+      <feColorMatrix in="rot0" type="saturate" values="1.3" result="rot"/>
+      <feColorMatrix in="SourceGraphic" type="matrix" result="m0"
+        values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  -1.2 -0.9 2.1 0 -0.15"/>
+      <feComponentTransfer in="m0" result="m1"><feFuncA type="linear" slope="6" intercept="-0.5"/></feComponentTransfer>
+      <feComposite in="m1" in2="SourceGraphic" operator="in" result="mask"/>
+      <feComposite in="rot" in2="mask" operator="in" result="tinted"/>
+      <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="tinted"/></feMerge>
+    </filter>
   </defs>
 
   <!-- ===== static scene ===== -->
@@ -53,7 +104,8 @@
   </g>
 
   <!-- ground shadows -->
-  <ellipse id="shPlayer" cx="0" cy="596" rx="26" ry="6" fill="#000" opacity="0.22"/>
+  <ellipse id="shP0" cx="0" cy="596" rx="26" ry="6" fill="#000" opacity="0.22"/>
+  <ellipse id="shP1" cx="0" cy="596" rx="26" ry="6" fill="#000" opacity="0.22"/>
   <ellipse id="shBall" cx="0" cy="596" rx="12" ry="4" fill="#000" opacity="0.18"/>
 
   <!-- ===== hoop rig (top middle) ===== -->
@@ -85,19 +137,20 @@
           stroke-dasharray="5 10" stroke-linecap="round"/>
   </g>
 
-  <!-- ===== player ===== -->
-  <!-- Sprite frames are injected into #psprite by the game; #pvector is the
-       fallback figure used when sprites/ is not available. -->
-  <g id="player">
-   <g id="pflip">
-    <g id="psprite"></g>
-    <g id="pvector">
+  <!-- ===== players =====
+       #rigTemplate is cloned once per player. Sprite frames are injected into
+       .psprite; .pvector is the fallback figure used when sprites/ is missing. -->
+  <g id="players"></g>
+  <g id="rigTemplate" style="display:none">
+   <g class="pflip">
+    <g class="psprite"></g>
+    <g class="pvector">
       <!-- white sticker outline so the figure reads on any court -->
       <g stroke="#ffffff" stroke-linecap="round" fill="#ffffff" opacity="0.85">
         <line x1="-8" y1="-26" x2="-11" y2="0" stroke-width="13"/>
         <line x1="6"  y1="-26" x2="10" y2="0" stroke-width="13"/>
-        <line id="armBbg" x1="-10" y1="-52" x2="-22" y2="-34" stroke-width="12"/>
-        <line id="armFbg" x1="10" y1="-52" x2="24" y2="-36" stroke-width="12"/>
+        <line class="armBbg" x1="-10" y1="-52" x2="-22" y2="-34" stroke-width="12"/>
+        <line class="armFbg" x1="10" y1="-52" x2="24" y2="-36" stroke-width="12"/>
         <rect x="-16" y="-62" width="33" height="42" rx="11"/>
         <circle cx="1" cy="-70" r="17"/>
       </g>
@@ -105,10 +158,10 @@
       <line x1="-8" y1="-26" x2="-11" y2="0" stroke="var(--ink)" stroke-width="7" stroke-linecap="round"/>
       <line x1="6"  y1="-26" x2="10" y2="0" stroke="var(--ink)" stroke-width="7" stroke-linecap="round"/>
       <!-- body -->
-      <rect x="-12" y="-58" width="25" height="34" rx="8" fill="var(--accent)"/>
+      <rect class="ptorso" x="-12" y="-58" width="25" height="34" rx="8" fill="var(--accent)"/>
       <!-- arms -->
-      <line id="armB" x1="-10" y1="-52" x2="-22" y2="-34" stroke="var(--ink)" stroke-width="6" stroke-linecap="round"/>
-      <line id="armF" x1="10" y1="-52" x2="24" y2="-36" stroke="var(--ink)" stroke-width="6" stroke-linecap="round"/>
+      <line class="armB" x1="-10" y1="-52" x2="-22" y2="-34" stroke="var(--ink)" stroke-width="6" stroke-linecap="round"/>
+      <line class="armF" x1="10" y1="-52" x2="24" y2="-36" stroke="var(--ink)" stroke-width="6" stroke-linecap="round"/>
       <!-- head -->
       <circle cx="1" cy="-70" r="13" fill="#f0c9a4" stroke="var(--ink)" stroke-width="2"/>
       <path d="M-12,-76 a13,13 0 0 1 26,0 z" fill="var(--ink)"/>
@@ -116,7 +169,7 @@
    </g>
   </g>
 
-  <!-- ===== ball (swap circle for <image> sprite later) ===== -->
+  <!-- ===== ball ===== -->
   <g id="ballg">
     <circle r="13" fill="url(#ballGrad)" stroke="#7d2f0d" stroke-width="1.5"/>
     <g clip-path="url(#ballClip)" stroke="#7d2f0d" stroke-width="1.6" fill="none">
@@ -133,52 +186,87 @@
     <rect id="pwFill" x="0" y="0" width="16" height="0" rx="8" fill="#3fbf5f"/>
   </g>
 
-  <!-- ===== HUD ===== -->
-  <g id="hud" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">
-    <rect x="620" y="20" width="320" height="56" rx="12" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>
-    <text x="648" y="43" font-size="11" fill="var(--muted)" letter-spacing="1.5">MADE</text>
-    <text id="hudMade" x="648" y="66" font-size="22" font-weight="700" fill="var(--ink)">0</text>
-    <text x="716" y="43" font-size="11" fill="var(--muted)" letter-spacing="1.5">POINTS</text>
-    <text id="hudPts" x="716" y="66" font-size="22" font-weight="700" fill="var(--ink)">0</text>
-    <text x="828" y="43" font-size="11" fill="var(--muted)" letter-spacing="1.5">SHOT CLOCK</text>
-    <text id="hudClock" x="828" y="66" font-size="22" font-weight="700" fill="var(--ink)">10.0</text>
-  </g>
-
-  <!-- court name toast -->
+  <!-- court name / steal toast -->
   <g id="toast" opacity="0">
-    <rect x="20" y="20" width="150" height="30" rx="10" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>
+    <rect id="toastBox" x="20" y="20" width="150" height="30" rx="10" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>
     <text id="toastText" x="95" y="40" text-anchor="middle" font-size="13" fill="var(--ink)"
           font-family="ui-sans-serif,system-ui">Court: Vector</text>
+  </g>
+
+  <!-- ===== control band (scoreboard + touch pads) ===== -->
+  <g id="band">
+    <rect x="0" y="640" width="960" height="96" fill="var(--band)"/>
+    <line x1="0" y1="640" x2="960" y2="640" stroke="var(--line)" stroke-width="2"/>
+    <g id="pads"></g>
+    <g id="scoreboard" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">
+      <!-- left slot: player 2 -->
+      <g id="sbL" opacity="0">
+        <text id="sbLName" x="330" y="668" font-size="11" fill="var(--p2)" letter-spacing="1.6" font-weight="700">PLAYER 2</text>
+        <text id="sbLPts" x="330" y="700" font-size="28" font-weight="700" fill="var(--ink)">0</text>
+        <text id="sbLMade" x="330" y="720" font-size="10.5" fill="var(--muted)" letter-spacing="1">0 MADE</text>
+      </g>
+      <!-- centre: shot clock -->
+      <g id="sbC">
+        <text x="480" y="668" text-anchor="middle" font-size="11" fill="var(--muted)" letter-spacing="1.6">SHOT CLOCK</text>
+        <text id="sbClock" x="480" y="704" text-anchor="middle" font-size="34" font-weight="700" fill="var(--ink)">10.0</text>
+      </g>
+      <!-- right slot: player 1 -->
+      <g id="sbR" opacity="0">
+        <text id="sbRName" x="630" y="668" text-anchor="end" font-size="11" fill="var(--p1)" letter-spacing="1.6" font-weight="700">PLAYER 1</text>
+        <text id="sbRPts" x="630" y="700" text-anchor="end" font-size="28" font-weight="700" fill="var(--ink)">0</text>
+        <text id="sbRMade" x="630" y="720" text-anchor="end" font-size="10.5" fill="var(--muted)" letter-spacing="1">0 MADE</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ===== mode select ===== -->
+  <g id="mode" opacity="0" pointer-events="none">
+    <rect x="0" y="0" width="960" height="640" fill="#0b0d12" opacity="0.86"/>
+    <text x="480" y="150" text-anchor="middle" font-size="36" font-weight="800" fill="#fff"
+          font-family="ui-sans-serif,system-ui" letter-spacing="1">HOOP SHOOTER</text>
+    <g id="modeCards"></g>
+    <text id="modeHint" x="480" y="576" text-anchor="middle" font-size="15" fill="#aab2c0"
+          font-family="ui-sans-serif,system-ui">← → to pick · ↑ to start</text>
   </g>
 
   <!-- ===== character select ===== -->
   <g id="select" opacity="0" pointer-events="none">
     <rect x="0" y="0" width="960" height="640" fill="#0b0d12" opacity="0.82"/>
-    <text x="480" y="96" text-anchor="middle" font-size="34" font-weight="800" fill="#fff"
+    <text id="selTitle" x="480" y="90" text-anchor="middle" font-size="32" font-weight="800" fill="#fff"
           font-family="ui-sans-serif,system-ui" letter-spacing="1">CHOOSE YOUR BALLER</text>
     <g id="selCards"></g>
-    <text x="480" y="592" text-anchor="middle" font-size="15" fill="#aab2c0"
-          font-family="ui-sans-serif,system-ui">← → to pick · Space to play</text>
+    <text id="selHint" x="480" y="586" text-anchor="middle" font-size="15" fill="#aab2c0"
+          font-family="ui-sans-serif,system-ui">← → to pick · ↑ to play</text>
   </g>
 
-  <!-- ===== overlay ===== -->
+  <!-- ===== game over ===== -->
   <g id="overlay" opacity="0" pointer-events="none">
     <rect x="0" y="0" width="960" height="640" fill="#000" opacity="0.62"/>
-    <text id="ovTitle" x="480" y="286" text-anchor="middle" font-size="52" font-weight="800" fill="#fff"
+    <text id="ovTitle" x="480" y="272" text-anchor="middle" font-size="52" font-weight="800" fill="#fff"
           font-family="ui-sans-serif,system-ui">TIME'S UP</text>
-    <text id="ovScore" x="480" y="338" text-anchor="middle" font-size="24" fill="#e6e9f0"
+    <text id="ovScore" x="480" y="324" text-anchor="middle" font-size="24" fill="#e6e9f0"
           font-family="ui-monospace,monospace">0 points</text>
-    <text x="480" y="392" text-anchor="middle" font-size="17" fill="#aab2c0"
-          font-family="ui-sans-serif,system-ui">Press Space or R to play again</text>
+    <text id="ovHint" x="480" y="380" text-anchor="middle" font-size="17" fill="#aab2c0"
+          font-family="ui-sans-serif,system-ui">Press ↑ or R to play again</text>
+  </g>
+
+  <!-- Fullscreen toggle. Last, so it stays on top of the menu screens and can
+       still be tapped there -- on a tablet that is where you want it. -->
+  <g id="fsBtn" opacity="0" style="cursor:pointer">
+    <rect x="896" y="16" width="44" height="40" rx="11" fill="var(--panel)" fill-opacity="0.72"
+          stroke="var(--line)" stroke-width="2"/>
+    <g id="fsIcon" stroke="var(--ink)" stroke-width="2.4" fill="none" stroke-linecap="round">
+      <path d="M906,32 v-6 h6 M930,32 v-6 h-6 M906,40 v6 h6 M930,40 v6 h-6"/>
+    </g>
   </g>
 </svg>
 </div>
 
-<p class="legend">
-  <kbd>←</kbd> <kbd>→</kbd> move &amp; dribble · <kbd>Space</kbd> pick up the ball and aim ·
-  <kbd>←</kbd> <kbd>→</kbd> set the angle · hold <kbd>Space</kbd> to charge (green → red), release to shoot ·
-  <kbd>R</kbd> restart (and pick a new character) · <kbd>C</kbd> or <kbd>1</kbd>–<kbd>4</kbd> switch court.
-  The shot clock starts on your first <kbd>Space</kbd> and resets on every throw — let it hit zero and the game is over.
+<p class="legend" id="legend">
+  <b>Player 1</b> <kbd>←</kbd> <kbd>→</kbd> move &amp; aim · <kbd>↑</kbd> pick up, aim, hold to charge, release to shoot · <kbd>↓</kbd> steal.
+  <b>Player 2</b> <kbd>A</kbd> <kbd>D</kbd> · <kbd>W</kbd> · <kbd>S</kbd>.
+  <kbd>R</kbd> restart · <kbd>C</kbd> or <kbd>1</kbd>–<kbd>4</kbd> switch court · <kbd>F</kbd> fullscreen.
+  The shot clock starts on the first <kbd>↑</kbd> and resets on every throw — let it hit zero and the game is over.
 </p>
 
 <!-- Generated sprite data. Absent -> the game falls back to the vector figure. -->
@@ -190,6 +278,7 @@
 
 // ---------------------------------------------------------------- constants
 const W = 960, H = 640, GROUND = 596;
+const BAND_Y = 640, BAND_H = 96;
 const G = 1500;                 // gravity px/s^2
 const BALL_R = 13;
 const AIR = 0.13;               // linear air drag coefficient
@@ -216,28 +305,42 @@ const PICKUP_DIST = 62;
 // four characters measure 0.40-0.45; one constant is steadier than per-sprite
 // detection, which trips over things like the monkey's tail.
 const DRIBBLE_HAND_H = 0.42;
-const PICKUP_LOCKOUT = 0.35;    // s after release before you can re-catch
+const PICKUP_LOCKOUT = 0.35;    // s after release before the shooter can re-catch
+
+// Stealing. The radius is horizontal only -- both players stand on the same
+// baseline. Immunity is what stops two players trading the ball every frame;
+// the cooldown is what stops a thief holding the button down for free.
+const STEAL_DIST = 70;
+const STEAL_IMMUNE = 0.9;       // s of protection after any change of possession
+const STEAL_CD = 0.5;           // s before a player may try again
 
 const CLOCK_BASE = 10, CLOCK_FLOOR = 3, CLOCK_STEP = 0.5, PTS_PER_STEP = 12;
 const POINTS_PER_BASKET = 3;
 
+const START_X = [W * 0.5 - 170, W * 0.5 + 170];   // player 1, player 2
+const SOLO_X = W * 0.5 - 170;
+
 // ---------------------------------------------------------------- elements
 const $ = id => document.getElementById(id);
 const el = {
-  player: $('player'), pflip: $('pflip'), armF: $('armF'), armB: $('armB'),
+  players: $('players'), rigTemplate: $('rigTemplate'),
   ballg: $('ballg'), aim: $('aimline'),
   power: $('power'), pwBg: $('pwBg'), pwFill: $('pwFill'),
-  made: $('hudMade'), pts: $('hudPts'), clock: $('hudClock'),
-  overlay: $('overlay'), ovTitle: $('ovTitle'), ovScore: $('ovScore'),
+  overlay: $('overlay'), ovTitle: $('ovTitle'), ovScore: $('ovScore'), ovHint: $('ovHint'),
   net: $('net'),
-  aimg: $('aimg'), aimBg: $('aimlineBg'), armFbg: $('armFbg'), armBbg: $('armBbg'),
-  psprite: $('psprite'), pvector: $('pvector'),
-  select: $('select'), selCards: $('selCards'), hud: $('hud'),
+  aimg: $('aimg'), aimBg: $('aimlineBg'),
+  select: $('select'), selCards: $('selCards'), selTitle: $('selTitle'), selHint: $('selHint'),
+  mode: $('mode'), modeCards: $('modeCards'), modeHint: $('modeHint'),
   court: $('court'), scrim: $('scrim'), vectorScene: $('vectorScene'),
   ceiling: $('ceiling'), floorLine: $('floorLine'),
-  shPlayer: $('shPlayer'), shBall: $('shBall'),
+  shP: [$('shP0'), $('shP1')], shBall: $('shBall'),
   bbL: $('bbL'), bbR: $('bbR'),
-  toast: $('toast'), toastText: $('toastText')
+  toast: $('toast'), toastText: $('toastText'), toastBox: $('toastBox'),
+  band: $('band'), pads: $('pads'),
+  sbL: $('sbL'), sbLPts: $('sbLPts'), sbLMade: $('sbLMade'),
+  sbR: $('sbR'), sbRPts: $('sbRPts'), sbRMade: $('sbRMade'), sbRName: $('sbRName'),
+  sbC: $('sbC'), sbClock: $('sbClock'),
+  fsBtn: $('fsBtn'), fsIcon: $('fsIcon'), stagewrap: $('stagewrap'), stage: $('stage')
 };
 
 // ---------------------------------------------------------------- courts
@@ -251,6 +354,8 @@ const COURTS = [
   { id: 'graffiti', label: 'Graffiti', src: COURT_DIR + 'graffiti.png' }
 ];
 let courtIdx = 0, toastT = 0;
+
+function toast(msg, secs) { el.toastText.textContent = msg; toastT = secs || 1.6; }
 
 function applyCourt(i, announce) {
   courtIdx = ((i % COURTS.length) + COURTS.length) % COURTS.length;
@@ -272,7 +377,7 @@ function applyCourt(i, announce) {
     el.bbL.setAttribute('opacity', '1'); el.bbR.setAttribute('opacity', '1');
   }
   try { localStorage.setItem('hoop.court', c.id); } catch (e) {}
-  if (announce) { el.toastText.textContent = 'Court: ' + c.label; toastT = 1.6; }
+  if (announce) toast('Court: ' + c.label);
 }
 // artwork missing (e.g. opened without the repo folder) -> fall back to vector
 el.court.addEventListener('error', () => { if (courtIdx !== 0) applyCourt(0, false); });
@@ -336,84 +441,282 @@ const BREAK_MIN = 2, BREAK_MAX = 4;
 const BREAK_CLOCK_FLOOR = 4;    // never mug for the crowd under this much time
 const PANIC_CLOCK = 2;          // ...and start panicking about it under this
 
-let charIdx = 0, curChar = null;
-let frameEls = {};              // sequence name -> [<image>]
-let shown = null;               // [sequence, index] currently visible
+// ---------------------------------------------------------------- player rigs
+// One rig per player: its own DOM subtree, its own frame elements and its own
+// "currently shown" cursor, so both players can wear the same character without
+// fighting over a single set of <image> nodes.
+function makeRig(n) {
+  const root = el.rigTemplate.cloneNode(true);
+  root.removeAttribute('id');
+  root.removeAttribute('style');
+  root.setAttribute('data-player', String(n));
+  const rig = {
+    root,
+    flip: root.querySelector('.pflip'),
+    sprite: root.querySelector('.psprite'),
+    vector: root.querySelector('.pvector'),
+    torso: root.querySelector('.ptorso'),
+    armF: root.querySelector('.armF'), armB: root.querySelector('.armB'),
+    armFbg: root.querySelector('.armFbg'), armBbg: root.querySelector('.armBbg')
+  };
+  if (n === 1) {
+    rig.sprite.setAttribute('filter', 'url(#kitP2)');
+    rig.torso.setAttribute('fill', 'var(--p2)');   // the vector fallback's kit
+  }
+  el.players.appendChild(root);
+  return rig;
+}
 
-function buildCharacter(i) {
-  curChar = CHARS[i] || null;
-  el.psprite.textContent = '';
-  frameEls = {}; shown = null;
-  el.pvector.setAttribute('opacity', curChar ? '0' : '1');
-  if (!curChar) return;
-  for (const [name, frames] of Object.entries(curChar.sequences)) {
-    frameEls[name] = frames.map(f => {
+function buildCharacter(p, i) {
+  p.char = CHARS[i] || null;
+  p.charIdx = i;
+  p.rig.sprite.textContent = '';
+  p.frameEls = {}; p.shown = null;
+  p.rig.vector.setAttribute('opacity', p.char ? '0' : '1');
+  if (!p.char) return;
+  for (const [name, frames] of Object.entries(p.char.sequences)) {
+    p.frameEls[name] = frames.map(f => {
       const im = document.createElementNS(SVGNS, 'image');
       im.setAttribute('href', f.src);
       im.setAttribute('width', f.w); im.setAttribute('height', f.h);
       im.setAttribute('x', -f.footX); im.setAttribute('y', -f.footY);
       im.setAttribute('opacity', '0');
-      el.psprite.appendChild(im);
+      p.rig.sprite.appendChild(im);
       return im;
     });
   }
-  try { localStorage.setItem('hoop.char', curChar.key); } catch (e) {}
 }
 
-const seqOf = name => (curChar && curChar.sequences[name]) || null;
+const seqOf = (p, name) => (p.char && p.char.sequences[name]) || null;
 // Fall back to the first sequence in the list that the character actually has.
-const firstSeq = (...names) => names.find(n => seqOf(n)) || 'dribble_idle';
+const firstSeq = (p, ...names) => names.find(n => seqOf(p, n)) || 'dribble_idle';
 
-function showFrame(name, idx) {
-  const list = frameEls[name];
+function showFrame(p, name, idx) {
+  const list = p.frameEls[name];
   if (!list || !list.length) return;
   idx = Math.max(0, Math.min(list.length - 1, idx));
-  if (shown && shown[0] === name && shown[1] === idx) return;
-  if (shown && frameEls[shown[0]]) frameEls[shown[0]][shown[1]].setAttribute('opacity', '0');
+  if (p.shown && p.shown[0] === name && p.shown[1] === idx) return;
+  if (p.shown && p.frameEls[p.shown[0]]) p.frameEls[p.shown[0]][p.shown[1]].setAttribute('opacity', '0');
   list[idx].setAttribute('opacity', '1');
-  shown = [name, idx];
+  p.shown = [name, idx];
 }
 
 // Choose which celebration to play, and say how long it runs.
-function pickCelebration() {
-  const names = Object.keys(curChar ? curChar.sequences : {}).filter(n => n.startsWith('celebrate'));
+function pickCelebration(p) {
+  const names = Object.keys(p.char ? p.char.sequences : {}).filter(n => n.startsWith('celebrate'));
   if (!names.length) return [null, CELEBRATE_TIME];
   const common = names.filter(n => !CELEB_RARE[n]);
   let name;
   const rare = names.find(n => CELEB_RARE[n] && Math.random() < CELEB_RARE[n]);
   if (rare && common.length) name = rare;
   else name = (common.length ? common : names)[Math.floor(Math.random() * (common.length || names.length))];
-  return [name, seqOf(name).length / (CELEB_HZ[name] || CELEB_HZ_DEFAULT)];
+  return [name, seqOf(p, name).length / (CELEB_HZ[name] || CELEB_HZ_DEFAULT)];
 }
 
 // A character drawn per direction is never mirrored, so nothing it carries
 // flips with facing either.
-const flipsWithFacing = () => !curChar || curChar.mirror;
+const flipsWithFacing = p => !p.char || p.char.mirror;
 
 // Which way the dribbling hand points in a given sequence: +1 is the viewer's
 // right. Mirrored characters have only one set of art, so theirs follows facing.
-function ballSide(seq) {
-  if (flipsWithFacing()) return g.facing;
-  return (curChar.ballSide && curChar.ballSide[seq]) || 1;
+function ballSide(p, seq) {
+  if (flipsWithFacing(p)) return p.facing;
+  return (p.char.ballSide && p.char.ballSide[seq]) || 1;
 }
 
 // The sequence the dribble is playing right now -- needed in step() to put the
 // ball on the correct side, and in animatePlayer() to draw it.
-function dribbleSeq() {
-  if (!curChar) return 'dribble_idle';
-  if (keys.ArrowLeft || keys.ArrowRight) {
-    return firstSeq(g.facing >= 0 ? 'run_dribble_r' : 'run_dribble_l', 'dribble_idle');
+function dribbleSeq(p) {
+  if (!p.char) return 'dribble_idle';
+  if (p.held.left || p.held.right) {
+    return firstSeq(p, p.facing >= 0 ? 'run_dribble_r' : 'run_dribble_l', 'dribble_idle');
   }
   // Down to the last seconds he stops clowning and starts pointing at the clock.
-  if (g.clockOn && g.clock <= PANIC_CLOCK && seqOf('panic')) return 'panic';
-  return (g.breakSeq && seqOf(g.breakSeq)) ? g.breakSeq : 'dribble_idle';
+  if (g.clockOn && g.clock <= PANIC_CLOCK && seqOf(p, 'panic')) return 'panic';
+  return (p.breakSeq && seqOf(p, p.breakSeq)) ? p.breakSeq : 'dribble_idle';
 }
 
 // where the ball sits when the character is holding it
-function holdPos() {
-  const hx = curChar ? curChar.handX : HAND_DX;
-  const hy = curChar ? curChar.handY + 12 : HAND_DY - 14;
-  return [g.px + hx * (flipsWithFacing() ? g.facing : 1), GROUND + hy];
+function holdPos(p) {
+  const hx = p.char ? p.char.handX : HAND_DX;
+  const hy = p.char ? p.char.handY + 12 : HAND_DY - 14;
+  return [p.px + hx * (flipsWithFacing(p) ? p.facing : 1), GROUND + hy];
+}
+
+// how tall the current character is, for shadow and pickup sizing
+const bodyH = p => p.char ? p.char.sequences.dribble_idle[0].h : 70;
+
+// ---------------------------------------------------------------- state
+// Match states, and the per-player states inside a match. A player is IDLE
+// whenever they do not have the ball -- chasing a rebound, watching a shot, or
+// having just been robbed.
+const MS = { MODE: 'MODE', SELECT: 'SELECT', PLAY: 'PLAY', OVER: 'OVER' };
+const PS = { IDLE: 'IDLE', DRIBBLE: 'DRIBBLE', AIM: 'AIM', CHARGE: 'CHARGE' };
+// legacy alias, for anything driving the game through window.__hoop
+const STATE = { SELECT: MS.SELECT, DRIBBLE: PS.DRIBBLE, AIM: PS.AIM, CHARGE: PS.CHARGE,
+                LIVE: PS.IDLE, OVER: MS.OVER };
+
+let g;                    // the match
+let players = [];         // 1 or 2 of them
+let rigs = [];            // built once, reused across matches
+let numPlayers = 1;
+let modeIdx = 0;          // 0 = one player, 1 = two players
+let picker = 0;           // whose turn it is on the character select
+let savedChar = [0, 0];
+
+function makePlayer(n) {
+  return {
+    n,
+    rig: rigs[n],
+    char: null, charIdx: 0, frameEls: {}, shown: null,
+    state: PS.IDLE,
+    px: START_X[n], facing: n === 0 ? 1 : -1,
+    angle: 74, power: 0,
+    made: 0, points: 0,
+    dribT: 0, animT: 0, throwT: 99,
+    turnT: 0, pickupT: 0, celebT: 0, celebSeq: null,
+    breakSeq: null, breakT: 0, breakAt: BREAK_MIN + Math.random() * (BREAK_MAX - BREAK_MIN),
+    stillT: 0, lockout: 0, stealCd: 0, mirrorPose: false,
+    // One direction can have more than one key on it (Space and Up both shoot
+    // in a one-player game), so the keyboard source counts keys rather than
+    // holding a flag -- otherwise letting go of one cancels the other.
+    kbKeys: { left: new Set(), right: new Set(), up: new Set(), down: new Set() },
+    kb: { left: false, right: false, up: false, down: false },
+    tc: { left: false, right: false, up: false, down: false },
+    held: { left: false, right: false, up: false, down: false }
+  };
+}
+
+// Fresh match, back to the mode screen.
+function reset() {
+  g = {
+    ms: HAS_SPRITES ? MS.MODE : MS.PLAY,
+    ball: { x: 0, y: 0, vx: 0, vy: 0, r: BALL_R, spin: 0, rest: false },
+    owner: null,            // index of the player holding the ball, or null
+    shooter: 0,             // who released the last shot
+    scoredThisShot: false,
+    stealImmune: 0,
+    clockOn: false, clockLimit: CLOCK_BASE, clock: CLOCK_BASE,
+    flash: 0
+  };
+  toastT = 0;
+  if (!HAS_SPRITES) { numPlayers = 1; startMatch(); return; }
+  picker = 0;
+  buildPlayers(numPlayers);
+  paintMode(); paintSelection(); syncScreens();
+}
+
+// Build (or rebuild) the player list for a mode. Rigs are reused.
+function buildPlayers(n) {
+  numPlayers = n;
+  players = [];
+  for (let i = 0; i < 2; i++) {
+    if (i < n) {
+      const p = makePlayer(i);
+      p.px = (n === 1) ? SOLO_X : START_X[i];
+      players.push(p);
+      if (HAS_SPRITES) buildCharacter(p, Math.min(savedChar[i], CHARS.length - 1));
+      rigs[i].root.setAttribute('opacity', '1');
+    } else {
+      rigs[i].root.setAttribute('opacity', '0');
+    }
+  }
+}
+
+// Leave the menus; tip off.
+function startMatch() {
+  if (!players.length) buildPlayers(numPlayers);
+  for (const p of players) {
+    p.state = PS.IDLE;
+    p.made = 0; p.points = 0; p.power = 0; p.angle = 74;
+    p.throwT = 99; p.turnT = 0; p.pickupT = 0; p.celebT = 0; p.celebSeq = null;
+    p.breakSeq = null; p.breakT = 0; p.stillT = 0; p.lockout = 0; p.stealCd = 0;
+    p.dribT = 0; p.animT = 0;
+    p.px = (numPlayers === 1) ? SOLO_X : START_X[p.n];
+    p.facing = p.n === 0 ? 1 : -1;
+  }
+  // Player 1 picked first, so player 1 starts with the ball -- and the tip-off
+  // counts as a change of possession, so it carries the same protection.
+  g.owner = 0; g.shooter = 0; g.stealImmune = STEAL_IMMUNE;
+  g.scoredThisShot = false;
+  players[0].state = PS.DRIBBLE;
+  g.clockOn = false; g.clockLimit = CLOCK_BASE; g.clock = CLOCK_BASE;
+  g.ms = MS.PLAY;
+  clearInput();                    // nothing held on the select screen carries in
+  syncScreens();
+  try {
+    localStorage.setItem('hoop.mode', String(numPlayers));
+    localStorage.setItem('hoop.char', (CHARS[players[0].charIdx] || {}).key || '');
+    if (players[1]) localStorage.setItem('hoop.char2', (CHARS[players[1].charIdx] || {}).key || '');
+  } catch (e) {}
+}
+
+function syncScreens() {
+  const show = (node, on) => {
+    node.setAttribute('opacity', on ? '1' : '0');
+    node.setAttribute('pointer-events', on ? 'auto' : 'none');
+  };
+  show(el.mode, g.ms === MS.MODE);
+  show(el.select, g.ms === MS.SELECT);
+  el.overlay.setAttribute('opacity', g.ms === MS.OVER ? '1' : '0');
+  layoutBand();
+}
+
+// ---------------------------------------------------------------- menus
+function buildModeCards() {
+  el.modeCards.textContent = '';
+  const labels = [['1 PLAYER', 'beat the shot clock'], ['2 PLAYERS', 'one ball, steal it back']];
+  const cw = 300, gap = 40, x0 = (W - (2 * cw + gap)) / 2, y = 220, ch = 260;
+  labels.forEach(([title, sub], i) => {
+    const x = x0 + i * (cw + gap);
+    const grp = document.createElementNS(SVGNS, 'g');
+    grp.style.cursor = 'pointer';
+    const card = document.createElementNS(SVGNS, 'rect');
+    card.setAttribute('x', x); card.setAttribute('y', y);
+    card.setAttribute('width', cw); card.setAttribute('height', ch);
+    card.setAttribute('rx', 18); card.setAttribute('fill', '#ffffff');
+    card.setAttribute('fill-opacity', '0.07');
+    card.setAttribute('stroke', '#ffffff'); card.setAttribute('stroke-opacity', '0.25');
+    card.setAttribute('stroke-width', '3');
+    grp.appendChild(card);
+    const t = document.createElementNS(SVGNS, 'text');
+    t.setAttribute('x', x + cw / 2); t.setAttribute('y', y + 130);
+    t.setAttribute('text-anchor', 'middle'); t.setAttribute('font-size', '34');
+    t.setAttribute('font-weight', '800'); t.setAttribute('fill', '#fff');
+    t.setAttribute('font-family', 'ui-sans-serif,system-ui');
+    t.textContent = title;
+    grp.appendChild(t);
+    const s = document.createElementNS(SVGNS, 'text');
+    s.setAttribute('x', x + cw / 2); s.setAttribute('y', y + 166);
+    s.setAttribute('text-anchor', 'middle'); s.setAttribute('font-size', '15');
+    s.setAttribute('fill', '#aab2c0'); s.setAttribute('font-family', 'ui-sans-serif,system-ui');
+    s.textContent = sub;
+    grp.appendChild(s);
+    grp.addEventListener('click', () => {
+      if (g.ms !== MS.MODE) return;
+      modeIdx = i; paintMode(); confirmMode();
+    });
+    el.modeCards.appendChild(grp);
+  });
+}
+
+function paintMode() {
+  [...el.modeCards.children].forEach((grp, i) => {
+    const on = i === modeIdx, card = grp.firstChild;
+    card.setAttribute('fill-opacity', on ? '0.18' : '0.07');
+    card.setAttribute('stroke', on ? '#ffb347' : '#ffffff');
+    card.setAttribute('stroke-opacity', on ? '1' : '0.25');
+    card.setAttribute('stroke-width', on ? '5' : '3');
+  });
+}
+
+function confirmMode() {
+  buildPlayers(modeIdx + 1);
+  picker = 0;
+  g.ms = MS.SELECT;
+  clearInput();
+  paintSelection();
+  syncScreens();
 }
 
 function buildSelectCards() {
@@ -421,7 +724,7 @@ function buildSelectCards() {
   const n = CHARS.length, cw = 200, gap = 24;
   const x0 = (W - (n * cw + (n - 1) * gap)) / 2;
   CHARS.forEach((c, i) => {
-    const x = x0 + i * (cw + gap), y = 140, ch = 400;
+    const x = x0 + i * (cw + gap), y = 134, ch = 400;
     const grp = document.createElementNS(SVGNS, 'g');
     grp.setAttribute('data-i', String(i));
     grp.style.cursor = 'pointer';
@@ -452,143 +755,389 @@ function buildSelectCards() {
     grp.appendChild(t);
 
     grp.addEventListener('click', () => {
-      if (g.state !== STATE.SELECT) return;
-      charIdx = i; paintSelection(); startRun();
+      if (g.ms !== MS.SELECT) return;
+      buildCharacter(players[picker], i);
+      paintSelection(); confirmPick();
     });
     el.selCards.appendChild(grp);
   });
 }
 
+// The cards wear the picking player's kit, so you see what you are choosing.
 function paintSelection() {
+  if (!players[picker]) return;
+  const cur = players[picker].charIdx;
+  const p2 = picker === 1;
   [...el.selCards.children].forEach((grp, i) => {
-    const on = i === charIdx, card = grp.firstChild;
+    const on = i === cur, card = grp.firstChild;
     card.setAttribute('fill-opacity', on ? '0.18' : '0.07');
-    card.setAttribute('stroke', on ? '#ffb347' : '#ffffff');
+    card.setAttribute('stroke', on ? (p2 ? '#ff7a63' : '#ffb347') : '#ffffff');
     card.setAttribute('stroke-opacity', on ? '1' : '0.25');
     card.setAttribute('stroke-width', on ? '5' : '3');
+    const im = grp.children[1];
+    if (p2) im.setAttribute('filter', 'url(#kitP2)'); else im.removeAttribute('filter');
   });
+  el.selTitle.textContent = numPlayers === 1 ? 'CHOOSE YOUR BALLER'
+    : (picker === 0 ? 'PLAYER 1 — CHOOSE YOUR BALLER' : 'PLAYER 2 — CHOOSE YOUR BALLER');
+  el.selTitle.setAttribute('fill', numPlayers === 1 ? '#fff' : (p2 ? '#ff8a72' : '#7fb0ff'));
+  el.selHint.textContent = numPlayers === 1 ? '← → to pick · ↑ to play'
+    : (picker === 0 ? '← → to pick · ↑ to confirm' : 'A D to pick · W to play');
+  layoutBand();                        // the picker's pad is the live one
 }
 
-// ---------------------------------------------------------------- state
-const STATE = { SELECT: 'SELECT', DRIBBLE: 'DRIBBLE', AIM: 'AIM', CHARGE: 'CHARGE', LIVE: 'LIVE', OVER: 'OVER' };
-let g;
-
-function reset() {
-  g = {
-    state: HAS_SPRITES ? STATE.SELECT : STATE.DRIBBLE,
-    px: W * 0.5 - 170,          // player feet x
-    facing: 1,
-    dribT: 0,
-    angle: 74,                  // degrees, CCW from +x
-    power: 0,
-    spaceHeld: false,
-    ball: { x: 0, y: 0, vx: 0, vy: 0, r: BALL_R, spin: 0, rest: false },
-    held: true,
-    lockout: 0,
-    scoredThisShot: false,
-    made: 0, points: 0,
-    clockOn: false,
-    clockLimit: CLOCK_BASE,
-    clock: CLOCK_BASE,
-    flash: 0,
-    animT: 0,
-    throwT: 99,                 // time since the release, for the throw poses
-    turnT: 0,                   // one-shots, counting down
-    pickupT: 0,
-    celebT: 0,
-    celebSeq: null,             // which celebration this basket earned
-    breakSeq: null,             // the idle break currently playing, if any
-    breakT: 0,
-    breakAt: BREAK_MIN + Math.random() * (BREAK_MAX - BREAK_MIN),
-    stillT: 0                   // how long he has stood dribbling on the spot
-  };
-  el.overlay.setAttribute('opacity', '0');
-  el.select.setAttribute('opacity', g.state === STATE.SELECT ? '1' : '0');
-  el.select.setAttribute('pointer-events', g.state === STATE.SELECT ? 'auto' : 'none');
+function confirmPick() {
+  savedChar[picker] = players[picker].charIdx;
+  if (picker + 1 < numPlayers) { picker++; clearInput(); paintSelection(); return; }
+  startMatch();
 }
 
-function startRun() {
-  buildCharacter(charIdx);
-  g.state = STATE.DRIBBLE;
-  el.select.setAttribute('opacity', '0');
-  el.select.setAttribute('pointer-events', 'none');
+// ---------------------------------------------------------------- touch pads
+// One pad per player, in the control band: player 2 on the left, player 1 on
+// the right, matching where WASD and the arrow keys sit on a keyboard.
+const PAD_BTN = 64, PAD_GAP = 10, PAD_W = 4 * PAD_BTN + 3 * PAD_GAP;
+const PAD_X = [W - 16 - PAD_W, 16];        // player 1 right, player 2 left
+const PAD_Y = BAND_Y + (BAND_H - PAD_BTN) / 2;
+const PAD_KEYS = [['←', '→', '↑', '↓'], ['A', 'D', 'W', 'S']];
+const PAD_DIRS = ['left', 'right', 'up', 'down'];
+const PAD_GLYPH = ['◀', '▶', '▲', '▼'];
+const PAD_CAP = ['', '', 'SHOOT', 'STEAL'];
+const padBtns = [[], []];
+
+function buildPads() {
+  el.pads.textContent = '';
+  for (let n = 0; n < 2; n++) {
+    const grp = document.createElementNS(SVGNS, 'g');
+    grp.setAttribute('data-pad', String(n));
+    PAD_DIRS.forEach((dir, k) => {
+      const x = PAD_X[n] + k * (PAD_BTN + PAD_GAP);
+      const b = document.createElementNS(SVGNS, 'g');
+      b.style.cursor = 'pointer';
+      const r = document.createElementNS(SVGNS, 'rect');
+      r.setAttribute('x', x); r.setAttribute('y', PAD_Y);
+      r.setAttribute('width', PAD_BTN); r.setAttribute('height', PAD_BTN);
+      r.setAttribute('rx', 14);
+      r.setAttribute('fill', 'var(--panel)');
+      r.setAttribute('stroke', n === 0 ? 'var(--p1)' : 'var(--p2)');
+      r.setAttribute('stroke-width', '2');
+      r.setAttribute('stroke-opacity', '0.55');
+      b.appendChild(r);
+      const key = document.createElementNS(SVGNS, 'text');
+      key.setAttribute('x', x + PAD_BTN / 2); key.setAttribute('y', PAD_Y + 15);
+      key.setAttribute('text-anchor', 'middle'); key.setAttribute('font-size', '10');
+      key.setAttribute('fill', 'var(--muted)');
+      key.setAttribute('font-family', 'ui-monospace,SFMono-Regular,Menlo,monospace');
+      key.textContent = PAD_KEYS[n][k];
+      b.appendChild(key);
+      const gl = document.createElementNS(SVGNS, 'text');
+      gl.setAttribute('x', x + PAD_BTN / 2); gl.setAttribute('y', PAD_Y + 42);
+      gl.setAttribute('text-anchor', 'middle'); gl.setAttribute('font-size', '21');
+      gl.setAttribute('fill', n === 0 ? 'var(--p1)' : 'var(--p2)');
+      gl.setAttribute('font-family', 'ui-sans-serif,system-ui');
+      gl.textContent = PAD_GLYPH[k];
+      b.appendChild(gl);
+      if (PAD_CAP[k]) {
+        const cap = document.createElementNS(SVGNS, 'text');
+        cap.setAttribute('x', x + PAD_BTN / 2); cap.setAttribute('y', PAD_Y + 56);
+        cap.setAttribute('text-anchor', 'middle'); cap.setAttribute('font-size', '8.5');
+        cap.setAttribute('fill', 'var(--muted)'); cap.setAttribute('letter-spacing', '0.8');
+        cap.setAttribute('font-family', 'ui-sans-serif,system-ui');
+        cap.textContent = PAD_CAP[k];
+        b.appendChild(cap);
+      }
+      // Pointer events, so mouse, pen and touch all go down the same path. The
+      // button captures the pointer: a thumb that slides off mid-charge keeps
+      // charging, and -- the part that matters -- the release still arrives here
+      // even if the button stops taking events in between, which is what a
+      // confirmed character select does to the pad underneath the finger.
+      const down = ev => {
+        ev.preventDefault();
+        try { b.setPointerCapture(ev.pointerId); } catch (e) {}
+        setSrc(n, dir, 'tc', true);
+        r.setAttribute('fill-opacity', '0.45');
+      };
+      const up = ev => {
+        ev.preventDefault();
+        try { b.releasePointerCapture(ev.pointerId); } catch (e) {}
+        setSrc(n, dir, 'tc', false);
+        r.setAttribute('fill-opacity', '1');
+      };
+      b.addEventListener('pointerdown', down);
+      b.addEventListener('pointerup', up);
+      b.addEventListener('pointercancel', up);
+      b.addEventListener('lostpointercapture', up);
+      grp.appendChild(b);
+      padBtns[n][k] = { g: b, rect: r };
+    });
+    el.pads.appendChild(grp);
+  }
 }
 
-if (HAS_SPRITES) {
-  let saved = null;
-  try { saved = localStorage.getItem('hoop.char'); } catch (e) {}
-  const i = CHARS.findIndex(c => c.key === saved);
-  charIdx = i >= 0 ? i : 0;
+// Which pads and score slots the band shows right now. On the mode screen both
+// pads are live, because either player may choose; on the character select only
+// the player whose turn it is; in a match, only the players who exist.
+function layoutBand() {
+  const ms = g.ms;
+  const scoreOn = (ms === MS.PLAY || ms === MS.OVER);
+  for (let n = 0; n < 2; n++) {
+    const node = el.pads.children[n];
+    if (!node) continue;
+    let vis;
+    if (!HAS_SPRITES) vis = (n === 0) ? 1 : 0;
+    else if (ms === MS.MODE) vis = 1;
+    else if (ms === MS.SELECT) vis = (n === picker) ? 1 : 0.18;
+    else vis = (n < numPlayers) ? 1 : 0;
+    node.setAttribute('opacity', String(vis));
+    node.setAttribute('pointer-events', vis === 1 ? 'auto' : 'none');
+    // The steal button is dead weight in a one-player game.
+    const steal = padBtns[n][3];
+    if (steal) steal.g.setAttribute('opacity', (numPlayers > 1 || ms === MS.MODE) ? '1' : '0.25');
+  }
+  el.sbL.setAttribute('opacity', scoreOn && numPlayers > 1 ? '1' : '0');
+  el.sbR.setAttribute('opacity', scoreOn ? '1' : '0');
+  el.sbC.setAttribute('opacity', scoreOn ? '1' : '0');
+  el.sbRName.textContent = numPlayers > 1 ? 'PLAYER 1' : 'SCORE';
+  el.sbRName.setAttribute('fill', numPlayers > 1 ? 'var(--p1)' : 'var(--muted)');
 }
-reset();
-if (HAS_SPRITES) { buildSelectCards(); paintSelection(); buildCharacter(charIdx); }
-
-function clockLimitFor(points) {
-  return Math.max(CLOCK_FLOOR, CLOCK_BASE - CLOCK_STEP * Math.floor(points / PTS_PER_STEP));
-}
-// how tall the current character is, for shadow and pickup sizing
-const bodyH = () => curChar ? curChar.sequences.dribble_idle[0].h : 70;
 
 // ---------------------------------------------------------------- input
+// Keyboard and touch are two sources feeding one set of held flags per player,
+// so releasing a touch button cannot cancel a key that is still down.
 const keys = Object.create(null);
+
+const KEYMAP = {
+  ArrowLeft: [0, 'left'], ArrowRight: [0, 'right'], ArrowUp: [0, 'up'], ArrowDown: [0, 'down'],
+  KeyA: [1, 'left'], KeyD: [1, 'right'], KeyW: [1, 'up'], KeyS: [1, 'down']
+};
+
+// Drop every held input without firing the release actions. Called whenever the
+// screen changes under the players' hands, and when the window loses focus, so
+// that a key held through a menu does not leak into the match and a button that
+// stopped taking events cannot stay stuck down. A charge nobody is holding any
+// more winds back to the aim: releasing it as a shot would fire a throw the
+// player never asked for, and leaving it would strand them in a state with no
+// way out.
+function clearInput() {
+  for (const p of players) {
+    for (const d of PAD_DIRS) {
+      p.kbKeys[d].clear();
+      p.kb[d] = false; p.tc[d] = false; p.held[d] = false;
+    }
+    if (p.state === PS.CHARGE) { p.state = PS.AIM; p.power = 0; }
+  }
+  for (let n = 0; n < 2; n++) {
+    for (let k = 0; k < PAD_DIRS.length; k++) {
+      const btn = padBtns[n][k];
+      if (btn) btn.rect.setAttribute('fill-opacity', '1');
+    }
+  }
+}
+
+// A keyboard press, routed through the per-direction key set.
+function setKey(n, dir, code, on) {
+  const p = players[n];
+  if (!p) { if (g.ms === MS.MODE && on) menuPress(n, dir); return; }
+  const set = p.kbKeys[dir];
+  if (on) set.add(code); else set.delete(code);
+  setSrc(n, dir, 'kb', set.size > 0);
+}
+
+function setSrc(n, dir, src, on) {
+  const p = players[n];
+  if (!p) {
+    // On the mode screen either pad may steer the choice even though the
+    // players do not exist yet.
+    if (g.ms === MS.MODE && on) menuPress(n, dir);
+    return;
+  }
+  if (p[src][dir] === on) return;
+  p[src][dir] = on;
+  const now = p.kb[dir] || p.tc[dir];
+  if (now === p.held[dir]) return;
+  p.held[dir] = now;
+  if (now) onPress(n, dir); else onRelease(n, dir);
+}
+
+function onPress(n, dir) {
+  if (g.ms === MS.MODE) { menuPress(n, dir); return; }
+  if (g.ms === MS.SELECT) {
+    if (n !== picker) return;
+    const p = players[picker];
+    if (dir === 'left')  { buildCharacter(p, (p.charIdx - 1 + CHARS.length) % CHARS.length); paintSelection(); }
+    if (dir === 'right') { buildCharacter(p, (p.charIdx + 1) % CHARS.length); paintSelection(); }
+    if (dir === 'up') confirmPick();
+    return;
+  }
+  if (g.ms === MS.OVER) { if (dir === 'up') reset(); return; }
+  if (dir === 'up') pressUp(n);
+}
+
+function onRelease(n, dir) {
+  if (g.ms !== MS.PLAY) return;
+  if (dir === 'up') {
+    const p = players[n];
+    if (p && p.state === PS.CHARGE) shoot(n);
+  }
+}
+
+function menuPress(n, dir) {
+  if (dir === 'left')  { modeIdx = 0; paintMode(); }
+  if (dir === 'right') { modeIdx = 1; paintMode(); }
+  if (dir === 'up') confirmMode();
+}
+
+function pressUp(n) {
+  const p = players[n];
+  if (!p || g.owner !== n) return;
+  if (p.state === PS.DRIBBLE) {
+    if (!g.clockOn) { g.clockOn = true; g.clock = g.clockLimit; }
+    p.state = PS.AIM;                     // grab the ball, start aiming
+    p.turnT = TURN_TIME;                  // pivot from the front stance
+    p.breakSeq = null; p.breakT = 0;      // a break never costs you control
+  } else if (p.state === PS.AIM) {
+    p.state = PS.CHARGE;                  // second press: start charging
+    p.power = 0;
+  }
+}
+
 window.addEventListener('keydown', e => {
   const k = e.code;
-  if (['ArrowLeft', 'ArrowRight', 'Space', 'ArrowUp', 'ArrowDown'].includes(k)) e.preventDefault();
+  if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Space'].includes(k)) e.preventDefault();
+  // Everything below is an edge, so auto-repeat is not one of them: holding R
+  // used to restart the game over and over at the keyboard's repeat rate.
+  if (e.repeat) return;
   if (k === 'KeyR') { reset(); return; }
   if (k === 'KeyC') { applyCourt(courtIdx + 1, true); return; }
+  if (k === 'KeyF') { toggleFullscreen(); return; }
   if (k.startsWith('Digit')) {
     const n = +k.slice(5);
     if (n >= 1 && n <= COURTS.length) { applyCourt(n - 1, true); return; }
   }
-  if (e.repeat) return;
   keys[k] = true;
-  if (g.state === STATE.SELECT) {
-    if (k === 'ArrowLeft')  { charIdx = (charIdx - 1 + CHARS.length) % CHARS.length; paintSelection(); return; }
-    if (k === 'ArrowRight') { charIdx = (charIdx + 1) % CHARS.length; paintSelection(); return; }
-    if (k === 'Enter') { startRun(); return; }
-  }
-  if (k === 'Space') onSpaceDown();
+  // Space stands in for player 1's up key, but only in a one-player game:
+  // sharing a keyboard, it sits far too close to player 2's hand to be fair.
+  if (k === 'Space' && numPlayers === 1) { setKey(0, 'up', k, true); return; }
+  const m = KEYMAP[k];
+  if (m) setKey(m[0], m[1], k, true);
 });
+
 window.addEventListener('keyup', e => {
   const k = e.code;
   keys[k] = false;
-  if (k === 'Space') onSpaceUp();
+  if (k === 'Space') { setKey(0, 'up', k, false); return; }
+  const m = KEYMAP[k];
+  if (m) setKey(m[0], m[1], k, false);
 });
-window.addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
 
-function onSpaceDown() {
-  if (g.state === STATE.SELECT) { startRun(); return; }
-  if (g.state === STATE.OVER) { reset(); return; }
-  if (!g.clockOn) { g.clockOn = true; g.clock = g.clockLimit; }
-  if (g.state === STATE.DRIBBLE) {
-    g.state = STATE.AIM;                 // grab the ball, start aiming
-    g.held = true;
-    g.turnT = TURN_TIME;                 // pivot from the front stance
-    g.breakSeq = null; g.breakT = 0;     // a break never costs you control
-  } else if (g.state === STATE.AIM) {
-    g.state = STATE.CHARGE;              // second press: start charging
-    g.power = 0;
+// Losing focus mid-charge must not leave a key stuck down -- nor fire the shot.
+window.addEventListener('blur', () => {
+  for (const k in keys) keys[k] = false;
+  clearInput();
+});
+
+// ---------------------------------------------------------------- fullscreen
+const fsSupported = !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
+function fsElement() { return document.fullscreenElement || document.webkitFullscreenElement; }
+function toggleFullscreen() {
+  if (!fsSupported) return;
+  const w = el.stagewrap;
+  if (fsElement()) {
+    (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+  } else {
+    (w.requestFullscreen || w.webkitRequestFullscreen).call(w);
   }
 }
-function onSpaceUp() {
-  if (g.state === STATE.CHARGE) shoot();
+if (fsSupported) {
+  el.fsBtn.setAttribute('opacity', '1');
+  el.fsBtn.addEventListener('click', ev => { ev.preventDefault(); toggleFullscreen(); });
+  const paintFs = () => {
+    el.fsIcon.innerHTML = fsElement()
+      ? '<path d="M912,26 v6 h-6 M924,26 v6 h6 M912,46 v-6 h-6 M924,46 v-6 h6"/>'
+      : '<path d="M906,32 v-6 h6 M930,32 v-6 h-6 M906,40 v6 h6 M930,40 v6 h-6"/>';
+  };
+  document.addEventListener('fullscreenchange', paintFs);
+  document.addEventListener('webkitfullscreenchange', paintFs);
+} else {
+  // Safari on iPhone and iPad has no element fullscreen. Adding the page to the
+  // home screen is the way there, so do not leave a dead button on the court.
+  el.fsBtn.setAttribute('pointer-events', 'none');
 }
 
-function shoot() {
-  const rad = g.angle * Math.PI / 180;
-  const speed = SPEED_MIN + (SPEED_MAX - SPEED_MIN) * g.power;
+// ---------------------------------------------------------------- possession
+function opponentOf(p) { return players[1 - p.n] || null; }
+
+function giveBall(p, viaPickup) {
+  const prev = (g.owner !== null) ? players[g.owner] : null;
+  if (prev && prev !== p) prev.state = PS.IDLE;
+  g.owner = p.n;
+  p.state = PS.DRIBBLE;
+  p.dribT = 0; p.stillT = 0;
+  p.breakSeq = null; p.breakT = 0;
+  if (viaPickup) p.pickupT = PICKUP_TIME;
+  g.stealImmune = STEAL_IMMUNE;
+  g.ball.rest = false;
+}
+
+function trySteal(p) {
+  const opp = opponentOf(p);
+  p.stealCd = STEAL_CD;
+  if (!opp) return;
+  if (g.owner !== opp.n) return;             // nobody to rob
+  if (opp.state !== PS.DRIBBLE) return;      // aiming and shooting are safe
+  if (g.stealImmune > 0) return;             // no instant steal-backs
+  if (Math.abs(p.px - opp.px) > STEAL_DIST) return;
+  giveBall(p, true);                         // the thief gathers it
+  opp.turnT = TURN_TIME;                     // the victim spins
+  opp.celebT = 0; opp.celebSeq = null;
+  p.facing = Math.sign(opp.px - p.px) || p.facing;
+  toast('PLAYER ' + (p.n + 1) + ' STEALS!', 1.1);
+}
+
+function shoot(n) {
+  const p = players[n];
+  const rad = p.angle * Math.PI / 180;
+  const speed = SPEED_MIN + (SPEED_MAX - SPEED_MIN) * p.power;
   const b = g.ball;
-  [b.x, b.y] = holdPos();
+  [b.x, b.y] = holdPos(p);
   b.vx = Math.cos(rad) * speed;
   b.vy = -Math.sin(rad) * speed;
   b.rest = false;
-  g.held = false;
-  g.lockout = PICKUP_LOCKOUT;
+  g.owner = null;
+  g.shooter = n;
   g.scoredThisShot = false;
-  g.state = STATE.LIVE;
-  g.power = 0;
-  g.throwT = 0;
-  g.clock = g.clockLimit;   // every throw resets the shot clock
+  p.state = PS.IDLE;
+  p.lockout = PICKUP_LOCKOUT;      // only the shooter waits to re-catch
+  p.power = 0;
+  p.throwT = 0;
+  g.clock = g.clockLimit;          // every throw resets the shot clock
+}
+
+function clockLimitFor(points) {
+  return Math.max(CLOCK_FLOOR, CLOCK_BASE - CLOCK_STEP * Math.floor(points / PTS_PER_STEP));
+}
+const totalPoints = () => players.reduce((s, p) => s + p.points, 0);
+
+function endMatch() {
+  g.clock = 0;
+  g.ms = MS.OVER;
+  // The buzzer catches a player mid-wind-up: put the ball back in their hands
+  // rather than leaving them charging a shot that can never be released.
+  for (const p of players) {
+    if (p.state === PS.AIM || p.state === PS.CHARGE) { p.state = PS.DRIBBLE; p.power = 0; }
+  }
+  if (numPlayers === 1) {
+    el.ovTitle.textContent = "TIME'S UP";
+    el.ovTitle.setAttribute('fill', '#fff');
+    el.ovScore.textContent = `${players[0].points} points  ·  ${players[0].made} made`;
+  } else {
+    const [a, b] = players;
+    const draw = a.points === b.points;
+    const win = a.points > b.points ? 0 : 1;
+    el.ovTitle.textContent = draw ? 'DRAW' : `PLAYER ${win + 1} WINS`;
+    el.ovTitle.setAttribute('fill', draw ? '#fff' : (win === 0 ? '#7fb0ff' : '#ff8a72'));
+    el.ovScore.textContent = `${a.points} – ${b.points}`;
+  }
+  el.ovHint.textContent = numPlayers > 1 ? 'Press ↑ / W or R to play again' : 'Press ↑ or R to play again';
+  syncScreens();
 }
 
 // ---------------------------------------------------------------- collisions
@@ -639,78 +1188,80 @@ function collideCircle(b, cx, cy, cr, rest) {
 
 // ---------------------------------------------------------------- update
 function step(dt) {
-  const left = !!keys.ArrowLeft, right = !!keys.ArrowRight;
-  g.animT += dt;
-  g.throwT += dt;
-  for (const k of ['turnT', 'pickupT', 'celebT', 'breakT']) g[k] = Math.max(0, g[k] - dt);
-  if (!g.breakT) g.breakSeq = null;
+  toastT = Math.max(0, toastT - dt);
+  if (g.ms === MS.MODE || g.ms === MS.SELECT) return;
 
-  if (g.state === STATE.SELECT) return;
-
-  // shot clock
-  if (g.clockOn && g.state !== STATE.OVER) {
-    g.clock -= dt;
-    if (g.clock <= 0) {
-      g.clock = 0;
-      g.state = STATE.OVER;
-      el.ovScore.textContent = `${g.points} points  ·  ${g.made} made`;
-      el.overlay.setAttribute('opacity', '1');
+  for (const p of players) {
+    p.animT += dt;
+    p.throwT += dt;
+    for (const k of ['turnT', 'pickupT', 'celebT', 'breakT', 'stealCd', 'lockout']) {
+      p[k] = Math.max(0, p[k] - dt);
     }
+    if (!p.breakT) p.breakSeq = null;
   }
-  if (g.state === STATE.OVER) return;
+  g.stealImmune = Math.max(0, g.stealImmune - dt);
+
+  // shot clock -- one clock, shared, reset by any throw
+  if (g.clockOn && g.ms !== MS.OVER) {
+    g.clock -= dt;
+    if (g.clock <= 0) endMatch();
+  }
+  if (g.ms === MS.OVER) return;
 
   // ---- movement / aiming
-  if (g.state === STATE.DRIBBLE || g.state === STATE.LIVE) {
-    let vx = 0;
-    if (left) vx -= PLAYER_SPEED;
-    if (right) vx += PLAYER_SPEED;
-    if (vx !== 0) g.facing = Math.sign(vx);
-    g.px = Math.max(PLAYER_MIN_X, Math.min(PLAYER_MAX_X, g.px + vx * dt));
-    g.dribT += dt * (vx !== 0 ? 9 : 7);
-  } else {
-    // aiming: arrows sweep the angle
-    if (left) g.angle += AIM_RATE * dt;
-    if (right) g.angle -= AIM_RATE * dt;
-    g.angle = Math.max(AIM_MIN, Math.min(AIM_MAX, g.angle));
-    g.facing = Math.cos(g.angle * Math.PI / 180) >= 0 ? 1 : -1;
-  }
-
-  if (g.state === STATE.CHARGE) {
-    g.power = Math.min(1, g.power + CHARGE_RATE * dt);
+  for (const p of players) {
+    const left = p.held.left, right = p.held.right;
+    if (p.state === PS.AIM || p.state === PS.CHARGE) {
+      if (left) p.angle += AIM_RATE * dt;
+      if (right) p.angle -= AIM_RATE * dt;
+      p.angle = Math.max(AIM_MIN, Math.min(AIM_MAX, p.angle));
+      p.facing = Math.cos(p.angle * Math.PI / 180) >= 0 ? 1 : -1;
+    } else {
+      let vx = 0;
+      if (left) vx -= PLAYER_SPEED;
+      if (right) vx += PLAYER_SPEED;
+      if (vx !== 0) p.facing = Math.sign(vx);
+      p.px = Math.max(PLAYER_MIN_X, Math.min(PLAYER_MAX_X, p.px + vx * dt));
+      if (p.state === PS.DRIBBLE) p.dribT += dt * (vx !== 0 ? 9 : 7);
+    }
+    if (p.state === PS.CHARGE) p.power = Math.min(1, p.power + CHARGE_RATE * dt);
+    // Holding the steal button keeps trying, at one attempt per cooldown.
+    if (numPlayers > 1 && p.held.down && p.stealCd <= 0 && p.state === PS.IDLE) trySteal(p);
   }
 
   // ---- ball
   const b = g.ball;
-  if (g.state === STATE.DRIBBLE) {
-    // dribbling next to the player
-    // The ball rises to half a radius above hand height, so the hand rests on
-    // its upper quarter. (Stopping at the ball's top -- subtract 2 * BALL_R --
-    // is truer to life, but on screen it reads as too short a bounce.)
-    const peak = Math.max(6, bodyH() * DRIBBLE_HAND_H - 0.5 * BALL_R);
-    const h = Math.abs(Math.sin(g.dribT)) * peak;
-    b.x = g.px + bodyH() * 0.26 * ballSide(dribbleSeq());
+  if (g.owner !== null) {
+    const p = players[g.owner];
+    if (p.state === PS.DRIBBLE) {
+      // The ball rises to half a radius above hand height, so the hand rests on
+      // its upper quarter. (Stopping at the ball's top -- subtract 2 * BALL_R --
+      // is truer to life, but on screen it reads as too short a bounce.)
+      const peak = Math.max(6, bodyH(p) * DRIBBLE_HAND_H - 0.5 * BALL_R);
+      const h = Math.abs(Math.sin(p.dribT)) * peak;
+      b.x = p.px + bodyH(p) * 0.26 * ballSide(p, dribbleSeq(p));
 
-    // Idle breaks: after a while standing still, the character does something
-    // in character. Any movement cancels it, and they never run down the clock.
-    const still = !left && !right && g.pickupT <= 0;
-    g.stillT = still ? g.stillT + dt : 0;
-    if (!still) { g.breakSeq = null; g.breakT = 0; }
-    const breaks = Object.keys(curChar ? curChar.sequences : {}).filter(n => n.startsWith('break_'));
-    if (still && !g.breakSeq && breaks.length && g.stillT > g.breakAt &&
-        (!g.clockOn || g.clock > BREAK_CLOCK_FLOOR)) {
-      g.breakSeq = breaks[Math.floor(Math.random() * breaks.length)];
-      g.breakT = Math.PI * 2 / 7;        // two bounces, the length of one loop
-      g.stillT = 0;
-      g.breakAt = BREAK_MIN + Math.random() * (BREAK_MAX - BREAK_MIN);
+      // Idle breaks: after a while standing still, the character does something
+      // in character. Any movement cancels it, and they never run down the clock.
+      const still = !p.held.left && !p.held.right && p.pickupT <= 0;
+      p.stillT = still ? p.stillT + dt : 0;
+      if (!still) { p.breakSeq = null; p.breakT = 0; }
+      const breaks = Object.keys(p.char ? p.char.sequences : {}).filter(n => n.startsWith('break_'));
+      if (still && !p.breakSeq && breaks.length && p.stillT > p.breakAt &&
+          (!g.clockOn || g.clock > BREAK_CLOCK_FLOOR)) {
+        p.breakSeq = breaks[Math.floor(Math.random() * breaks.length)];
+        p.breakT = Math.PI * 2 / 7;        // two bounces, the length of one loop
+        p.stillT = 0;
+        p.breakAt = BREAK_MIN + Math.random() * (BREAK_MAX - BREAK_MIN);
+      }
+      b.y = GROUND - BALL_R - h;
+      b.spin += dt * 300 * p.facing;
+      b.vx = 0; b.vy = 0;
+    } else {
+      [b.x, b.y] = holdPos(p);
     }
-    b.y = GROUND - BALL_R - h;
-    b.spin += dt * 300 * g.facing;
-    b.vx = 0; b.vy = 0;
-  } else if (g.state === STATE.AIM || g.state === STATE.CHARGE) {
-    [b.x, b.y] = holdPos();
   } else {
     // free flight
-    g.lockout = Math.max(0, g.lockout - dt);
     const prevY = b.y, prevX = b.x;
 
     b.vy += G * dt;
@@ -745,31 +1296,32 @@ function step(dt) {
       const t = (HOOP.rimY - prevY) / Math.max(1e-6, b.y - prevY);
       const xAt = prevX + (b.x - prevX) * t;
       if (Math.abs(xAt - HOOP.cx) < HOOP.halfW - HOOP.nubR) {
+        const s = players[g.shooter];
         g.scoredThisShot = true;
-        g.made += 1;
-        g.points += POINTS_PER_BASKET;
-        g.clockLimit = clockLimitFor(g.points);
+        s.made += 1;
+        s.points += POINTS_PER_BASKET;
+        g.clockLimit = clockLimitFor(totalPoints());
         g.clock = g.clockLimit;              // a make also refreshes the clock
         g.flash = 0.5;
-        [g.celebSeq, g.celebT] = pickCelebration();
+        [s.celebSeq, s.celebT] = pickCelebration(s);
       }
     }
 
-    // auto pickup
-    if (g.lockout <= 0) {
-      const dx = b.x - g.px, dy = b.y - (GROUND - bodyH() * 0.45);
-      if (Math.hypot(dx, dy) < PICKUP_DIST) {
-        g.state = STATE.DRIBBLE;
-        g.held = true;
-        g.dribT = 0;
-        g.pickupT = PICKUP_TIME;       // scoop it up off the floor
-        g.stillT = 0;
-      }
+    // loose ball: nearest player takes it; a dead heat goes to whoever did not
+    // shoot it, so a rebound is never handed straight back to the shooter.
+    let best = null, bestD = Infinity;
+    for (const p of players) {
+      if (p.lockout > 0) continue;
+      const dx = b.x - p.px, dy = b.y - (GROUND - bodyH(p) * 0.45);
+      const d = Math.hypot(dx, dy);
+      if (d >= PICKUP_DIST) continue;
+      if (d < bestD - 0.5) { best = p; bestD = d; }
+      else if (Math.abs(d - bestD) <= 0.5 && best && best.n === g.shooter) { best = p; bestD = d; }
     }
+    if (best) giveBall(best, true);
   }
 
   g.flash = Math.max(0, g.flash - dt);
-  toastT = Math.max(0, toastT - dt);
 }
 
 // green -> yellow -> red, written as literal rgb() so every renderer agrees
@@ -785,118 +1337,135 @@ function powerColor(p) {
 // always meets the ball. One bounce is dribT advancing by PI. The hand is at its
 // LOWEST (frame 1) when the ball is up at the hand, and at its HIGHEST (the
 // middle of the sequence) when the ball is down at the floor.
-function dribbleFrame(n) {
-  const u = (((g.dribT % Math.PI) + Math.PI) % Math.PI) / Math.PI;
+function dribbleFrame(p, n) {
+  const u = (((p.dribT % Math.PI) + Math.PI) % Math.PI) / Math.PI;
   return Math.floor(((((u - 0.5) % 1) + 1) % 1) * n) % n;
 }
 
 // Pick the sequence and frame for this tick. Loops run at a handful of frames
 // per second -- the heave that old DOS sports games ran on -- except dribbling,
 // which follows the ball.
-function animatePlayer() {
-  g.mirrorPose = false;
-  if (!curChar) return;
+function animatePlayer(p) {
+  p.mirrorPose = false;
+  if (!p.char) return;
 
-  const moving = !!keys.ArrowLeft || !!keys.ArrowRight;
-  const right = g.facing >= 0;
+  const moving = p.held.left || p.held.right;
+  const right = p.facing >= 0;
 
-  if (g.state === STATE.OVER) {
-    const name = firstSeq('gameover', 'dribble_idle');
-    return showFrame(name, Math.floor(g.animT * ANIM_HZ.gameover) % seqOf(name).length);
+  if (g.ms === MS.OVER) {
+    const name = firstSeq(p, 'gameover', 'dribble_idle');
+    return showFrame(p, name, Math.floor(p.animT * ANIM_HZ.gameover) % seqOf(p, name).length);
   }
 
-  if (g.state === STATE.LIVE) {
-    const shot = seqOf('shot');
-    if (g.throwT < RISE_HOLD && shot.length >= 3) return showFrame('shot', shot.length - 3);
-    if (g.throwT < RELEASE_HOLD) return showFrame('shot', shot.length - 2);
-    if (g.throwT < RELEASE_HOLD + FOLLOW_HOLD) return showFrame('shot', shot.length - 1);
-    // A celebration yields the moment the player moves: chasing the rebound
-    // always matters more than showboating.
-    if (g.celebT > 0 && !moving && g.celebSeq && seqOf(g.celebSeq)) {
-      const n = seqOf(g.celebSeq).length;
-      const hz = CELEB_HZ[g.celebSeq] || CELEB_HZ_DEFAULT;
-      const k = Math.floor((n / hz - g.celebT) * hz);
-      return showFrame(g.celebSeq, Math.min(n - 1, Math.max(0, k)));
-    }
-    if (moving) {
-      const name = firstSeq(right ? 'run_r' : 'run_l', 'dribble_idle');
-      g.mirrorPose = curChar.mirror;
-      return showFrame(name, Math.floor(g.animT * ANIM_HZ.run) % seqOf(name).length);
-    }
-    g.mirrorPose = curChar.mirror;
-    return showFrame('dribble_idle', 0);
-  }
-
-  if (g.state === STATE.CHARGE) {
+  if (p.state === PS.CHARGE) {
     // Not a loop: the coil deepens with the power meter and holds at its
     // deepest. Cycling it made him bob up and down while winding up.
-    const n = seqOf('charge').length;
-    return showFrame('charge', Math.min(n - 1, Math.floor(g.power * n)));
+    const name = firstSeq(p, 'charge', 'aim', 'dribble_idle');
+    const n = seqOf(p, name).length;
+    return showFrame(p, name, Math.min(n - 1, Math.floor(p.power * n)));
   }
 
-  if (g.state === STATE.AIM) {
-    const turn = seqOf('turn');
-    if (g.turnT > 0 && turn) {
-      const k = Math.floor((TURN_TIME - g.turnT) / TURN_TIME * turn.length);
-      return showFrame('turn', Math.min(turn.length - 1, k));
+  if (p.state === PS.AIM) {
+    const turn = seqOf(p, 'turn');
+    if (p.turnT > 0 && turn) {
+      const k = Math.floor((TURN_TIME - p.turnT) / TURN_TIME * turn.length);
+      return showFrame(p, 'turn', Math.min(turn.length - 1, k));
     }
-    const n = seqOf('aim').length;
-    return showFrame('aim', Math.floor(g.animT * ANIM_HZ.aim) % n);
+    const name = firstSeq(p, 'aim', 'dribble_idle');
+    const n = seqOf(p, name).length;
+    return showFrame(p, name, Math.floor(p.animT * ANIM_HZ.aim) % n);
   }
 
-  // dribbling
-  const pickup = seqOf('pickup');
-  if (g.pickupT > 0 && pickup) {
-    const k = Math.floor((PICKUP_TIME - g.pickupT) / PICKUP_TIME * pickup.length);
-    return showFrame('pickup', Math.min(pickup.length - 1, k));
+  if (p.state === PS.DRIBBLE) {
+    const pickup = seqOf(p, 'pickup');
+    if (p.pickupT > 0 && pickup) {
+      const k = Math.floor((PICKUP_TIME - p.pickupT) / PICKUP_TIME * pickup.length);
+      return showFrame(p, 'pickup', Math.min(pickup.length - 1, k));
+    }
+    // The old-style characters have no left/right art, so their front stance is
+    // mirrored to keep the dribbling hand over the ball.
+    p.mirrorPose = p.char.mirror;
+    const name = dribbleSeq(p);
+    return showFrame(p, name, dribbleFrame(p, seqOf(p, name).length));
   }
-  // The old-style characters have no left/right art, so their front stance is
-  // mirrored to keep the dribbling hand over the ball.
-  g.mirrorPose = curChar.mirror;
-  const name = dribbleSeq();
-  showFrame(name, dribbleFrame(seqOf(name).length));
+
+  // IDLE -- no ball: following through, celebrating, chasing, or just standing.
+  const shot = seqOf(p, 'shot');
+  if (p.n === g.shooter && shot) {
+    if (p.throwT < RISE_HOLD && shot.length >= 3) return showFrame(p, 'shot', shot.length - 3);
+    if (p.throwT < RELEASE_HOLD) return showFrame(p, 'shot', shot.length - 2);
+    if (p.throwT < RELEASE_HOLD + FOLLOW_HOLD) return showFrame(p, 'shot', shot.length - 1);
+  }
+  // A celebration yields the moment the player moves: chasing the rebound
+  // always matters more than showboating.
+  if (p.celebT > 0 && !moving && p.celebSeq && seqOf(p, p.celebSeq)) {
+    const n = seqOf(p, p.celebSeq).length;
+    const hz = CELEB_HZ[p.celebSeq] || CELEB_HZ_DEFAULT;
+    const k = Math.floor((n / hz - p.celebT) * hz);
+    return showFrame(p, p.celebSeq, Math.min(n - 1, Math.max(0, k)));
+  }
+  if (moving) {
+    const name = firstSeq(p, right ? 'run_r' : 'run_l', 'dribble_idle');
+    p.mirrorPose = p.char.mirror;
+    return showFrame(p, name, Math.floor(p.animT * ANIM_HZ.run) % seqOf(p, name).length);
+  }
+  // Just robbed: a spin, using the same two frames as the shooting pivot.
+  const turn = seqOf(p, 'turn');
+  if (p.turnT > 0 && turn) {
+    const k = Math.floor((TURN_TIME - p.turnT) / TURN_TIME * turn.length);
+    p.mirrorPose = p.char.mirror;
+    return showFrame(p, 'turn', Math.min(turn.length - 1, turn.length - 1 - k));
+  }
+  p.mirrorPose = p.char.mirror;
+  return showFrame(p, 'dribble_idle', 0);
 }
 
 // ---------------------------------------------------------------- render
 function render() {
   const b = g.ball;
-  el.player.setAttribute('transform', `translate(${g.px.toFixed(1)},${GROUND})`);
-  el.player.setAttribute('opacity', g.state === STATE.SELECT ? '0' : '1');
-  animatePlayer();                       // sets g.mirrorPose for this frame
-  // Characters drawn per direction are never flipped; only the single-facing
-  // art turns around.
-  const flip = flipsWithFacing() ? g.facing * (g.mirrorPose ? -1 : 1) : 1;
-  el.pflip.setAttribute('transform', flip < 0 ? 'scale(-1,1)' : 'scale(1,1)');
+  const menus = (g.ms === MS.MODE || g.ms === MS.SELECT);
 
-  // shadows shrink with height off the floor
-  el.shPlayer.setAttribute('cx', g.px.toFixed(1));
-  el.shPlayer.setAttribute('rx', (bodyH() * 0.2).toFixed(1));
+  players.forEach((p, i) => {
+    p.rig.root.setAttribute('transform', `translate(${p.px.toFixed(1)},${GROUND})`);
+    p.rig.root.setAttribute('opacity', menus ? '0' : '1');
+    animatePlayer(p);                    // sets p.mirrorPose for this frame
+    // Characters drawn per direction are never flipped; only the single-facing
+    // art turns around.
+    const flip = flipsWithFacing(p) ? p.facing * (p.mirrorPose ? -1 : 1) : 1;
+    p.rig.flip.setAttribute('transform', flip < 0 ? 'scale(-1,1)' : 'scale(1,1)');
+
+    const aiming = (p.state === PS.AIM || p.state === PS.CHARGE);
+    const armF = aiming ? [HAND_DX + 4, HAND_DY + 6] : [24, -36];
+    const armB = aiming ? [HAND_DX - 12, HAND_DY + 12] : [-22, -34];
+    for (const [node, bg, [x2, y2]] of [[p.rig.armF, p.rig.armFbg, armF], [p.rig.armB, p.rig.armBbg, armB]]) {
+      node.setAttribute('x2', String(x2)); node.setAttribute('y2', String(y2));
+      bg.setAttribute('x2', String(x2)); bg.setAttribute('y2', String(y2));
+    }
+
+    // shadows
+    const sh = el.shP[i];
+    sh.setAttribute('cx', p.px.toFixed(1));
+    sh.setAttribute('rx', (bodyH(p) * 0.2).toFixed(1));
+    sh.setAttribute('opacity', menus ? '0' : '0.22');
+  });
+  for (let i = players.length; i < 2; i++) el.shP[i].setAttribute('opacity', '0');
+
+  // ball + its shadow
   const hAir = Math.max(0, Math.min(1, (GROUND - BALL_R - b.y) / 420));
   el.shBall.setAttribute('cx', b.x.toFixed(1));
   el.shBall.setAttribute('rx', (12 * (1 - 0.55 * hAir)).toFixed(1));
-  el.shBall.setAttribute('opacity', g.state === STATE.SELECT ? '0'
-                                    : (0.20 * (1 - 0.7 * hAir)).toFixed(3));
-
-  const aiming = (g.state === STATE.AIM || g.state === STATE.CHARGE);
-  // front arm points at the ball when holding, hangs otherwise
-  const armF = aiming ? [HAND_DX + 4, HAND_DY + 6] : [24, -36];
-  const armB = aiming ? [HAND_DX - 12, HAND_DY + 12] : [-22, -34];
-  for (const [node, bg, [x2, y2]] of [[el.armF, el.armFbg, armF], [el.armB, el.armBbg, armB]]) {
-    node.setAttribute('x2', String(x2)); node.setAttribute('y2', String(y2));
-    bg.setAttribute('x2', String(x2)); bg.setAttribute('y2', String(y2));
-  }
-
+  el.shBall.setAttribute('opacity', menus ? '0' : (0.20 * (1 - 0.7 * hAir)).toFixed(3));
   el.ballg.setAttribute('transform',
     `translate(${b.x.toFixed(1)},${b.y.toFixed(1)}) rotate(${(b.spin % 360).toFixed(1)})`);
-  const hidden = g.state === STATE.SELECT ? '0' : '1';
-  el.ballg.setAttribute('opacity', hidden);
-  el.shPlayer.setAttribute('opacity', g.state === STATE.SELECT ? '0' : '0.22');
+  el.ballg.setAttribute('opacity', menus ? '0' : '1');
 
-  // aim line
-  if (aiming) {
-    const rad = g.angle * Math.PI / 180;
-    const len = 78 + 150 * g.power;
-    const [x1, y1] = holdPos();
+  // aim line and power meter belong to whoever has the ball, and go away the
+  // moment the clock does
+  const owner = (g.owner !== null && !menus && g.ms !== MS.OVER) ? players[g.owner] : null;
+  if (owner && (owner.state === PS.AIM || owner.state === PS.CHARGE)) {
+    const rad = owner.angle * Math.PI / 180;
+    const len = 78 + 150 * owner.power;
+    const [x1, y1] = holdPos(owner);
     const x2 = (x1 + Math.cos(rad) * len).toFixed(1);
     const y2 = (y1 - Math.sin(rad) * len).toFixed(1);
     for (const n of [el.aim, el.aimBg]) {
@@ -908,29 +1477,68 @@ function render() {
     el.aimg.setAttribute('opacity', '0');
   }
 
-  // power meter
-  if (g.state === STATE.CHARGE) {
+  if (owner && owner.state === PS.CHARGE) {
     // sit the meter on the side the player is NOT aiming towards
-    const side = -g.facing;
-    const bx = Math.max(8, Math.min(W - 24, g.px + 74 * side - 8)), by = GROUND - 210;
+    const side = -owner.facing;
+    const bx = Math.max(8, Math.min(W - 24, owner.px + 74 * side - 8)), by = GROUND - 210;
     el.power.setAttribute('opacity', '1');
     el.power.setAttribute('transform', `translate(${bx.toFixed(1)},${by})`);
-    const h = 96 * g.power;
+    const h = 96 * owner.power;
     el.pwFill.setAttribute('y', (96 - h).toFixed(1));
     el.pwFill.setAttribute('height', h.toFixed(1));
-    el.pwFill.setAttribute('fill', powerColor(g.power));
+    el.pwFill.setAttribute('fill', powerColor(owner.power));
   } else {
     el.power.setAttribute('opacity', '0');
   }
 
-  el.made.textContent = String(g.made);
-  el.pts.textContent = String(g.points);
-  el.clock.textContent = g.clock.toFixed(1);
-  el.clock.setAttribute('fill', g.clock <= 3 ? '#e2572b' : 'var(--ink)');
-  el.pts.setAttribute('fill', g.flash > 0 ? '#3fbf5f' : 'var(--ink)');
+  // scoreboard: player 1 on the right, player 2 on the left, each above its pad
+  const p1 = players[0], p2 = players[1];
+  if (p1) {
+    el.sbRPts.textContent = String(p1.points);
+    el.sbRMade.textContent = p1.made + ' MADE';
+    el.sbRPts.setAttribute('fill', g.flash > 0 && g.shooter === 0 ? '#3fbf5f' : 'var(--ink)');
+  }
+  if (p2) {
+    el.sbLPts.textContent = String(p2.points);
+    el.sbLMade.textContent = p2.made + ' MADE';
+    el.sbLPts.setAttribute('fill', g.flash > 0 && g.shooter === 1 ? '#3fbf5f' : 'var(--ink)');
+  }
+  el.sbClock.textContent = g.clock.toFixed(1);
+  el.sbClock.setAttribute('fill', g.clock <= 3 ? '#e2572b' : 'var(--ink)');
+
+  // pads light up with whatever is held, keyboard included
+  for (let n = 0; n < 2; n++) {
+    const p = players[n];
+    PAD_DIRS.forEach((dir, k) => {
+      const btn = padBtns[n][k];
+      if (!btn) return;
+      btn.rect.setAttribute('fill-opacity', p && p.held[dir] ? '0.45' : '1');
+    });
+  }
+
   el.toast.setAttribute('opacity', Math.min(1, toastT / 0.4).toFixed(2));
-  el.hud.setAttribute('opacity', g.state === STATE.SELECT ? '0' : '1');
 }
+
+// ---------------------------------------------------------------- boot
+rigs = [makeRig(0), makeRig(1)];
+if (HAS_SPRITES) {
+  buildPads();
+  buildModeCards();
+  buildSelectCards();
+  let mode = null, c1 = null, c2 = null;
+  try {
+    mode = localStorage.getItem('hoop.mode');
+    c1 = localStorage.getItem('hoop.char');
+    c2 = localStorage.getItem('hoop.char2');
+  } catch (e) {}
+  numPlayers = (mode === '2') ? 2 : 1;
+  modeIdx = numPlayers - 1;
+  const find = k => { const i = CHARS.findIndex(c => c.key === k); return i >= 0 ? i : 0; };
+  savedChar = [find(c1), find(c2)];
+} else {
+  buildPads();
+}
+reset();
 
 // ---------------------------------------------------------------- loop
 let last = performance.now();
@@ -946,10 +1554,22 @@ function frame(now) {
 }
 requestAnimationFrame(frame);
 
-// expose for debugging / future sprite work
-window.__hoop = { get state(){ return g; }, reset, step, render, keys, STATE, HOOP,
-                  startRun, get chars(){ return CHARS; },
-                  get shown(){ return shown; }, get char(){ return curChar; },
-                  get charIdx(){ return charIdx; }, set charIdx(v){ charIdx = v; } };
+// expose for debugging / headless tests
+window.__hoop = {
+  get state() { return g; },
+  get players() { return players; },
+  get numPlayers() { return numPlayers; },
+  reset, step, render, keys, STATE, MS, PS, HOOP, startMatch,
+  press: (n, dir) => setKey(n, dir, 'test', true),
+  release: (n, dir) => setKey(n, dir, 'test', false),
+  setMode: n => { modeIdx = n - 1; paintMode(); confirmMode(); },
+  pick: (n, i) => {
+    if (!players[n]) return false;
+    picker = n; buildCharacter(players[n], i); paintSelection(); confirmPick(); return true;
+  },
+  get chars() { return CHARS; }
+};
 })();
 </script>
+</body>
+</html>
