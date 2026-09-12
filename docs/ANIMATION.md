@@ -81,7 +81,7 @@ What exists today, and what each one wants.
 | Shot | one-shot | 2 | **4** | load → rise → release (A3) → follow-through. Today it is just release + follow, so the throw has no build. |
 | Run without the ball | loop | reuses dribble | **2 × 2** | Chasing a loose ball. Distinct from run-dribble: no hand pushing down, arms pumping. Left and right. |
 | Made basket | one-shot | 0 | **2** | Ends on A1. |
-| Game over | one-shot | 0 | **1** | Hands on knees when the clock hits zero. Right now the overlay just appears over a dribbling character. |
+| Game over | loop | 0 | **2** | Hands on knees, panting, when the clock hits zero — feet and hands pinned, only the shoulders and head move, at about 2.5 fps. Right now the overlay just appears over a dribbling character. |
 
 Roughly 40 frames per character, against today's 8.
 
@@ -140,7 +140,7 @@ how often the player actually sees each thing:
    are on screen almost all the time.
 2. **Turn to shoot, shot build** (6 frames). The moment of drama, and the fix
    for the only hard cut in the game.
-3. **Idle breaks, celebration, game over** (11 frames). Personality — and where
+3. **Idle breaks, celebration, game over** (12 frames). Personality — and where
    the characters stop being reskins of each other.
 4. **Run without the ball** (4 frames). Least visible; happens only while
    chasing a rebound.

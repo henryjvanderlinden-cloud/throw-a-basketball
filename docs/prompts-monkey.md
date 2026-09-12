@@ -553,35 +553,55 @@ separately by the game.
 
 ===============================================================================
 
-## 12 — Game over · one-shot · 1 frame · attach Monkey 001.png
+## 12 — Game over, panting · loop · 2 frames · attach Monkey 001.png
 
-A single frame, shown when the shot clock hits zero.
+Loops under the game-over overlay. The whole effect is one breath: the feet and
+hands are nailed in place and only the torso, shoulders and head move, so the
+loop reads as breathing rather than as the figure wobbling.
 
 ```
-Pixel-art single character sprite, one figure only, fully transparent
-background.
+Pixel-art sprite sheet, single image, fully transparent background.
 
 SUBJECT: the anthropomorphic monkey basketball player in the attached reference
 image. Match that character exactly: brown fur, shaggy darker head fur, a long
 curling tail, a blue sleeveless basketball jersey with a yellow number 7, blue
 shorts with white and yellow trim, blue-and-white high-top sneakers. Identical
-colours, identical proportions and identical build as the reference.
+colours, identical proportions, identical build and identical height as the
+reference, in every frame.
 
-CAMERA: locked off, same distance and eye level as the reference image. The feet
-rest on the ground.
+LAYOUT: one horizontal row of 2 frames of equal width, evenly spaced.
+No borders, no frame numbers, no labels, no background, no drop shadows.
 
-VIEW: front view, facing the viewer.
+CAMERA: locked off. Identical distance and eye level in both frames. Do not
+zoom, crop, recompose or rescale between frames. Both frames share one ground
+line: the soles of both feet touch the same horizontal line.
 
-POSE: completely spent. Bent forward at the waist with both hands braced on his
-knees, head hanging down, shoulders slumped and heaving, mouth open, panting.
-The tail droops limply to the floor behind him.
+VIEW: front view, facing the viewer. In both frames he is completely spent:
+bent forward at the waist, both hands braced on his bent knees, legs
+shoulder-width apart, the tail drooping limply to the floor behind him.
+
+The feet, the legs and the hands-on-knees are in EXACTLY the same position in
+both frames. Only the chest, shoulders and head move between them.
+
+FRAMES, left to right — one breath:
+1. The bottom of an exhale: shoulders dropped low, back rounded, chest
+   collapsed, head hanging right down toward the floor, eyes half shut, mouth
+   hanging open.
+2. The top of a gulping inhale: shoulders heaved up around his ears, back
+   arched, chest puffed out, head lifted a little so the muzzle points forward,
+   mouth wide open gasping for air.
+
+This row is a seamless loop: frame 2 must flow back into frame 1 with no jump.
+The two frames should differ clearly in the height of the shoulders and head —
+enough that flicking between them reads unmistakably as panting.
 
 STYLE: 16-bit arcade pixel art, bold dark outline, flat cel shading, limited
 palette, crisp hard pixel edges. The background must be fully transparent
-(alpha 0) with no haze, glow or soft fringe around the silhouette.
+(alpha 0) with no haze, glow or soft fringe around the silhouette. Output a wide
+landscape image.
 
-The character is NOT holding a basketball — the ball is drawn separately by the
-game.
+The character is NOT holding a basketball in either frame — the ball is drawn
+separately by the game.
 ```
 
 ===============================================================================
@@ -708,7 +728,7 @@ artwork/basketball-players/Monkey strips/
   09-run-right.png
   10-run-left.png
   11-celebrate.png
-  12-gameover.png
+  12-gameover-panting.png
   13-break-banana.png
   14-break-wave.png
 ```
