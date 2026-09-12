@@ -733,7 +733,246 @@ artwork/basketball-players/Monkey strips/
   14-break-wave.png
 ```
 
-The build script will slice each strip into its frames using the frame count
-above, so the number of cells in the image has to match exactly. If a
-generation comes back with three frames when you asked for four, re-roll rather
-than keeping it.
+`tools/slice-strips.py` cuts each strip into its frames using the frame count
+above, so the number of cells in the image has to match exactly. If a generation
+comes back with three frames when you asked for four, re-roll rather than
+keeping it.
+
+===============================================================================
+
+# Re-rolls
+
+Three of the fourteen came back wrong. Everything else is good and sliced
+cleanly. Replace the strip file and re-run the slicer.
+
+## R1 — replaces prompt 1, stationary dribble
+
+**What went wrong:** the raised hand swapped sides between frames 2 and 3, so he
+looks like he is alternating hands, and it never rose above hip height — so all
+four frames read as the same pose. In a loop this short, the hand travel *is*
+the animation.
+
+```
+Pixel-art sprite sheet, single image, fully transparent background.
+
+SUBJECT: the anthropomorphic monkey basketball player in the attached reference
+image. Match that character exactly: brown fur, shaggy darker head fur, a long
+curling tail, a blue sleeveless basketball jersey with a yellow number 7, blue
+shorts with white and yellow trim, blue-and-white high-top sneakers. Identical
+colours, identical proportions, identical build and identical height as the
+reference, in every frame.
+
+LAYOUT: one horizontal row of 4 frames of equal width, evenly spaced.
+No borders, no frame numbers, no labels, no background, no drop shadows.
+
+CAMERA: locked off. Identical distance and eye level in every frame. The
+character must be exactly the same height in every frame, and the same height as
+in the reference image — do not zoom, crop, recompose or rescale between frames.
+All frames share one ground line: the soles of the feet touch the same
+horizontal line in every frame.
+
+VIEW: front view, facing the viewer, squared to camera, low athletic stance with
+the knees bent and the feet planted shoulder-width apart.
+
+CRITICAL: exactly ONE hand dribbles — the hand on the VIEWER'S RIGHT — and it is
+the same hand in all four frames. It must never switch sides. The other arm
+hangs relaxed and almost still at his side throughout, and never rises above his
+hip.
+
+The four frames differ ONLY in the height of that one dribbling hand, and the
+difference must be large and obvious — the hand travels a long way, from down by
+his knee up to his chest:
+
+FRAMES, left to right:
+1. The dribbling hand is at its LOWEST — reaching right down, palm flat to the
+   floor, level with the KNEE, arm almost straight.
+2. The dribbling hand has risen to HIP height, palm still facing down, elbow
+   starting to bend.
+3. The dribbling hand is at its HIGHEST — up at CHEST height, elbow sharply
+   bent, wrist cocked, palm still facing down.
+4. The dribbling hand has dropped back to HIP height, palm down, on its way
+   down.
+
+This row is a seamless loop: frame 4 must flow back into frame 1 with no jump.
+The feet do not move at any point, and the body stays in the same low stance —
+only the dribbling arm moves.
+
+STYLE: 16-bit arcade pixel art, bold dark outline, flat cel shading, limited
+palette, crisp hard pixel edges. The background must be fully transparent
+(alpha 0) with no haze, glow or soft fringe around the silhouette. Output a wide
+landscape image.
+
+The character is NOT holding a basketball in any frame — the ball is drawn
+separately by the game.
+```
+
+===============================================================================
+
+## R2 — replaces prompt 2, run-dribble moving right
+
+**What went wrong:** he came back sprinting with both fists pumping — a running
+cycle with no dribble in it, identical in function to prompt 9. The dribbling
+hand needs to be the headline of every frame, not a detail at the end.
+
+```
+Pixel-art sprite sheet, single image, fully transparent background.
+
+SUBJECT: the anthropomorphic monkey basketball player in the attached reference
+image. Match that character exactly: brown fur, shaggy darker head fur, a long
+curling tail, a blue sleeveless basketball jersey with a yellow number 7, blue
+shorts with white and yellow trim, blue-and-white high-top sneakers. Identical
+colours, identical proportions, identical build and identical height as the
+reference, in every frame.
+
+LAYOUT: one horizontal row of 4 frames of equal width, evenly spaced.
+No borders, no frame numbers, no labels, no background, no drop shadows.
+
+CAMERA: locked off. Identical distance and eye level in every frame. The
+character must be exactly the same height in every frame, and the same height as
+in the reference image — do not zoom, crop, recompose or rescale between frames.
+All frames share one ground line: the sole of the planted foot touches the same
+horizontal line in every frame.
+
+VIEW: three-quarter view, running toward the right of frame, chest turned
+slightly toward the viewer so the jersey number stays readable. The tail streams
+out behind him to the viewer's left.
+
+CRITICAL: he is DRIBBLING A BASKETBALL WHILE HE RUNS — this is not a plain
+sprint. The hand on the VIEWER'S RIGHT is the dribbling hand in all four frames.
+It is always held out in front of his body with the palm facing DOWN toward the
+floor, fingers spread, pushing an invisible ball down. It is never a fist, never
+swung back, and never tucked in at his side. The OTHER arm does the running,
+swinging freely.
+
+FRAMES, left to right:
+1. Dribbling hand pushed low, near knee height, palm flat to the floor. Legs:
+   leading leg forward and planted, trailing leg stretched out behind. Free arm
+   swung back.
+2. Dribbling hand risen to hip height, palm still down. Legs mid-stride, the
+   trailing leg swinging through beneath the body. Torso leaning forward.
+3. Dribbling hand pushed low again near knee height, palm flat down. Legs: the
+   other leg forward and planted. Free arm swung forward.
+4. Dribbling hand risen to hip height, palm down. Legs mid-stride the other way,
+   the leading leg swinging through.
+
+This row is a seamless loop: frame 4 must flow back into frame 1 with no jump.
+
+STYLE: 16-bit arcade pixel art, bold dark outline, flat cel shading, limited
+palette, crisp hard pixel edges. The background must be fully transparent
+(alpha 0) with no haze, glow or soft fringe around the silhouette. Output a wide
+landscape image.
+
+The character is NOT holding a basketball in any frame — the ball is drawn
+separately by the game. His hand pushes down as if a ball were there.
+```
+
+===============================================================================
+
+## R3 — replaces prompt 3, run-dribble moving left
+
+Same fix, other direction. Not a mirror of R2.
+
+```
+Pixel-art sprite sheet, single image, fully transparent background.
+
+SUBJECT: the anthropomorphic monkey basketball player in the attached reference
+image. Match that character exactly: brown fur, shaggy darker head fur, a long
+curling tail, a blue sleeveless basketball jersey with a yellow number 7, blue
+shorts with white and yellow trim, blue-and-white high-top sneakers. Identical
+colours, identical proportions, identical build and identical height as the
+reference, in every frame.
+
+LAYOUT: one horizontal row of 4 frames of equal width, evenly spaced.
+No borders, no frame numbers, no labels, no background, no drop shadows.
+
+CAMERA: locked off. Identical distance and eye level in every frame. The
+character must be exactly the same height in every frame, and the same height as
+in the reference image — do not zoom, crop, recompose or rescale between frames.
+All frames share one ground line: the sole of the planted foot touches the same
+horizontal line in every frame.
+
+VIEW: three-quarter view, running toward the left of frame, chest turned
+slightly toward the viewer so the jersey number stays readable and reads
+forwards. The tail streams out behind him to the viewer's right.
+
+CRITICAL: he is DRIBBLING A BASKETBALL WHILE HE RUNS — this is not a plain
+sprint. The hand on the VIEWER'S LEFT is the dribbling hand in all four frames.
+It is always held out in front of his body with the palm facing DOWN toward the
+floor, fingers spread, pushing an invisible ball down. It is never a fist, never
+swung back, and never tucked in at his side. The OTHER arm does the running,
+swinging freely.
+
+FRAMES, left to right:
+1. Dribbling hand pushed low, near knee height, palm flat to the floor. Legs:
+   leading leg forward and planted, trailing leg stretched out behind. Free arm
+   swung back.
+2. Dribbling hand risen to hip height, palm still down. Legs mid-stride, the
+   trailing leg swinging through beneath the body. Torso leaning forward.
+3. Dribbling hand pushed low again near knee height, palm flat down. Legs: the
+   other leg forward and planted. Free arm swung forward.
+4. Dribbling hand risen to hip height, palm down. Legs mid-stride the other way,
+   the leading leg swinging through.
+
+This row is a seamless loop: frame 4 must flow back into frame 1 with no jump.
+
+STYLE: 16-bit arcade pixel art, bold dark outline, flat cel shading, limited
+palette, crisp hard pixel edges. The background must be fully transparent
+(alpha 0) with no haze, glow or soft fringe around the silhouette. Output a wide
+landscape image.
+
+The character is NOT holding a basketball in any frame — the ball is drawn
+separately by the game. His hand pushes down as if a ball were there.
+```
+
+===============================================================================
+
+## R4 — replaces prompt 12, game over panting
+
+**What went wrong:** close, but his hands hang loose instead of gripping his
+knees, and the shoulders barely move between the two frames — most of the
+difference is in his face, which is too small to read at game size.
+
+```
+Pixel-art sprite sheet, single image, fully transparent background.
+
+SUBJECT: the anthropomorphic monkey basketball player in the attached reference
+image. Match that character exactly: brown fur, shaggy darker head fur, a long
+curling tail, a blue sleeveless basketball jersey with a yellow number 7, blue
+shorts with white and yellow trim, blue-and-white high-top sneakers. Identical
+colours, identical proportions, identical build and identical height as the
+reference, in every frame.
+
+LAYOUT: one horizontal row of 2 frames of equal width, evenly spaced.
+No borders, no frame numbers, no labels, no background, no drop shadows.
+
+CAMERA: locked off. Identical distance and eye level in both frames. Do not
+zoom, crop, recompose or rescale between frames. Both frames share one ground
+line: the soles of both feet touch the same horizontal line.
+
+VIEW: front view, facing the viewer. In BOTH frames he is doubled over,
+exhausted, bent forward at the waist with BOTH PALMS PLANTED FLAT ON HIS OWN
+BENT KNEES, elbows locked out, propping himself up. His tail lies limp on the
+floor behind him. The feet, legs and the hands-on-knees are in EXACTLY the same
+position in both frames — do not let the arms hang loose.
+
+The two frames differ in ONE thing: how high his shoulders and head are. That
+difference must be large and unmistakable, because it is the whole animation.
+
+FRAMES, left to right — one huge breath:
+1. EXHALED, at his lowest: shoulders dropped right down, back deeply rounded and
+   hunched, chest collapsed, head hanging straight down toward the floor, tongue
+   lolling out.
+2. INHALING, at his highest: shoulders heaved right up around his ears, back
+   arched, chest puffed out wide, head lifted so the muzzle points forward,
+   mouth wide open gasping for air.
+
+This row is a seamless loop: frame 2 must flow back into frame 1 with no jump.
+
+STYLE: 16-bit arcade pixel art, bold dark outline, flat cel shading, limited
+palette, crisp hard pixel edges. The background must be fully transparent
+(alpha 0) with no haze, glow or soft fringe around the silhouette. Output a wide
+landscape image.
+
+The character is NOT holding a basketball in either frame — the ball is drawn
+separately by the game.
+```
