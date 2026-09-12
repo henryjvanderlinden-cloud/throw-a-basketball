@@ -814,6 +814,129 @@ separately by the game.
 
 ===============================================================================
 
+# 16 — Celebration B: low fist pump · one-shot · 3 frames · attach Monkey 001.png
+
+A restrained one, to sit alongside the arms-overhead celebration from prompt 11.
+The game picks between them at random, so this should read as a *different*
+reaction, not a smaller version of the same one — chest-height and contained,
+where prompt 11 is arms-up and loud. Save as `Monkey_sequence_016.png`.
+
+```
+Pixel-art sprite sheet, single image, fully transparent background.
+
+SUBJECT: the anthropomorphic monkey basketball player in the attached reference
+image. Match that character exactly: brown fur, shaggy darker head fur, a long
+curling tail, a blue sleeveless basketball jersey with a yellow number 7, blue
+shorts with white and yellow trim, blue-and-white high-top sneakers. Identical
+colours, identical proportions, identical build and identical height as the
+reference, in every frame.
+
+LAYOUT: one horizontal row of 3 frames of equal width, evenly spaced.
+No borders, no frame numbers, no labels, no background, no drop shadows.
+
+CAMERA: locked off. Identical distance and eye level in every frame. The
+character must be exactly the same height in every frame, and the same height as
+in the reference image — do not zoom, crop, recompose or rescale between frames.
+All frames share one ground line: the soles of both feet touch the same
+horizontal line in every frame, and the feet stay planted throughout.
+
+VIEW: front view, facing the viewer.
+
+He has just sunk a shot and is quietly pleased with himself — cocky rather than
+ecstatic. Nothing goes above his chest.
+
+FRAMES, left to right:
+1. Standing up out of his stance, both fists clenched at chest height, chin
+   lifted, one eyebrow raised, a smug closed-mouth smirk. Tail curled up behind
+   him.
+2. The pump: one fist driven sharply down and back to hip height, elbow tucked
+   in tight to his side, shoulders hunched forward, knees bent, teeth bared in a
+   sharp grin. The other fist stays at his chest.
+3. Settling: the fist relaxing back up toward the waist, shoulders dropping,
+   weight easing back into a low athletic stance, still grinning.
+
+This is a one-shot, not a loop. Frame 3 must settle back into the low athletic
+standing stance the character starts from.
+
+STYLE: 16-bit arcade pixel art, bold dark outline, flat cel shading, limited
+palette, crisp hard pixel edges. The background must be fully transparent
+(alpha 0) with no haze, glow or soft fringe around the silhouette. Output a wide
+landscape image.
+
+The character is NOT holding a basketball in any frame — the ball is drawn
+separately by the game.
+```
+
+===============================================================================
+
+# 17 — Celebration C: back handspring · one-shot · 6 frames · attach Monkey 001.png
+
+The showpiece, played rarely. Six frames rather than four, because a handspring
+has genuinely distinct positions and skipping any of them makes it read as a
+teleport. Save as `Monkey_sequence_017.png`.
+
+Note the ground line clause is different here: he is airborne in two frames and
+on his *hands* in another, so the rule is about whatever touches the floor, not
+about feet specifically. That is the detail most likely to come back wrong.
+
+```
+Pixel-art sprite sheet, single image, fully transparent background.
+
+SUBJECT: the anthropomorphic monkey basketball player in the attached reference
+image. Match that character exactly: brown fur, shaggy darker head fur, a long
+curling tail, a blue sleeveless basketball jersey with a yellow number 7, blue
+shorts with white and yellow trim, blue-and-white high-top sneakers. Identical
+colours, identical proportions, identical build and identical height as the
+reference, in every frame.
+
+LAYOUT: one horizontal row of 6 frames of equal width, evenly spaced.
+No borders, no frame numbers, no labels, no background, no drop shadows.
+
+CAMERA: locked off. Identical distance and eye level in every frame. The
+character is the same size in every frame — do not zoom, crop, recompose or
+rescale between frames, even while he is in the air.
+
+GROUND LINE: every frame shares one horizontal floor line. Whatever is touching
+the floor in a given frame rests exactly on that line — his feet in frames 1, 5
+and 6, his hands in frame 3. In frames 2 and 4 he is airborne and nothing
+touches it.
+
+VIEW: side-on, three-quarter view, the character flipping BACKWARDS toward the
+left of frame, chest turned slightly toward the viewer.
+
+He has just sunk a shot and is showing off with a back handspring, then
+celebrating. He is delighted throughout — eyes bright, mouth open, grinning.
+
+FRAMES, left to right — one continuous move:
+1. Load: deep crouch, knees bent, both arms swung back behind him, leaning back,
+   looking up and back over his shoulder. Tail curled low.
+2. Launch: airborne, arched backwards in mid-air, both arms thrown up and back
+   over his head reaching for the floor behind him, legs still extending. Tail
+   streaming.
+3. Hands down: fully inverted, upside down, both palms planted flat on the floor
+   line, arms straight, legs whipping up and over above him, tail flung out.
+4. Whip over: airborne again, past vertical, legs snapping down toward the floor,
+   hands just leaving the ground, body uncurling.
+5. Landing: both feet planted on the floor line, knees deeply bent absorbing the
+   impact, arms flung out wide to either side for balance, crouched low.
+6. The celebration: standing up out of the landing, one fist punched up above
+   his head in triumph, other arm out, head back, mouth wide open in a shout,
+   tail curled high.
+
+This is a one-shot, not a loop. Frame 1 must continue naturally from a normal
+standing stance, and frame 6 is the end of the move.
+
+STYLE: 16-bit arcade pixel art, bold dark outline, flat cel shading, limited
+palette, crisp hard pixel edges. The background must be fully transparent
+(alpha 0) with no haze, glow or soft fringe around the silhouette. No motion
+blur, no speed lines, no dust. Output a wide landscape image.
+
+The character is NOT holding a basketball in any frame — the ball is drawn
+separately by the game.
+```
+
+===============================================================================
+
 # Re-rolls
 
 Three problems across four strips. The other ten are good and sliced cleanly.

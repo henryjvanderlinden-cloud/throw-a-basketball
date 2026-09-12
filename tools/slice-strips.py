@@ -49,11 +49,17 @@ STRIPS = {
         ("break_banana",    "Monkey_sequence_013.png", 4),
         ("break_wave",      "Monkey_sequence_014.png", 4),
         ("panic",           "Monkey_sequence_015.png", 4),
+        ("celebrate_pump",  "Monkey_sequence_016.png", 3),
+        ("celebrate_flip",  "Monkey_sequence_017.png", 6),
     ],
 }
 
 
 BLEED_MAX_SHARE = 0.15      # a stray blob is at most this share of the figure
+
+# Sequences that deliberately leave the floor, so the ground-line check would
+# only produce a misleading warning.
+AIRBORNE = {"celebrate_flip"}
 
 
 def ink_columns(im: Image.Image) -> np.ndarray:
@@ -167,7 +173,7 @@ def slice_character(name: str, seqs) -> None:
             cell.save(out_dir / f"{i+1:02d}.png")
 
         flags = []
-        if max(feet) - min(feet) > 12:
+        if seq not in AIRBORNE and max(feet) - min(feet) > 12:
             flags.append(f"GROUND LINE varies by {max(feet)-min(feet)}px")
         if cleaned:
             flags.append(f"removed {cleaned} bleed fragment(s)")

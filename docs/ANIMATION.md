@@ -80,7 +80,7 @@ What exists today, and what each one wants.
 | Charge | loop | 2 | **3** | Plays faster as power builds, so frames should differ in *crouch depth*, not arm position — a coil that visibly tightens. |
 | Shot | one-shot | 2 | **4** | load → rise → release (A3) → follow-through. Today it is just release + follow, so the throw has no build. |
 | Run without the ball | loop | reuses dribble | **2 × 2** | Chasing a loose ball. Distinct from run-dribble: no hand pushing down, arms pumping. Left and right. |
-| Made basket | one-shot | 0 | **2** | Ends on A1. |
+| Made basket | one-shot | 0 | **2 + 3 + 6** | Three of them, picked at random so scoring does not always look the same: arms overhead, a low fist pump, and a rare back handspring. All end on A1. Duration comes from the frame count, not a fixed timer, and any movement cancels — chasing the rebound beats showboating. |
 | Shot-clock panic | loop | 0 | **4** | Grimacing and jabbing a finger at the clock, under 2 seconds. Built like an idle break — the dribbling hand keeps its cycle, the other hand does the business — so it needs no handover. |
 | Game over | loop | 0 | **2** | Hands on knees, panting, when the clock hits zero — feet and hands pinned, only the shoulders and head move, at about 2.5 fps. Right now the overlay just appears over a dribbling character. |
 
