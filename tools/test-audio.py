@@ -14,6 +14,25 @@ URL = "http://localhost:8899/index.html"
 fails = []
 
 
+# Records which decoded clip each Web Audio voice actually plays, so a check can
+# say that a basket swished rather than only that a sound happened.
+SFX_PROBE = """() => {
+  window.__sfxLog = [];
+  const proto = (window.AudioContext || window.webkitAudioContext).prototype;
+  const make = proto.createBufferSource;
+  proto.createBufferSource = function () {
+    const s = make.call(this);
+    const start = s.start.bind(s);
+    s.start = function () {
+      const clips = __hoop.audio.clipmap;
+      for (const u in clips) if (clips[u] === s.buffer) { __sfxLog.push(u.split('/').pop()); break; }
+      return start.apply(null, arguments);
+    };
+    return s;
+  };
+}"""
+
+
 def check(name, ok, detail=""):
     print(("  PASS " if ok else "  FAIL ") + name + ("  " + str(detail) if detail else ""))
     if not ok:
@@ -99,23 +118,7 @@ with sync_playwright() as pw:
 
     section("the right clip fires for the right event")
     page.evaluate("__hoop.reset(); __hoop.setMode(2); __hoop.pick(0,0); __hoop.pick(1,1);")
-    # Every buffer that actually starts, by file name, so the checks below can
-    # say which sound played rather than only that one did.
-    page.evaluate("""() => {
-      window.__sfxLog = [];
-      const proto = (window.AudioContext || window.webkitAudioContext).prototype;
-      const make = proto.createBufferSource;
-      proto.createBufferSource = function () {
-        const s = make.call(this);
-        const start = s.start.bind(s);
-        s.start = function () {
-          const clips = __hoop.audio.clipmap;
-          for (const u in clips) if (clips[u] === s.buffer) { __sfxLog.push(u.split('/').pop()); break; }
-          return start.apply(null, arguments);
-        };
-        return s;
-      };
-    }""")
+    page.evaluate(SFX_PROBE)
 
     def log_after(js, frames=1, dt="1/60"):
         page.evaluate("__sfxLog = []")
@@ -231,29 +234,40 @@ with sync_playwright() as pw:
     }""")
     f.keyboard.press("ArrowLeft")
     f.wait_for_timeout(800)
-    check("falls back to the element engine", f.evaluate("__hoop.audio.engine") == "el",
-          f.evaluate("__hoop.audio.engine"))
-    check("no context is built at all", f.evaluate("__hoop.audio.context") is None)
+    check("the music falls back to <audio> elements",
+          f.evaluate("__hoop.audio.via") == "element", f.evaluate("__hoop.audio.via"))
+    # The effects are inlined, so they reach Web Audio even here -- which is the
+    # only way an effect lands on the frame that fired it.
+    check("but a context is still built, for the effects",
+          f.evaluate("__hoop.audio.context") is not None)
+    check("and the effects are decoded into it",
+          f.evaluate("__hoop.audio.loaded.filter(u => u.indexOf('bounce') >= 0).length") == 3,
+          f.evaluate("__hoop.audio.loaded.length"))
     heard = f.evaluate("__playLog")
     check("the menu music actually starts",
           any("full-court-pressure" in c for c in heard), heard)
     opened = f.evaluate("__openLog")
-    check("the music is the first file asked for, not the last",
+    check("the music is the first audio file asked for",
           opened and "full-court-pressure" in opened[0], opened[:4])
-    check("the effects queue up behind it, one at a time",
-          not any("squeak" in c for c in opened[:2]), opened[:4])
+    check("no effect is ever fetched as a file",
+          not any(k in c for c in opened
+                  for k in ("squeak", "bounce", "swish", "backboard")), opened[:6])
 
     f.evaluate("__playLog = []; __hoop.setMode(2); __hoop.pick(0,0); __hoop.pick(1,1);")
     f.wait_for_timeout(400)
     check("the in-game anthem actually starts",
           any("overtime-overdrive" in c for c in f.evaluate("__playLog")), f.evaluate("__playLog"))
 
-    f.evaluate("__playLog = []")
+    # Effects are Web Audio here too, not elements, so they are counted the same
+    # way as on the served pass.
+    f.evaluate(SFX_PROBE)
+    heard = []
     for _ in range(4):
         f.wait_for_timeout(160)
-        f.evaluate("for (let i = 0; i < 30; i++) __hoop.step(1/60)")
-    heard = f.evaluate("__playLog")
-    check("effects actually play", any("floor-bounce" in c for c in heard), heard)
+        f.evaluate("__sfxLog = []; for (let i = 0; i < 30; i++) __hoop.step(1/60)")
+        heard += f.evaluate("__sfxLog")
+    check("effects actually play, through Web Audio",
+          any("floor-bounce" in c for c in heard), heard)
 
     f.evaluate("__playLog = []")
     f.evaluate("__hoop.state.clockOn = true; __hoop.state.clock = 0.001; __hoop.step(0.05);")

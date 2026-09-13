@@ -312,6 +312,10 @@
 <!-- Generated sprite data. Absent -> the game falls back to the vector figure. -->
 <script src="sprites/manifest.js"></script>
 
+<!-- The twelve effect one-shots, base64'd by tools/build-audio-web.py. Inline so
+     they cost no disk reads and can reach Web Audio off a file:// page. -->
+<script src="audio/sfx-data.js"></script>
+
 <script>
 (() => {
 'use strict';
@@ -393,25 +397,84 @@ const el = {
   muteBtn: $('muteBtn'), muteIcon: $('muteIcon')
 };
 
+// ---------------------------------------------------------------- assets
+// One policy for everything this game loads, and the reason its startup order
+// looks deliberate: whatever the player is looking at or listening to right now
+// is fetched on its own, and every other asset waits here and is fetched one at
+// a time behind it.
+//
+// A browser handed sixty-eight references starts sixty-eight reads, and the one
+// being waited on is not first in line. On a fast disk that costs nothing and
+// this queue changes nothing. On a disk where every read is scanned before it is
+// served -- a Windows folder under ransomware protection, which is where this
+// game actually lives -- it was the difference between a menu that appears at
+// once and several seconds of watching the wrong things load.
+//
+// Jobs run in the order they are pushed, so push them in the order they will be
+// wanted. Each job is called with a callback and must invoke it when its asset
+// has settled, one way or the other.
+const loadLog = [];
+const mark = what => {
+  if (loadLog.length < 400) loadLog.push([Math.round(performance.now()), what]);
+};
+
+const Q = {
+  jobs: [], busy: false, gate: true, holds: 0,
+  push(job) { Q.jobs.push(job); Q.pump(); },
+  // Opened once the first screen is actually on screen. Nothing loads in front
+  // of the picture the player is waiting for.
+  open() { if (!Q.gate) return; Q.gate = false; mark('queue open (' + Q.jobs.length + ' waiting)'); Q.pump(); },
+  // Something the player is about to hear or see is loading: stand aside.
+  hold() { Q.holds++; },
+  release() { Q.holds = Math.max(0, Q.holds - 1); Q.pump(); },
+  pump() {
+    if (Q.gate || Q.busy || Q.holds || !Q.jobs.length) return;
+    const job = Q.jobs.shift();
+    Q.busy = true;
+    let done = false;
+    const next = () => { if (done) return; done = true; Q.busy = false; Q.pump(); };
+    // One asset that never settles must not stall everything behind it.
+    setTimeout(next, 8000);
+    try { job(next); } catch (e) { next(); }
+  }
+};
+
+// Hand an <image> its source when the queue gets to it.
+function qImage(im, src) {
+  Q.push(done => {
+    if (im.getAttribute('href')) return done();
+    im.addEventListener('load', done, { once: true });
+    im.addEventListener('error', done, { once: true });
+    im.setAttribute('href', src);
+  });
+}
+
 // ---------------------------------------------------------------- courts
 // Backdrops live next to this file. The artwork is framed so its painted rim
 // lands on the play rim when the image is drawn 960x720, top-aligned.
 const COURT_DIR = 'artwork/basketball-courts/';
+// The WebP is a tenth of the PNG and indistinguishable at the size a backdrop is
+// drawn; the PNG stays as the fallback for an un-run build or a browser without
+// WebP. tools/build-courts.py makes the pair.
 const COURTS = [
   { id: 'vector',   label: 'Vector',   src: null },
-  { id: 'nba',      label: 'NBA',      src: COURT_DIR + 'nba.png' },
-  { id: 'school',   label: 'School',   src: COURT_DIR + 'school.png' },
-  { id: 'graffiti', label: 'Graffiti', src: COURT_DIR + 'graffiti.png' }
+  { id: 'nba',      label: 'NBA',      src: COURT_DIR + 'nba.webp',      png: COURT_DIR + 'nba.png' },
+  { id: 'school',   label: 'School',   src: COURT_DIR + 'school.webp',   png: COURT_DIR + 'school.png' },
+  { id: 'graffiti', label: 'Graffiti', src: COURT_DIR + 'graffiti.webp', png: COURT_DIR + 'graffiti.png' }
 ];
 let courtIdx = 0, toastT = 0;
 
 function toast(msg, secs) { el.toastText.textContent = msg; toastT = secs || 1.6; }
 
-function applyCourt(i, announce) {
+// `now` is for a court the player has just asked for; at boot it is queued,
+// because during the menus the backdrop is completely hidden and two megabytes
+// in front of the menu art is two megabytes of watching the wrong thing load.
+function applyCourt(i, announce, now) {
   courtIdx = ((i % COURTS.length) + COURTS.length) % COURTS.length;
   const c = COURTS[courtIdx];
   if (c.src) {
-    el.court.setAttribute('href', c.src);
+    el.court.removeAttribute('href');
+    if (now) el.court.setAttribute('href', c.src); else qImage(el.court, c.src);
     el.court.setAttribute('opacity', '1');
     el.scrim.setAttribute('opacity', '0.12');
     el.vectorScene.setAttribute('opacity', '0');
@@ -429,8 +492,16 @@ function applyCourt(i, announce) {
   try { localStorage.setItem('hoop.court', c.id); } catch (e) {}
   if (announce) toast('Court: ' + c.label);
 }
-// artwork missing (e.g. opened without the repo folder) -> fall back to vector
-el.court.addEventListener('error', () => { if (courtIdx !== 0) applyCourt(0, false); });
+// A missing WebP drops to the PNG; a missing PNG (e.g. opened without the repo
+// folder) drops to the vector court.
+el.court.addEventListener('error', () => {
+  const c = COURTS[courtIdx];
+  if (c && c.png && el.court.getAttribute('href') === c.src) {
+    el.court.setAttribute('href', c.png);
+    return;
+  }
+  if (courtIdx !== 0) applyCourt(0, false, true);
+});
 (() => {
   let saved = null;
   try { saved = localStorage.getItem('hoop.court'); } catch (e) {}
@@ -532,15 +603,23 @@ function splashSettle(ok) {
   if (splashSettled) return;
   splashSettled = true;
   splashReady = ok;
+  mark('first menu on screen');
+  Q.open();                    // everything else may load now, one at a time
   if (CHARS.length) { buildModeCards(); buildSelectCards(); paintMode(); paintSelection(); }
   syncScreens();
 }
 
 function buildSplash() {
-  const names = SPLASH_MODE.concat([SPLASH_SELECT, 'won-1', 'won-2']);
+  // Only the first frame is needed to put a menu on screen. The four variations
+  // are for a wink every few seconds, the select painting is one screen later,
+  // and the banners are not wanted until somebody wins -- so the base frame
+  // loads on its own and the other seven queue up behind it, in that order.
+  const first = SPLASH_MODE[0];
+  const names = [first, SPLASH_SELECT].concat(SPLASH_MODE.slice(1), ['won-1', 'won-2']);
   for (const name of names) {
     const im = document.createElementNS(SVGNS, 'image');
-    im.setAttribute('href', SPLASH_DIR + name + '.webp');
+    if (name === first) im.setAttribute('href', SPLASH_DIR + name + '.webp');
+    else qImage(im, SPLASH_DIR + name + '.webp');
     im.setAttribute('x', ART_X); im.setAttribute('y', ART_Y);
     im.setAttribute('width', ART_W); im.setAttribute('height', ART_H);
     // slice, not meet: if a re-render ever comes back a hair off 4:3, crop the
@@ -678,10 +757,13 @@ function buildCharacter(p, i) {
   p.frameEls = {}; p.shown = null;
   p.rig.vector.setAttribute('opacity', p.char ? '0' : '1');
   if (!p.char) return;
+  // No href yet. Fifty-eight sprite frames used to load before the player had
+  // even chosen a character; now a frame is fetched when it is first drawn, and
+  // the rest of a character's frames queue up the moment he is confirmed.
   for (const [name, frames] of Object.entries(p.char.sequences)) {
     p.frameEls[name] = frames.map(f => {
       const im = document.createElementNS(SVGNS, 'image');
-      im.setAttribute('href', f.src);
+      im.setAttribute('data-src', f.src);
       im.setAttribute('width', f.w); im.setAttribute('height', f.h);
       im.setAttribute('x', -f.footX); im.setAttribute('y', -f.footY);
       im.setAttribute('opacity', '0');
@@ -695,10 +777,39 @@ const seqOf = (p, name) => (p.char && p.char.sequences[name]) || null;
 // Fall back to the first sequence in the list that the character actually has.
 const firstSeq = (p, ...names) => names.find(n => seqOf(p, n)) || 'dribble_idle';
 
+// Give a frame its source. Returns false if it already had one.
+function armFrame(im) {
+  const src = im.getAttribute('data-src');
+  if (!src) return false;
+  im.removeAttribute('data-src');
+  im.setAttribute('href', src);
+  return true;
+}
+
+// Every frame this character will need, queued in the order it comes up: what he
+// does the instant the match starts, first.
+const FRAME_ORDER = ['dribble_idle', 'run_dribble_r', 'run_dribble_l', 'pickup',
+                     'turn', 'aim', 'charge', 'shot', 'run_r', 'run_l', 'panic'];
+function queueCharacter(p) {
+  if (!p || !p.char) return;
+  const rank = n => { const i = FRAME_ORDER.indexOf(n); return i < 0 ? 99 : i; };
+  for (const name of Object.keys(p.frameEls).sort((a, b) => rank(a) - rank(b))) {
+    for (const im of p.frameEls[name]) {
+      Q.push(done => {
+        if (!armFrame(im)) return done();
+        im.addEventListener('load', done, { once: true });
+        im.addEventListener('error', done, { once: true });
+      });
+    }
+  }
+}
+
 function showFrame(p, name, idx) {
   const list = p.frameEls[name];
   if (!list || !list.length) return;
   idx = Math.max(0, Math.min(list.length - 1, idx));
+  // Drawn before the queue reached it: fetch it now rather than show a hole.
+  armFrame(list[idx]);
   if (p.shown && p.shown[0] === name && p.shown[1] === idx) return;
   if (p.shown && p.frameEls[p.shown[0]]) p.frameEls[p.shown[0]][p.shown[1]].setAttribute('opacity', '0');
   list[idx].setAttribute('opacity', '1');
@@ -851,6 +962,10 @@ function startMatch() {
   players[0].state = PS.DRIBBLE;
   g.clockOn = false; g.clockLimit = CLOCK_BASE; g.clock = CLOCK_BASE;
   g.ms = MS.PLAY;
+  for (const q of players) queueCharacter(q);
+  // The backdrop has been waiting behind the menus; it is on screen now.
+  const court = COURTS[courtIdx];
+  if (court && court.src && !el.court.getAttribute('href')) el.court.setAttribute('href', court.src);
   clearInput();                    // nothing held on the select screen carries in
   syncScreens();
   try {
@@ -995,7 +1110,7 @@ function buildSelectCards() {
 
     const f = c.sequences.dribble_idle[0];
     const im = document.createElementNS(SVGNS, 'image');
-    im.setAttribute('href', f.src);
+    qImage(im, f.src);
     im.setAttribute('width', (f.w * k).toFixed(1)); im.setAttribute('height', (f.h * k).toFixed(1));
     im.setAttribute('x', (x + cw / 2 - f.footX * k).toFixed(1));
     im.setAttribute('y', (y + ch - 26 - f.footY * k).toFixed(1));
@@ -1051,6 +1166,7 @@ function paintSelection() {
 
 function confirmPick() {
   savedChar[picker] = players[picker].charIdx;
+  queueCharacter(players[picker]);   // he is in the match now; start fetching him
   if (picker + 1 < numPlayers) { picker++; clearInput(); paintSelection(); return; }
   startMatch();
 }
@@ -1296,11 +1412,11 @@ window.addEventListener('keydown', e => {
   ensureAudio();
   if (k === 'KeyM') { setMute(!muted, true); return; }
   if (k === 'KeyR') { reset(); return; }
-  if (k === 'KeyC') { applyCourt(courtIdx + 1, true); return; }
+  if (k === 'KeyC') { applyCourt(courtIdx + 1, true, true); return; }
   if (k === 'KeyF') { toggleFullscreen(); return; }
   if (k.startsWith('Digit')) {
     const n = +k.slice(5);
-    if (n >= 1 && n <= COURTS.length) { applyCourt(n - 1, true); return; }
+    if (n >= 1 && n <= COURTS.length) { applyCourt(n - 1, true, true); return; }
   }
   keys[k] = true;
   // Space stands in for player 1's up key, but only in a one-player game:
@@ -1356,22 +1472,45 @@ if (fsSupported) {
 }
 
 // ---------------------------------------------------------------- audio
-// One AudioContext, two buses: music and effects. A browser will not start
-// audio before the player has touched something, so nothing is built until the
-// first key or tap. Until then the game only remembers which track it *wants*,
-// and starts it on the way in. Everything here is best-effort: a missing file,
-// a refused context or a browser with no Web Audio at all leaves a silent game,
-// never a broken one -- which is also what keeps the headless tests green.
+// Effects and music are loaded in completely different ways, because they are
+// completely different problems.
+//
+// The twelve effects are compiled into audio/sfx-data.js by
+// tools/build-audio-web.py -- 73 KB of one-shots, base64'd. That costs no disk
+// reads at all, they are ready before the first tap, and they go into Web Audio
+// on every protocol, which is the only way an effect lands on the frame that
+// fired it. It is also the only way they reach Web Audio off a file:// page,
+// where fetch() refuses to read anything.
+//
+// The music is megabytes and cannot be inlined. On http(s) it is fetched and
+// decoded (sample-accurate looping, the victory hand-off scheduled on the audio
+// clock). Anywhere else -- opened straight off disk, which is how this game is
+// usually played -- it is an <audio> element, where the loop seam is at the
+// browser's mercy and the hand-off is a timer. Audible beats correct and silent.
 const SFX_DIR = 'audio/basketball-natural/wav/';
 const TRACKS = {
-  menu:    'audio/full-court-pressure/full-court-pressure.wav',
-  play:    'audio/overtime-overdrive/overtime-overdrive.wav',
-  victory: 'audio/victory-lap/victory-lap-loop.wav'
+  menu:    'audio/full-court-pressure/full-court-pressure',
+  play:    'audio/overtime-overdrive/overtime-overdrive',
+  victory: 'audio/victory-lap/victory-lap-loop'
 };
-const VICTORY_STING = 'audio/victory-lap/victory-sting.wav';
+const VICTORY_STING = 'audio/victory-lap/victory-sting';
+
+// FLAC is a quarter of the WAV and decodes to bit-identical samples, so it is
+// preferred wherever the browser will take it. The WAVs stay on disk as the
+// fallback, and as what the build scripts actually produce.
+let musicExt = '.wav';
+try {
+  const probe = document.createElement('audio');
+  if (probe.canPlayType && (probe.canPlayType('audio/flac') || probe.canPlayType('audio/x-flac'))) {
+    musicExt = '.flac';
+  }
+} catch (e) {}
+const trackUrl = name => TRACKS[name] + musicExt;
+const stingUrl = () => VICTORY_STING + musicExt;
+
 // The sting is exactly four seconds and the loop is written to begin where it
-// ends, so the hand-off is scheduled on the audio clock. Waiting for an 'ended'
-// event instead would arrive late and leave a hole in the middle of the tune.
+// ends, so on the Web Audio path the hand-off is scheduled rather than fired
+// from an 'ended' event, which arrives late and leaves a hole in the tune.
 const STING_LEN = 4;
 const LOOP_ENTRY_FADE = 0.005;   // 5 ms, and only on the loop's first entry
 const MUSIC_FADE = 0.4;          // crossfade between tracks
@@ -1388,33 +1527,75 @@ const SFX = {
 const SFX_CD = { squeak: 0.18, board: 0.07, swish: 0.4, bounce: 0.07 };
 
 let ac = null, musicBus = null, sfxBus = null;
-const clips = Object.create(null);      // url -> AudioBuffer (null once it has failed)
+let musicVia = null;                    // 'fetch' on http(s), 'element' otherwise
+const clips = Object.create(null);      // url -> AudioBuffer (null once it failed)
 const clipReq = Object.create(null);    // url -> in-flight promise
 const sfxAt = Object.create(null), sfxPrev = Object.create(null);
 let curTrack = null, wantTrack = null;
-let musicVoices = [];                   // every music source currently scheduled
+let musicVoices = [];                   // Web Audio sources currently scheduled
+let elVoices = [];                      // <audio> elements playing music now
+let elTimer = 0;                        // the victory loop's pending start
 let muted = false;
 try { muted = localStorage.getItem('hoop.mute') === '1'; } catch (e) {}
 
-// Two engines. 'wa' is Web Audio -- decoded buffers, sample-accurate loops,
-// scheduled hand-offs -- and needs the bytes, which it gets with fetch(). 'el'
-// is plain <audio> elements, for a game opened straight off disk: fetch()
-// cannot read a file:// URL, so on that path the buffers never arrive and the
-// good engine is silent. The element engine loses the seamless loop and the
-// four-second hand-off is a timer rather than a schedule, but it makes noise.
-let engine = null;
-const elemPool = Object.create(null);   // url -> { pool: [Audio], i }
-let elVoices = [];                      // <audio> elements playing music now
-let elTimer = 0;                        // the victory loop's pending start
+const audioReady = () => !!(ac && ac.state === 'running');
 
-// Every milestone, timestamped. Read it with __hoop.audio.timeline when the
-// sound is late: it says which engine was chosen and how long each file took,
-// which is the difference between a bug and a slow disk.
-const audioLog = [];
-const mark = what => { if (audioLog.length < 300) audioLog.push([Math.round(performance.now()), what]); };
+// ---- effects: no files, no waiting -----------------------------------------
+function decodeInlineSfx() {
+  const data = window.SFX_DATA;
+  if (!data) { mark('audio/sfx-data.js missing - no effects'); return; }
+  let n = 0;
+  for (const key in data) {
+    const url = SFX_DIR + key + '.wav';
+    let u8;
+    try {
+      const bin = atob(data[key]);
+      u8 = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    } catch (e) { continue; }
+    const keep = url;
+    const ok = buf => { clips[keep] = buf; };
+    try {
+      const q = ac.decodeAudioData(u8.buffer, ok, () => {});
+      if (q && q.then) q.then(ok, () => {});
+      n++;
+    } catch (e) {}
+  }
+  mark('decoding ' + n + ' inlined effects');
+}
 
-const audioReady = () => engine === 'el' || !!(engine === 'wa' && ac && ac.state === 'running');
+function playSfx(group, gain, rate) {
+  if (!audioReady() || muted) return;
+  const names = SFX[group];
+  if (!names) return;
+  const now = ac.currentTime;
+  if (now - (sfxAt[group] || -99) < SFX_CD[group]) return;
+  // Randomise the variant, never twice running: three clips played straight
+  // through are more obviously three clips than three clips shuffled.
+  let i = Math.floor(Math.random() * names.length) % names.length;
+  if (names.length > 1 && i === sfxPrev[group]) i = (i + 1) % names.length;
+  const buf = clips[SFX_DIR + names[i] + '.wav'];
+  if (!buf) return;
+  sfxPrev[group] = i;
+  sfxAt[group] = now;
+  try {
+    const src = ac.createBufferSource();
+    src.buffer = buf;
+    if (rate) src.playbackRate.value = rate;
+    const gn = ac.createGain();
+    gn.gain.value = Math.max(0, Math.min(1.5, gain === undefined ? 1 : gain));
+    src.connect(gn); gn.connect(sfxBus);
+    src.start();
+  } catch (e) {}
+}
 
+// A wall is the floor sample held well down: the same ball hitting another hard
+// flat surface, but nobody in the building is looking at it.
+function wallSound(speed) {
+  if (speed > 120) playSfx('bounce', Math.min(0.5, 0.15 + speed / 1800));
+}
+
+// ---- music: the one thing worth waiting for --------------------------------
 function loadClip(url) {
   if (!ac) return Promise.resolve(null);
   if (clips[url] !== undefined) return Promise.resolve(clips[url]);
@@ -1427,108 +1608,29 @@ function loadClip(url) {
       const q = ac.decodeAudioData(a, res, rej);
       if (q && q.then) q.then(res, rej);
     }))
-    .then(buf => { clips[url] = buf; return buf; })
-    .catch(() => { clips[url] = null; return null; });
+    .then(buf => { clips[url] = buf; mark('decoded ' + url.split('/').pop()); return buf; })
+    .catch(() => { clips[url] = null; mark('failed ' + url.split('/').pop()); return null; });
   return clipReq[url];
 }
 
-// The menu track first: it is the only thing audible on the screen the player
-// is looking at, and twelve parallel fetches in front of it is twelve files'
-// worth of waiting on a slow disk. Then the effects, then the in-game anthem,
-// then the victory pair, which nobody needs until the buzzer. Each rung waits
-// for the one above.
-function preload() {
-  loadClip(TRACKS.menu)
-    .then(() => {
-      mark('decoded the menu track');
-      const small = [];
-      for (const k in SFX) for (const n of SFX[k]) small.push(loadClip(SFX_DIR + n + '.wav'));
-      return Promise.all(small);
-    })
-    .then(() => { mark('decoded the effects'); return loadClip(TRACKS.play); })
-    .then(() => { mark('decoded the anthem'); loadClip(VICTORY_STING); loadClip(TRACKS.victory); })
-    .catch(() => {});
+// The tracks nobody is listening to yet, behind everything else in the queue.
+function queueSpareTracks() {
+  const later = [trackUrl('play'), stingUrl(), trackUrl('victory')];
+  for (const url of later) {
+    Q.push(done => {
+      if (musicVia === 'fetch') { loadClip(url).then(done, done); return; }
+      const a = new Audio(url);
+      a.preload = 'auto';
+      spare.push(a);                       // keep it alive so the load sticks
+      a.addEventListener('canplaythrough', done, { once: true });
+      a.addEventListener('error', done, { once: true });
+    });
+  }
 }
+const spare = [];
 
-// Loading order is the whole game here. Thirty-odd media elements created at
-// once all start reading at once, and the music -- the one thing the player is
-// listening to -- waits at the back of that queue. On a disk where every read
-// is cheap nobody notices; on one where every read is scanned first (a Windows
-// repo folder under ransomware protection is the case that found this) it is
-// minutes of silence. So: the current track loads alone, and everything else
-// loads one file at a time behind it, in the order it will be wanted.
-let elJobs = [];          // [url, wantedCopies]
-let elBusy = false;       // a file is being read right now
-let elGate = true;        // held shut until the music is actually playing
-
-function elemAdd(url) {
-  const p = elemPool[url] || (elemPool[url] = { pool: [], i: 0 });
-  const a = new Audio(url);
-  a.preload = 'auto';
-  p.pool.push(a);
-  return a;
-}
-
-// An element to play this instant: a loaded one if there is one, otherwise a
-// fresh one, which will simply arrive late rather than not at all.
-function elemTake(url) {
-  const p = elemPool[url];
-  if (!p || !p.pool.length) return elemAdd(url);
-  return p.pool[p.i = (p.i + 1) % p.pool.length];
-}
-
-function elQueue(url, copies) { elJobs.push([url, copies || 1]); elPump(); }
-
-function elPump() {
-  if (elGate || elBusy || !elJobs.length) return;
-  const job = elJobs.shift();
-  const p = elemPool[job[0]];
-  if (p && p.pool.length >= job[1]) { elPump(); return; }
-  elBusy = true;
-  const a = elemAdd(job[0]);
-  const name = job[0].split('/').pop();
-  let settled = false;
-  const next = why => {
-    if (settled) return;
-    settled = true;
-    mark('loaded ' + name + ' (' + why + ')');
-    elBusy = false;
-    elPump();
-  };
-  a.addEventListener('canplaythrough', () => next('ok'));
-  a.addEventListener('error', () => next('failed'));
-  // One file that never settles either way must not stall everything behind it.
-  setTimeout(() => next('timed out'), 8000);
-}
-
-// Opened by the music, so nothing competes with it for the disk.
-function elOpenGate() {
-  if (!elGate) return;
-  elGate = false;
-  mark('preload queue open');
-  elPump();
-}
-
-// In the order they are wanted: the anthem within seconds of the menu, then one
-// voice of every effect so everything can at least make a noise, then the
-// victory pair, and only then the spare voices that stop an overlapping bounce
-// cutting a squeak off.
-function elQueueRest() {
-  elQueue(TRACKS.play, 1);
-  for (const k in SFX) for (const n of SFX[k]) elQueue(SFX_DIR + n + '.wav', 1);
-  elQueue(VICTORY_STING, 1);
-  elQueue(TRACKS.victory, 1);
-  for (const k in SFX) for (const n of SFX[k]) elQueue(SFX_DIR + n + '.wav', 3);
-}
-
-function elBoot() {
-  mark('engine: elements');
-  applyWantedTrack();          // the music, alone, first
-  elQueueRest();               // everything else, behind the gate
-  setTimeout(elOpenGate, 4000);  // and open it anyway if the music never starts
-}
-
-// There is no gain node to ramp, so a fade is a volume walked by hand.
+// There is no gain node on an <audio> element, so a fade is a volume walked by
+// hand.
 function elFade(a, to, ms, stop) {
   const from = a.volume, t0 = performance.now();
   const tick = () => {
@@ -1541,17 +1643,34 @@ function elFade(a, to, ms, stop) {
 }
 
 function elStart(url, loop) {
-  const a = elemTake(url);
+  const name = url.split('/').pop();
+  const a = new Audio(url);
   a.loop = !!loop;
   a.volume = 0;
-  try { a.currentTime = 0; } catch (e) {}
   elVoices.push(a);
-  mark('starting ' + url.split('/').pop());
+  // The track the player is about to hear gets the disk to itself.
+  Q.hold();
+  let freed = false;
+  const free = () => { if (freed) return; freed = true; Q.release(); };
+  a.addEventListener('canplaythrough', free, { once: true });
+  a.addEventListener('error', () => {
+    free();
+    // The browser said it could play FLAC and then could not find one -- an
+    // un-run tools/build-audio-web.py. The WAVs are always there.
+    if (musicExt !== '.flac') { mark('could not play ' + name); return; }
+    mark('no ' + name + ' - falling back to the WAVs');
+    musicExt = '.wav';
+    const was = curTrack;
+    curTrack = null;
+    if (was) playMusic(was);
+  }, { once: true });
+  setTimeout(free, 8000);
+  mark('starting ' + name);
   a.play().then(() => {
-    mark('playing ' + url.split('/').pop());
+    mark('playing ' + name);
     elFade(a, muted ? 0 : MUSIC_GAIN, 300, false);
-    elOpenGate();
-  }, () => elOpenGate());
+    free();
+  }, free);
   return a;
 }
 
@@ -1565,110 +1684,9 @@ function elStopMusic(ms) {
   }
 }
 
-// Web Audio got the context but not the bytes -- almost always a file:// page
-// where a stricter browser refused the fetch. Hand everything to the elements
-// and start the track that was wanted.
-function downgrade() {
-  if (engine !== 'wa') return;
-  waStop(0);
-  engine = 'el';
-  elBoot();
-}
-
-// Called on the first key or tap, and harmlessly on every one after it.
-function ensureAudio() {
-  if (engine === 'el') return;
-  if (!engine) {
-    // fetch() only speaks http(s). Opened from the filesystem -- which is how
-    // this game is usually played -- the element engine is the only one that
-    // can hear anything, so do not even build a context.
-    engine = /^https?:$/.test(location.protocol) ? 'wa' : 'el';
-    if (engine === 'el') { elBoot(); return; }
-  }
-  if (ac) {
-    if (ac.state === 'suspended') ac.resume().then(applyWantedTrack, () => {});
-    return;
-  }
-  const AC = window.AudioContext || window.webkitAudioContext;
-  if (!AC) return;
-  try { ac = new AC(); } catch (e) { ac = null; engine = 'el'; elBoot(); return; }
-  musicBus = ac.createGain(); musicBus.gain.value = muted ? 0 : MUSIC_GAIN;
-  sfxBus = ac.createGain();   sfxBus.gain.value   = muted ? 0 : SFX_GAIN;
-  musicBus.connect(ac.destination);
-  sfxBus.connect(ac.destination);
-  mark('engine: web audio');
-  preload();
-  if (ac.state === 'suspended') ac.resume().then(applyWantedTrack, () => {});
-  else applyWantedTrack();
-}
-
-function applyWantedTrack() {
-  const want = wantTrack;
-  curTrack = null;
-  if (want) playMusic(want);
-}
-
-function playSfx(group, gain, rate) {
-  if (!audioReady() || muted) return;
-  const names = SFX[group];
-  if (!names) return;
-  // The debounce runs on the wall clock rather than the audio clock, because in
-  // element mode there is no audio clock to run on.
-  const now = performance.now() / 1000;
-  if (now - (sfxAt[group] || -99) < SFX_CD[group]) return;
-  // Randomise the variant, never twice running: three clips played straight
-  // through are more obviously three clips than three clips shuffled.
-  let i = Math.floor(Math.random() * names.length) % names.length;
-  if (names.length > 1 && i === sfxPrev[group]) i = (i + 1) % names.length;
-  const url = SFX_DIR + names[i] + '.wav';
-  const vol = Math.max(0, Math.min(1.5, gain === undefined ? 1 : gain));
-
-  if (engine === 'el') {
-    const p = elemPool[url];
-    if (!p) return;
-    sfxPrev[group] = i;
-    sfxAt[group] = now;
-    const a = p.pool[p.i = (p.i + 1) % p.pool.length];
-    try {
-      a.pause();
-      a.currentTime = 0;
-      a.volume = Math.max(0, Math.min(1, vol * SFX_GAIN));
-      // Without this the browser time-stretches instead of pitching, and the
-      // rim loses the short, high character the rate change is there for.
-      a.preservesPitch = false;
-      a.mozPreservesPitch = false;
-      a.webkitPreservesPitch = false;
-      a.playbackRate = rate || 1;
-      const q = a.play();
-      if (q && q.catch) q.catch(() => {});
-    } catch (e) {}
-    return;
-  }
-
-  const buf = clips[url];
-  if (!buf) return;
-  sfxPrev[group] = i;
-  sfxAt[group] = now;
-  try {
-    const src = ac.createBufferSource();
-    src.buffer = buf;
-    if (rate) src.playbackRate.value = rate;
-    const gn = ac.createGain();
-    gn.gain.value = vol;
-    src.connect(gn); gn.connect(sfxBus);
-    src.start();
-  } catch (e) {}
-}
-
-// A wall is the floor sample held well down: the same ball hitting another hard
-// flat surface, but nobody in the building is looking at it.
-function wallSound(speed) {
-  if (speed > 120) playSfx('bounce', Math.min(0.5, 0.15 + speed / 1800));
-}
-
-// Start a looping track. loopEnd is the whole buffer: both anthems and the
-// victory loop are written so their tails wrap across the repeat point, which
-// only works with the audio engine's own sample-accurate looping.
+// Start a looping track on the Web Audio path. loopEnd is the whole buffer: the
+// tracks are written so their tails wrap across the repeat point, which only
+// works with the audio engine's own sample-accurate looping.
 function musicLoop(buf, at, fade) {
   const src = ac.createBufferSource();
   src.buffer = buf;
@@ -1683,14 +1701,13 @@ function musicLoop(buf, at, fade) {
   musicVoices.push({ src, gn });
 }
 
-// Fade down and stop everything on the music bus. A voice scheduled to start
-// later is stopped before it ever begins, which is what makes leaving the
-// victory screen during the sting safe.
 function fadeOutMusic(fade) {
-  if (engine === 'el') { elStopMusic(fade * 1000); return; }
+  if (musicVia === 'element') { elStopMusic(fade * 1000); return; }
   waStop(fade);
 }
 
+// A voice scheduled to start later is stopped before it ever begins, which is
+// what makes leaving the victory screen during the sting safe.
 function waStop(fade) {
   const voices = musicVoices;
   musicVoices = [];
@@ -1712,31 +1729,35 @@ function playMusic(name) {
   curTrack = name;
   if (name === 'victory') { victorySequence(); return; }
   fadeOutMusic(MUSIC_FADE);
-  if (engine === 'el') { elStart(TRACKS[name], true); return; }
-  loadClip(TRACKS[name]).then(buf => {
+  if (musicVia === 'element') { elStart(trackUrl(name), true); return; }
+  Q.hold();
+  loadClip(trackUrl(name)).then(buf => {
+    Q.release();
     if (curTrack !== name) return;
-    // The context came up but the bytes did not. Nothing the Web Audio path can
-    // do from here; the elements can still read the file.
-    if (!buf) { downgrade(); return; }
+    // The context came up but the bytes did not. If we were asking for FLAC,
+    // the browser may play it but not decode it; otherwise hand the whole of
+    // the music over to the elements, which can still read the file.
+    if (!buf) { if (musicExt === '.flac') { musicExt = '.wav'; curTrack = null; playMusic(name); } else downgrade(); return; }
     if (!audioReady()) return;
     musicLoop(buf, ac.currentTime + 0.02, MUSIC_FADE);
   });
 }
 
-// The sting once, then the loop, four seconds later to the sample.
 function victorySequence() {
   fadeOutMusic(0.25);
-  if (engine === 'el') {
-    elStart(VICTORY_STING, false);
-    // A timer, not a schedule. It will not land on the sample, but the sting
-    // ends in silence, so a few milliseconds either way is not audible.
+  if (musicVia === 'element') {
+    elStart(stingUrl(), false);
+    // A timer, not a schedule. The sting ends in silence, so a few milliseconds
+    // either way is not audible.
     elTimer = setTimeout(() => {
       elTimer = 0;
-      if (curTrack === 'victory') elStart(TRACKS.victory, true);
+      if (curTrack === 'victory') elStart(trackUrl('victory'), true);
     }, STING_LEN * 1000);
     return;
   }
-  Promise.all([loadClip(VICTORY_STING), loadClip(TRACKS.victory)]).then(pair => {
+  Q.hold();
+  Promise.all([loadClip(stingUrl()), loadClip(trackUrl('victory'))]).then(pair => {
+    Q.release();
     const sting = pair[0], loop = pair[1];
     if (curTrack !== 'victory' || !audioReady()) return;
     const t0 = ac.currentTime + 0.05;
@@ -1752,6 +1773,50 @@ function victorySequence() {
     }
     if (loop) musicLoop(loop, t0 + (sting ? STING_LEN : 0), LOOP_ENTRY_FADE);
   });
+}
+
+// The Web Audio path lost its bytes; give the music to the elements.
+function downgrade() {
+  if (musicVia !== 'fetch') return;
+  waStop(0);
+  musicVia = 'element';
+  mark('music downgraded to <audio> elements');
+  const want = wantTrack;
+  curTrack = null;
+  if (want) playMusic(want);
+}
+
+// ---- waking up --------------------------------------------------------------
+// Called on the first key or tap, and harmlessly on every one after it.
+function ensureAudio() {
+  if (ac) {
+    if (ac.state === 'suspended') ac.resume().then(applyWantedTrack, () => {});
+    return;
+  }
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return;
+  try { ac = new AC(); } catch (e) { ac = null; return; }
+  musicBus = ac.createGain(); musicBus.gain.value = muted ? 0 : MUSIC_GAIN;
+  sfxBus = ac.createGain();   sfxBus.gain.value   = muted ? 0 : SFX_GAIN;
+  musicBus.connect(ac.destination);
+  sfxBus.connect(ac.destination);
+  // fetch() only speaks http(s); off the filesystem the music has to come
+  // through an element. The effects do not care either way.
+  musicVia = /^https?:$/.test(location.protocol) ? 'fetch' : 'element';
+  mark('audio up, music via ' + musicVia + ' (' + musicExt + ')');
+  decodeInlineSfx();
+  // Strictly in this order: the track being listened to claims the disk (it
+  // calls Q.hold), and only then do the tracks nobody is listening to yet get
+  // queued behind it. Reversed, the queue starts the in-game anthem first.
+  const kick = () => { applyWantedTrack(); queueSpareTracks(); };
+  if (ac.state === 'suspended') ac.resume().then(kick, kick);
+  else kick();
+}
+
+function applyWantedTrack() {
+  const want = wantTrack;
+  curTrack = null;
+  if (want) playMusic(want);
 }
 
 // Which track belongs to the screen we are on. Called from syncScreens, so
@@ -2248,7 +2313,9 @@ function render() {
   players.forEach((p, i) => {
     p.rig.root.setAttribute('transform', `translate(${p.px.toFixed(1)},${GROUND})`);
     p.rig.root.setAttribute('opacity', menus ? '0' : '1');
-    animatePlayer(p);                    // sets p.mirrorPose for this frame
+    // A rig at zero opacity behind a painted menu does not need a pose, and
+    // asking for one pulls a sprite frame off the disk in front of the menu art.
+    if (!menus) animatePlayer(p);        // sets p.mirrorPose for this frame
     // Characters drawn per direction are never flipped; only the single-facing
     // art turns around.
     const flip = flipsWithFacing(p) ? p.facing * (p.mirrorPose ? -1 : 1) : 1;
@@ -2367,6 +2434,9 @@ if (HAS_SPRITES) {
   buildPads();
 }
 reset();
+// Nothing should wait on the queue forever: without splash art there is no first
+// menu to settle, and splashSettle is what normally opens it.
+setTimeout(Q.open, 3000);
 
 // ---------------------------------------------------------------- loop
 let last = performance.now();
@@ -2396,8 +2466,10 @@ window.__hoop = {
     get track() { return curTrack; },
     get wanted() { return wantTrack; },
     get muted() { return muted; },
-    get engine() { return engine; },
-    get timeline() { return audioLog.slice(); },
+    get via() { return musicVia; },
+    get ext() { return musicExt; },
+    get queued() { return Q.jobs.length; },
+    get timeline() { return loadLog.slice(); },
     get loaded() { return Object.keys(clips).filter(u => clips[u]); },
     get voices() { return musicVoices.length; },
     get clipmap() { return clips; },

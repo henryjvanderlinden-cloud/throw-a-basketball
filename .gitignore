@@ -40,3 +40,7 @@ audio/**/validation.json
 # Tarballs staged out to the cloud workspace, and Python bytecode
 _stage/
 __pycache__/
+
+# audio/sfx-data.js and the .flac tracks ARE committed: they are what the game
+# loads. The .wav sources stay too, as the fallback and as what the build
+# scripts produce.
