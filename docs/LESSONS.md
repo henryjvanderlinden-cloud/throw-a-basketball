@@ -38,6 +38,31 @@ stops being "infer the scale from an arbitrary pose" and becomes "compare like
 with like", which is exact. Worth remembering as a shape: **when a measurement
 is unreliable, look for a way to change what is being measured.**
 
+**Where you cannot change the input, a landmark can be a colour rather than a
+shape.** The old eight-pose sets cannot be re-shot with a calibration frame, and
+they had the same problem in a worse form: each pose was drawn to fill its own
+canvas, so the arms-up poses carry a *smaller body*, and those characters visibly
+shrank at the moment they shot. What worked was the top of the kit — the highest
+row carrying a real run of jersey blue. The jersey sits at the shoulders and
+stays there whatever the arms do, and it is trivially detectable because it is
+the only large blue area up high.
+
+Two things make it trustworthy rather than merely plausible. A pose used by two
+different sequences measures the same from both, which says the number tracks
+scale and not posture. And where a pose is genuinely crouched — the monkey's
+charge, which really does drop his shoulders — the measurement drops with it, so
+the landmark may only be pointed at poses you already know are upright. It is a
+scale check, not a pose check.
+
+**Threshold the landmark as well as the alpha.** The first version of that
+measurement took the topmost blue pixel, and quantisation leaves the odd stray
+blue speck up in the hair. One pixel, in one reference frame, moved its shoulder
+line by 6% of body height — and because every other frame is measured *against*
+that reference, it poisoned the whole table and made a correct rebuild look like
+a regression. Requiring a run rather than a pixel — three, or six per cent of the
+frame width — fixed it. An instrument this cheap needs its own sanity check
+before you trust it to grade the output.
+
 **The generator ignores instructions it finds inconvenient, quietly.** The
 prompt asked for the dribbling hand on the viewer's right in every standing
 pose. It came back on the left — consistently, across the original take and both

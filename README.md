@@ -148,6 +148,13 @@ Four playable characters: **Monkey**, **NBA Player**, **High Schooler**,
 **Zombie**. Animation is deliberately a few frames at a handful of frames per
 second — the heave that old DOS sports games ran on.
 
+They are not all the same size. `CHAR_SCALE` in `build-sprites.py` sets each
+one's height against the standing height: the NBA player is the biggest thing on
+the court at 1.10, the High Schooler a teenager beside him at 0.97, the Monkey
+shortest at 0.88. Normalising everyone to the same *total* height is not the same
+as making them the same size — the Monkey stands in a crouch, so matching his
+overall height scaled his whole body up until he loomed over the professionals.
+
 The **Monkey** is fully animated, with fourteen sequences:
 
 | Sequence | Kind | Rate |

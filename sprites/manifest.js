@@ -10,420 +10,420 @@ window.SPRITE_MANIFEST = {
     "aim": [
      {
       "src": "sprites/monkey/aim/01.png",
-      "w": 90.36,
-      "h": 132.03,
-      "footX": 49.47,
-      "footY": 132.03
+      "w": 79.52,
+      "h": 116.18,
+      "footX": 43.53,
+      "footY": 116.18
      },
      {
       "src": "sprites/monkey/aim/02.png",
-      "w": 93.64,
-      "h": 127.5,
-      "footX": 52.12,
-      "footY": 127.5
+      "w": 82.4,
+      "h": 112.2,
+      "footX": 45.87,
+      "footY": 112.2
      }
     ],
     "break_banana": [
      {
       "src": "sprites/monkey/break_banana/01.png",
-      "w": 116.61,
-      "h": 138.5,
-      "footX": 60.58,
-      "footY": 138.5
+      "w": 102.62,
+      "h": 121.88,
+      "footX": 53.31,
+      "footY": 121.88
      },
      {
       "src": "sprites/monkey/break_banana/02.png",
-      "w": 110.11,
-      "h": 138.5,
-      "footX": 54.95,
-      "footY": 138.5
+      "w": 96.9,
+      "h": 121.88,
+      "footX": 48.35,
+      "footY": 121.88
      },
      {
       "src": "sprites/monkey/break_banana/03.png",
-      "w": 108.59,
-      "h": 138.29,
-      "footX": 54.19,
-      "footY": 138.29
+      "w": 95.56,
+      "h": 121.69,
+      "footX": 47.68,
+      "footY": 121.69
      },
      {
       "src": "sprites/monkey/break_banana/04.png",
-      "w": 123.55,
-      "h": 137.42,
-      "footX": 57.55,
-      "footY": 137.42
+      "w": 108.72,
+      "h": 120.93,
+      "footX": 50.64,
+      "footY": 120.93
      }
     ],
     "break_wave": [
      {
       "src": "sprites/monkey/break_wave/01.png",
-      "w": 106.46,
-      "h": 144.34,
-      "footX": 54.46,
-      "footY": 144.34
+      "w": 93.68,
+      "h": 127.02,
+      "footX": 47.93,
+      "footY": 127.02
      },
      {
       "src": "sprites/monkey/break_wave/02.png",
-      "w": 109.34,
-      "h": 126.02,
-      "footX": 51.68,
-      "footY": 126.02
+      "w": 96.22,
+      "h": 110.9,
+      "footX": 45.48,
+      "footY": 110.9
      },
      {
       "src": "sprites/monkey/break_wave/03.png",
-      "w": 112.84,
-      "h": 128.08,
-      "footX": 52.2,
-      "footY": 128.08
+      "w": 99.3,
+      "h": 112.71,
+      "footX": 45.93,
+      "footY": 112.71
      },
      {
       "src": "sprites/monkey/break_wave/04.png",
-      "w": 104.81,
-      "h": 123.55,
-      "footX": 52.4,
-      "footY": 123.55
+      "w": 92.23,
+      "h": 108.72,
+      "footX": 46.12,
+      "footY": 108.72
      }
     ],
     "celebrate": [
      {
       "src": "sprites/monkey/celebrate/01.png",
-      "w": 106.81,
-      "h": 174.91,
-      "footX": 47.02,
-      "footY": 174.91
+      "w": 94.0,
+      "h": 153.92,
+      "footX": 41.38,
+      "footY": 153.92
      },
      {
       "src": "sprites/monkey/celebrate/02.png",
-      "w": 109.67,
-      "h": 138.29,
-      "footX": 53.5,
-      "footY": 138.29
+      "w": 96.51,
+      "h": 121.69,
+      "footX": 47.08,
+      "footY": 121.69
      }
     ],
     "celebrate_flip": [
      {
       "src": "sprites/monkey/celebrate_flip/01.png",
-      "w": 82.97,
-      "h": 98.06,
-      "footX": 38.47,
-      "footY": 98.06
+      "w": 73.01,
+      "h": 86.29,
+      "footX": 33.85,
+      "footY": 86.29
      },
      {
       "src": "sprites/monkey/celebrate_flip/02.png",
-      "w": 83.47,
-      "h": 123.2,
-      "footX": 37.46,
-      "footY": 133.76
+      "w": 73.46,
+      "h": 108.42,
+      "footX": 32.97,
+      "footY": 117.71
      },
      {
       "src": "sprites/monkey/celebrate_flip/03.png",
-      "w": 81.71,
-      "h": 149.35,
-      "footX": 40.23,
-      "footY": 150.35
+      "w": 71.91,
+      "h": 131.43,
+      "footX": 35.4,
+      "footY": 132.31
      },
      {
       "src": "sprites/monkey/celebrate_flip/04.png",
-      "w": 90.77,
-      "h": 94.29,
-      "footX": 40.73,
-      "footY": 106.61
+      "w": 79.87,
+      "h": 82.97,
+      "footX": 35.84,
+      "footY": 93.81
      },
      {
       "src": "sprites/monkey/celebrate_flip/05.png",
-      "w": 89.76,
-      "h": 79.95,
-      "footX": 44.0,
-      "footY": 79.95
+      "w": 78.99,
+      "h": 70.36,
+      "footX": 38.72,
+      "footY": 70.36
      },
      {
       "src": "sprites/monkey/celebrate_flip/06.png",
-      "w": 79.2,
-      "h": 144.57,
-      "footX": 32.94,
-      "footY": 144.57
+      "w": 69.7,
+      "h": 127.22,
+      "footX": 28.98,
+      "footY": 127.22
      }
     ],
     "celebrate_pump": [
      {
       "src": "sprites/monkey/celebrate_pump/01.png",
-      "w": 108.37,
-      "h": 150.64,
-      "footX": 52.13,
-      "footY": 150.64
+      "w": 95.37,
+      "h": 132.56,
+      "footX": 45.87,
+      "footY": 132.56
      },
      {
       "src": "sprites/monkey/celebrate_pump/02.png",
-      "w": 110.54,
-      "h": 133.08,
-      "footX": 55.16,
-      "footY": 133.3
+      "w": 97.28,
+      "h": 117.11,
+      "footX": 48.54,
+      "footY": 117.3
      },
      {
       "src": "sprites/monkey/celebrate_pump/03.png",
-      "w": 110.54,
-      "h": 133.73,
-      "footX": 55.16,
-      "footY": 133.95
+      "w": 97.28,
+      "h": 117.69,
+      "footX": 48.54,
+      "footY": 117.88
      }
     ],
     "charge": [
      {
       "src": "sprites/monkey/charge/01.png",
-      "w": 102.89,
-      "h": 131.41,
-      "footX": 59.18,
-      "footY": 131.41
+      "w": 90.55,
+      "h": 115.65,
+      "footX": 52.08,
+      "footY": 115.65
      },
      {
       "src": "sprites/monkey/charge/02.png",
-      "w": 95.07,
-      "h": 116.13,
-      "footX": 50.89,
-      "footY": 116.13
+      "w": 83.66,
+      "h": 102.19,
+      "footX": 44.78,
+      "footY": 102.19
      },
      {
       "src": "sprites/monkey/charge/03.png",
-      "w": 95.44,
-      "h": 98.61,
-      "footX": 50.8,
-      "footY": 98.61
+      "w": 83.99,
+      "h": 86.77,
+      "footX": 44.7,
+      "footY": 86.77
      }
     ],
     "dribble_idle": [
      {
       "src": "sprites/monkey/dribble_idle/01.png",
-      "w": 111.41,
-      "h": 132.0,
-      "footX": 56.03,
-      "footY": 132.0
+      "w": 98.04,
+      "h": 116.16,
+      "footX": 49.31,
+      "footY": 116.16
      },
      {
       "src": "sprites/monkey/dribble_idle/02.png",
-      "w": 108.59,
-      "h": 133.08,
-      "footX": 53.43,
-      "footY": 133.08
+      "w": 95.56,
+      "h": 117.11,
+      "footX": 47.02,
+      "footY": 117.11
      },
      {
       "src": "sprites/monkey/dribble_idle/03.png",
-      "w": 108.59,
-      "h": 134.6,
-      "footX": 53.75,
-      "footY": 134.6
+      "w": 95.56,
+      "h": 118.45,
+      "footX": 47.3,
+      "footY": 118.45
      },
      {
       "src": "sprites/monkey/dribble_idle/04.png",
-      "w": 109.89,
-      "h": 132.43,
-      "footX": 55.92,
-      "footY": 132.43
+      "w": 96.7,
+      "h": 116.54,
+      "footX": 49.21,
+      "footY": 116.54
      }
     ],
     "gameover": [
      {
       "src": "sprites/monkey/gameover/01.png",
-      "w": 128.94,
-      "h": 112.35,
-      "footX": 54.84,
-      "footY": 112.35
+      "w": 113.47,
+      "h": 98.86,
+      "footX": 48.26,
+      "footY": 98.86
      },
      {
       "src": "sprites/monkey/gameover/02.png",
-      "w": 132.75,
-      "h": 130.85,
-      "footX": 55.41,
-      "footY": 130.85
+      "w": 116.82,
+      "h": 115.15,
+      "footX": 48.76,
+      "footY": 115.15
      }
     ],
     "panic": [
      {
       "src": "sprites/monkey/panic/01.png",
-      "w": 107.69,
-      "h": 128.69,
-      "footX": 53.74,
-      "footY": 128.9
+      "w": 94.77,
+      "h": 113.25,
+      "footX": 47.29,
+      "footY": 113.43
      },
      {
       "src": "sprites/monkey/panic/02.png",
-      "w": 107.07,
-      "h": 143.31,
-      "footX": 53.43,
-      "footY": 143.31
+      "w": 94.23,
+      "h": 126.12,
+      "footX": 47.02,
+      "footY": 126.12
      },
      {
       "src": "sprites/monkey/panic/03.png",
-      "w": 107.69,
-      "h": 131.37,
-      "footX": 53.74,
-      "footY": 131.37
+      "w": 94.77,
+      "h": 115.61,
+      "footX": 47.29,
+      "footY": 115.61
      },
      {
       "src": "sprites/monkey/panic/04.png",
-      "w": 106.46,
-      "h": 143.31,
-      "footX": 53.13,
-      "footY": 143.31
+      "w": 93.68,
+      "h": 126.12,
+      "footX": 46.75,
+      "footY": 126.12
      }
     ],
     "pickup": [
      {
       "src": "sprites/monkey/pickup/01.png",
-      "w": 110.54,
-      "h": 115.7,
-      "footX": 55.18,
-      "footY": 116.25
+      "w": 97.28,
+      "h": 101.82,
+      "footX": 48.56,
+      "footY": 102.3
      },
      {
       "src": "sprites/monkey/pickup/02.png",
-      "w": 110.73,
-      "h": 128.04,
-      "footX": 55.27,
-      "footY": 128.04
+      "w": 97.44,
+      "h": 112.68,
+      "footX": 48.64,
+      "footY": 112.68
      },
      {
       "src": "sprites/monkey/pickup/03.png",
-      "w": 111.46,
-      "h": 130.99,
-      "footX": 57.85,
-      "footY": 131.54
+      "w": 98.09,
+      "h": 115.27,
+      "footX": 50.91,
+      "footY": 115.76
      }
     ],
     "run_dribble_l": [
      {
       "src": "sprites/monkey/run_dribble_l/01.png",
-      "w": 117.68,
-      "h": 133.61,
-      "footX": 56.61,
-      "footY": 133.61
+      "w": 103.56,
+      "h": 117.58,
+      "footX": 49.82,
+      "footY": 117.58
      },
      {
       "src": "sprites/monkey/run_dribble_l/02.png",
-      "w": 108.97,
-      "h": 132.76,
-      "footX": 60.64,
-      "footY": 133.4
+      "w": 95.89,
+      "h": 116.83,
+      "footX": 53.37,
+      "footY": 117.39
      },
      {
       "src": "sprites/monkey/run_dribble_l/03.png",
-      "w": 113.0,
-      "h": 133.61,
-      "footX": 61.07,
-      "footY": 133.61
+      "w": 99.44,
+      "h": 117.58,
+      "footX": 53.74,
+      "footY": 117.58
      },
      {
       "src": "sprites/monkey/run_dribble_l/04.png",
-      "w": 103.87,
-      "h": 133.61,
-      "footX": 52.57,
-      "footY": 133.61
+      "w": 91.41,
+      "h": 117.58,
+      "footX": 46.26,
+      "footY": 117.58
      }
     ],
     "run_dribble_r": [
      {
       "src": "sprites/monkey/run_dribble_r/01.png",
-      "w": 111.6,
-      "h": 137.34,
-      "footX": 52.3,
-      "footY": 137.96
+      "w": 98.21,
+      "h": 120.86,
+      "footX": 46.03,
+      "footY": 121.41
      },
      {
       "src": "sprites/monkey/run_dribble_r/02.png",
-      "w": 102.96,
-      "h": 137.34,
-      "footX": 59.1,
-      "footY": 137.96
+      "w": 90.6,
+      "h": 120.86,
+      "footX": 52.0,
+      "footY": 121.41
      },
      {
       "src": "sprites/monkey/run_dribble_r/03.png",
-      "w": 101.31,
-      "h": 137.34,
-      "footX": 54.77,
-      "footY": 137.96
+      "w": 89.15,
+      "h": 120.86,
+      "footX": 48.2,
+      "footY": 121.41
      },
      {
       "src": "sprites/monkey/run_dribble_r/04.png",
-      "w": 104.4,
-      "h": 137.14,
-      "footX": 46.95,
-      "footY": 137.14
+      "w": 91.87,
+      "h": 120.68,
+      "footX": 41.31,
+      "footY": 120.68
      }
     ],
     "run_l": [
      {
       "src": "sprites/monkey/run_l/01.png",
-      "w": 134.49,
-      "h": 127.21,
-      "footX": 64.4,
-      "footY": 127.21
+      "w": 118.35,
+      "h": 111.95,
+      "footX": 56.67,
+      "footY": 111.95
      },
      {
       "src": "sprites/monkey/run_l/02.png",
-      "w": 130.85,
-      "h": 127.21,
-      "footX": 64.71,
-      "footY": 127.21
+      "w": 115.15,
+      "h": 111.95,
+      "footX": 56.95,
+      "footY": 111.95
      }
     ],
     "run_r": [
      {
       "src": "sprites/monkey/run_r/01.png",
-      "w": 132.38,
-      "h": 126.63,
-      "footX": 61.29,
-      "footY": 126.63
+      "w": 116.49,
+      "h": 111.43,
+      "footX": 53.93,
+      "footY": 111.43
      },
      {
       "src": "sprites/monkey/run_r/02.png",
-      "w": 124.6,
-      "h": 126.63,
-      "footX": 62.47,
-      "footY": 126.63
+      "w": 109.65,
+      "h": 111.43,
+      "footX": 54.97,
+      "footY": 111.43
      }
     ],
     "shot": [
      {
       "src": "sprites/monkey/shot/01.png",
-      "w": 88.02,
-      "h": 99.63,
-      "footX": 45.33,
-      "footY": 99.63
+      "w": 77.46,
+      "h": 87.68,
+      "footX": 39.89,
+      "footY": 87.68
      },
      {
       "src": "sprites/monkey/shot/02.png",
-      "w": 99.02,
-      "h": 137.53,
-      "footX": 60.51,
-      "footY": 137.73
+      "w": 87.14,
+      "h": 121.02,
+      "footX": 53.25,
+      "footY": 121.2
      },
      {
       "src": "sprites/monkey/shot/03.png",
-      "w": 89.04,
-      "h": 164.22,
-      "footX": 55.52,
-      "footY": 165.64
+      "w": 78.35,
+      "h": 144.51,
+      "footX": 48.86,
+      "footY": 145.77
      },
      {
       "src": "sprites/monkey/shot/04.png",
-      "w": 77.42,
-      "h": 155.86,
-      "footX": 44.62,
-      "footY": 156.07
+      "w": 68.13,
+      "h": 137.16,
+      "footX": 39.27,
+      "footY": 137.34
      }
     ],
     "turn": [
      {
       "src": "sprites/monkey/turn/01.png",
-      "w": 108.43,
-      "h": 132.0,
-      "footX": 59.59,
-      "footY": 132.0
+      "w": 95.42,
+      "h": 116.16,
+      "footX": 52.44,
+      "footY": 116.16
      },
      {
       "src": "sprites/monkey/turn/02.png",
-      "w": 100.51,
-      "h": 131.06,
-      "footX": 52.42,
-      "footY": 131.06
+      "w": 88.45,
+      "h": 115.33,
+      "footX": 46.13,
+      "footY": 115.33
      }
     ]
    },
@@ -436,8 +436,8 @@ window.SPRITE_MANIFEST = {
     "run_dribble_r": 1,
     "run_dribble_l": -1
    },
-   "handX": 15.51,
-   "handY": -165.64
+   "handX": 13.52,
+   "handY": -145.77
   },
   {
    "key": "nba",
@@ -447,135 +447,135 @@ window.SPRITE_MANIFEST = {
     "dribble_idle": [
      {
       "src": "sprites/nba/dribble_idle/01.png",
-      "w": 88.25,
-      "h": 132.0,
-      "footX": 45.48,
-      "footY": 132.0
+      "w": 97.07,
+      "h": 145.2,
+      "footX": 50.02,
+      "footY": 145.2
      },
      {
       "src": "sprites/nba/dribble_idle/02.png",
-      "w": 84.24,
-      "h": 128.36,
-      "footX": 42.07,
-      "footY": 128.36
+      "w": 94.05,
+      "h": 143.32,
+      "footX": 46.97,
+      "footY": 143.32
      }
     ],
     "run_dribble_r": [
      {
       "src": "sprites/nba/run_dribble_r/01.png",
-      "w": 88.25,
-      "h": 132.0,
-      "footX": 45.48,
-      "footY": 132.0
+      "w": 97.07,
+      "h": 145.2,
+      "footX": 50.02,
+      "footY": 145.2
      },
      {
       "src": "sprites/nba/run_dribble_r/02.png",
-      "w": 84.24,
-      "h": 128.36,
-      "footX": 42.07,
-      "footY": 128.36
+      "w": 94.05,
+      "h": 143.32,
+      "footX": 46.97,
+      "footY": 143.32
      }
     ],
     "run_dribble_l": [
      {
       "src": "sprites/nba/run_dribble_l/01.png",
-      "w": 88.25,
-      "h": 132.0,
-      "footX": 45.48,
-      "footY": 132.0
+      "w": 97.07,
+      "h": 145.2,
+      "footX": 50.02,
+      "footY": 145.2
      },
      {
       "src": "sprites/nba/run_dribble_l/02.png",
-      "w": 84.24,
-      "h": 128.36,
-      "footX": 42.07,
-      "footY": 128.36
+      "w": 94.05,
+      "h": 143.32,
+      "footX": 46.97,
+      "footY": 143.32
      }
     ],
     "run_r": [
      {
       "src": "sprites/nba/run_r/01.png",
-      "w": 88.25,
-      "h": 132.0,
-      "footX": 45.48,
-      "footY": 132.0
+      "w": 97.07,
+      "h": 145.2,
+      "footX": 50.02,
+      "footY": 145.2
      },
      {
       "src": "sprites/nba/run_r/02.png",
-      "w": 84.24,
-      "h": 128.36,
-      "footX": 42.07,
-      "footY": 128.36
+      "w": 94.05,
+      "h": 143.32,
+      "footX": 46.97,
+      "footY": 143.32
      }
     ],
     "run_l": [
      {
       "src": "sprites/nba/run_l/01.png",
-      "w": 88.25,
-      "h": 132.0,
-      "footX": 45.48,
-      "footY": 132.0
+      "w": 97.07,
+      "h": 145.2,
+      "footX": 50.02,
+      "footY": 145.2
      },
      {
       "src": "sprites/nba/run_l/02.png",
-      "w": 84.24,
-      "h": 128.36,
-      "footX": 42.07,
-      "footY": 128.36
+      "w": 94.05,
+      "h": 143.32,
+      "footX": 46.97,
+      "footY": 143.32
      }
     ],
     "aim": [
      {
       "src": "sprites/nba/aim/01.png",
-      "w": 93.01,
-      "h": 127.34,
-      "footX": 46.46,
-      "footY": 127.34
+      "w": 105.27,
+      "h": 144.13,
+      "footX": 52.58,
+      "footY": 144.13
      },
      {
       "src": "sprites/nba/aim/02.png",
-      "w": 86.94,
-      "h": 127.06,
-      "footX": 45.29,
-      "footY": 127.06
+      "w": 98.89,
+      "h": 144.51,
+      "footX": 51.51,
+      "footY": 144.51
      }
     ],
     "charge": [
      {
       "src": "sprites/nba/charge/01.png",
-      "w": 75.56,
-      "h": 132.47,
-      "footX": 37.73,
-      "footY": 132.47
+      "w": 95.59,
+      "h": 167.57,
+      "footX": 47.73,
+      "footY": 167.57
      },
      {
       "src": "sprites/nba/charge/02.png",
-      "w": 86.94,
-      "h": 127.06,
-      "footX": 45.29,
-      "footY": 127.06
+      "w": 98.89,
+      "h": 144.51,
+      "footX": 51.51,
+      "footY": 144.51
      }
     ],
     "shot": [
      {
       "src": "sprites/nba/shot/01.png",
-      "w": 53.45,
-      "h": 129.01,
-      "footX": 17.35,
-      "footY": 129.01
+      "w": 71.15,
+      "h": 171.72,
+      "footX": 23.09,
+      "footY": 171.72
      },
      {
       "src": "sprites/nba/shot/02.png",
-      "w": 82.74,
-      "h": 130.51,
-      "footX": 41.47,
-      "footY": 130.51
+      "w": 101.58,
+      "h": 160.21,
+      "footX": 50.9,
+      "footY": 160.21
      }
     ]
    },
    "ballSide": {},
-   "handX": 15.12,
-   "handY": -129.01
+   "handX": 20.25,
+   "handY": -171.72
   },
   {
    "key": "highschooler",
@@ -585,135 +585,135 @@ window.SPRITE_MANIFEST = {
     "dribble_idle": [
      {
       "src": "sprites/highschooler/dribble_idle/01.png",
-      "w": 81.97,
-      "h": 132.0,
-      "footX": 41.17,
-      "footY": 132.0
+      "w": 79.51,
+      "h": 128.04,
+      "footX": 39.94,
+      "footY": 128.04
      },
      {
       "src": "sprites/highschooler/dribble_idle/02.png",
-      "w": 82.35,
-      "h": 131.91,
-      "footX": 43.12,
-      "footY": 131.91
+      "w": 79.88,
+      "h": 127.95,
+      "footX": 41.82,
+      "footY": 127.95
      }
     ],
     "run_dribble_r": [
      {
       "src": "sprites/highschooler/run_dribble_r/01.png",
-      "w": 81.97,
-      "h": 132.0,
-      "footX": 41.17,
-      "footY": 132.0
+      "w": 79.51,
+      "h": 128.04,
+      "footX": 39.94,
+      "footY": 128.04
      },
      {
       "src": "sprites/highschooler/run_dribble_r/02.png",
-      "w": 82.35,
-      "h": 131.91,
-      "footX": 43.12,
-      "footY": 131.91
+      "w": 79.88,
+      "h": 127.95,
+      "footX": 41.82,
+      "footY": 127.95
      }
     ],
     "run_dribble_l": [
      {
       "src": "sprites/highschooler/run_dribble_l/01.png",
-      "w": 81.97,
-      "h": 132.0,
-      "footX": 41.17,
-      "footY": 132.0
+      "w": 79.51,
+      "h": 128.04,
+      "footX": 39.94,
+      "footY": 128.04
      },
      {
       "src": "sprites/highschooler/run_dribble_l/02.png",
-      "w": 82.35,
-      "h": 131.91,
-      "footX": 43.12,
-      "footY": 131.91
+      "w": 79.88,
+      "h": 127.95,
+      "footX": 41.82,
+      "footY": 127.95
      }
     ],
     "run_r": [
      {
       "src": "sprites/highschooler/run_r/01.png",
-      "w": 81.97,
-      "h": 132.0,
-      "footX": 41.17,
-      "footY": 132.0
+      "w": 79.51,
+      "h": 128.04,
+      "footX": 39.94,
+      "footY": 128.04
      },
      {
       "src": "sprites/highschooler/run_r/02.png",
-      "w": 82.35,
-      "h": 131.91,
-      "footX": 43.12,
-      "footY": 131.91
+      "w": 79.88,
+      "h": 127.95,
+      "footX": 41.82,
+      "footY": 127.95
      }
     ],
     "run_l": [
      {
       "src": "sprites/highschooler/run_l/01.png",
-      "w": 81.97,
-      "h": 132.0,
-      "footX": 41.17,
-      "footY": 132.0
+      "w": 79.51,
+      "h": 128.04,
+      "footX": 39.94,
+      "footY": 128.04
      },
      {
       "src": "sprites/highschooler/run_l/02.png",
-      "w": 82.35,
-      "h": 131.91,
-      "footX": 43.12,
-      "footY": 131.91
+      "w": 79.88,
+      "h": 127.95,
+      "footX": 41.82,
+      "footY": 127.95
      }
     ],
     "aim": [
      {
       "src": "sprites/highschooler/aim/01.png",
-      "w": 85.95,
-      "h": 129.63,
-      "footX": 42.93,
-      "footY": 129.63
+      "w": 84.87,
+      "h": 128.01,
+      "footX": 42.39,
+      "footY": 128.01
      },
      {
       "src": "sprites/highschooler/aim/02.png",
-      "w": 83.29,
-      "h": 126.6,
-      "footX": 45.82,
-      "footY": 126.6
+      "w": 84.03,
+      "h": 127.71,
+      "footX": 46.22,
+      "footY": 127.71
      }
     ],
     "charge": [
      {
       "src": "sprites/highschooler/charge/01.png",
-      "w": 81.4,
-      "h": 125.37,
-      "footX": 40.65,
-      "footY": 125.37
+      "w": 86.22,
+      "h": 132.79,
+      "footX": 43.06,
+      "footY": 132.79
      },
      {
       "src": "sprites/highschooler/charge/02.png",
-      "w": 56.95,
-      "h": 129.44,
-      "footX": 28.43,
-      "footY": 129.44
+      "w": 61.65,
+      "h": 140.12,
+      "footX": 30.77,
+      "footY": 140.12
      }
     ],
     "shot": [
      {
       "src": "sprites/highschooler/shot/01.png",
-      "w": 45.11,
-      "h": 131.34,
-      "footX": 14.36,
-      "footY": 131.34
+      "w": 49.53,
+      "h": 144.21,
+      "footX": 15.76,
+      "footY": 144.21
      },
      {
       "src": "sprites/highschooler/shot/02.png",
-      "w": 75.24,
-      "h": 131.72,
-      "footX": 36.39,
-      "footY": 131.72
+      "w": 78.75,
+      "h": 137.86,
+      "footX": 38.08,
+      "footY": 137.86
      }
     ]
    },
    "ballSide": {},
-   "handX": 15.96,
-   "handY": -131.34
+   "handX": 17.51,
+   "handY": -144.21
   },
   {
    "key": "zombie",
@@ -730,10 +730,10 @@ window.SPRITE_MANIFEST = {
      },
      {
       "src": "sprites/zombie/dribble_idle/02.png",
-      "w": 92.63,
-      "h": 126.73,
-      "footX": 48.76,
-      "footY": 126.73
+      "w": 94.95,
+      "h": 129.9,
+      "footX": 49.98,
+      "footY": 129.9
      }
     ],
     "run_dribble_r": [
@@ -746,10 +746,10 @@ window.SPRITE_MANIFEST = {
      },
      {
       "src": "sprites/zombie/run_dribble_r/02.png",
-      "w": 92.63,
-      "h": 126.73,
-      "footX": 48.76,
-      "footY": 126.73
+      "w": 94.95,
+      "h": 129.9,
+      "footX": 49.98,
+      "footY": 129.9
      }
     ],
     "run_dribble_l": [
@@ -762,10 +762,10 @@ window.SPRITE_MANIFEST = {
      },
      {
       "src": "sprites/zombie/run_dribble_l/02.png",
-      "w": 92.63,
-      "h": 126.73,
-      "footX": 48.76,
-      "footY": 126.73
+      "w": 94.95,
+      "h": 129.9,
+      "footX": 49.98,
+      "footY": 129.9
      }
     ],
     "run_r": [
@@ -778,10 +778,10 @@ window.SPRITE_MANIFEST = {
      },
      {
       "src": "sprites/zombie/run_r/02.png",
-      "w": 92.63,
-      "h": 126.73,
-      "footX": 48.76,
-      "footY": 126.73
+      "w": 94.95,
+      "h": 129.9,
+      "footX": 49.98,
+      "footY": 129.9
      }
     ],
     "run_l": [
@@ -794,64 +794,64 @@ window.SPRITE_MANIFEST = {
      },
      {
       "src": "sprites/zombie/run_l/02.png",
-      "w": 92.63,
-      "h": 126.73,
-      "footX": 48.76,
-      "footY": 126.73
+      "w": 94.95,
+      "h": 129.9,
+      "footX": 49.98,
+      "footY": 129.9
      }
     ],
     "aim": [
      {
       "src": "sprites/zombie/aim/01.png",
-      "w": 90.62,
-      "h": 128.36,
-      "footX": 43.97,
-      "footY": 128.36
+      "w": 91.89,
+      "h": 130.16,
+      "footX": 44.58,
+      "footY": 130.16
      },
      {
       "src": "sprites/zombie/aim/02.png",
-      "w": 86.31,
-      "h": 118.97,
-      "footX": 51.06,
-      "footY": 118.97
+      "w": 94.08,
+      "h": 129.68,
+      "footX": 55.65,
+      "footY": 129.68
      }
     ],
     "charge": [
      {
       "src": "sprites/zombie/charge/01.png",
-      "w": 61.79,
-      "h": 133.53,
-      "footX": 30.84,
-      "footY": 133.53
+      "w": 69.14,
+      "h": 149.42,
+      "footX": 34.52,
+      "footY": 149.42
      },
      {
       "src": "sprites/zombie/charge/02.png",
-      "w": 58.62,
-      "h": 134.2,
-      "footX": 29.26,
-      "footY": 134.2
+      "w": 63.02,
+      "h": 144.27,
+      "footX": 31.46,
+      "footY": 144.27
      }
     ],
     "shot": [
      {
       "src": "sprites/zombie/shot/01.png",
-      "w": 77.49,
-      "h": 131.71,
-      "footX": 46.84,
-      "footY": 131.71
+      "w": 82.61,
+      "h": 140.41,
+      "footX": 49.93,
+      "footY": 140.41
      },
      {
       "src": "sprites/zombie/shot/02.png",
-      "w": 76.92,
-      "h": 127.98,
-      "footX": 43.68,
-      "footY": 127.98
+      "w": 83.77,
+      "h": 139.37,
+      "footX": 47.57,
+      "footY": 139.37
      }
     ]
    },
    "ballSide": {},
-   "handX": 22.65,
-   "handY": -131.71
+   "handX": 13.91,
+   "handY": -140.41
   }
  ]
 };
