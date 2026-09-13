@@ -325,6 +325,24 @@ actually made on a keyboard -- so the run is only forgotten after
 <kbd>M</kbd> or the speaker button silences everything; the choice is remembered
 in `localStorage`. The button is there because a tablet has no <kbd>M</kbd>.
 
+### Two engines, because of how the game is opened
+
+The game is usually opened by double-clicking `index.html`, not served, and
+`fetch()` refuses a `file://` URL outright. So there are two paths:
+
+- **Web Audio** (`engine === 'wa'`), chosen when the page is on `http(s)`:
+  decoded buffers, sample-accurate looping, the victory hand-off scheduled on
+  the audio clock, per-voice gain. This is what GitHub Pages gets.
+- **`<audio>` elements** (`engine === 'el'`), chosen for anything else, and
+  fallen back to if the context comes up but the bytes never arrive. Three
+  elements per effect so a bounce landing on a squeak does not cut it off, a
+  volume walked by hand where the gain ramp was, and the victory hand-off on a
+  `setTimeout` rather than a schedule. The loop seam is at the browser's mercy
+  and the hand-off is a few milliseconds loose; everything is audible.
+
+The protocol check is made once, on the first gesture. In element mode no
+`AudioContext` is built at all.
+
 ### How it behaves
 
 - **Nothing is created until the player touches something.** A browser will not
@@ -335,16 +353,17 @@ in `localStorage`. The button is there because a tablet has no <kbd>M</kbd>.
 - **Loading is a ladder.** The twelve effects first (they are small and wanted
   within seconds), then the two anthems, then the victory pair, so the menu
   music is not queued behind six megabytes of anthem.
-- **The victory hand-off is scheduled, not fired.** The sting is exactly four
-  seconds and the loop is written to begin where it ends, so the loop is
-  scheduled at `stingStart + 4` on the audio clock. Waiting for an `ended` event
-  would arrive late and leave a hole in the middle of the tune.
+- **The victory hand-off is scheduled, not fired** (on the Web Audio path). The
+  sting is exactly four seconds and the loop is written to begin where it ends,
+  so the loop is scheduled at `stingStart + 4` on the audio clock. Waiting for
+  an `ended` event would arrive late and leave a hole in the middle of the tune.
 - **Tracks loop on the audio engine, not on the media element.** All three are
   written so their reverb tails wrap across the repeat point; only
   sample-accurate looping keeps the seam inaudible.
 - **Every effect group has its own debounce** (70 ms for impacts, 180 ms for
-  squeaks). A frame runs three physics sub-steps and a ball can rattle between
-  the two rim nubs inside one of them.
+  squeaks), on the wall clock rather than the audio clock, because in element
+  mode there is no audio clock. A frame runs three physics sub-steps and a ball
+  can rattle between the two rim nubs inside one of them.
 - Variants are randomised and never repeat twice running.
 
 ### The packs
@@ -399,11 +418,15 @@ the things that must hold whatever is pressed: at most one ball-holder, the
 holder's state agreeing with who owns the ball, nobody off the court, no NaN, no
 negative clock.
 
-`test-audio.py` runs the browser with `--autoplay-policy=no-user-gesture-required`,
+`test-audio.py` runs every check over HTTP and then runs a second pass on a
+`file://` URL, because those are two different audio engines and the served one
+passing says nothing about the one a player actually gets. It runs the browser
+with `--autoplay-policy=no-user-gesture-required`,
 because a synthetic key press is not a trusted gesture and would leave the
 context suspended forever. It patches `createBufferSource` to record which file
-each voice actually plays, so it can check that a basket swishes and a turn
-squeaks rather than only that *a* sound happened. Note that the effect debounce
+each voice actually plays -- and `HTMLMediaElement.play` for the same reason on
+the filesystem pass -- so it can check that a basket swishes and a turn squeaks
+rather than only that *a* sound happened. Note that the effect debounce
 runs on the audio clock -- real time -- while `step()` is simulated time, so a
 test driving ninety frames in ten milliseconds will hear one bounce, not three.
 

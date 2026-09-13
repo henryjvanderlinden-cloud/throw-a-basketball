@@ -1396,7 +1396,18 @@ let musicVoices = [];                   // every music source currently schedule
 let muted = false;
 try { muted = localStorage.getItem('hoop.mute') === '1'; } catch (e) {}
 
-const audioReady = () => !!(ac && ac.state === 'running');
+// Two engines. 'wa' is Web Audio -- decoded buffers, sample-accurate loops,
+// scheduled hand-offs -- and needs the bytes, which it gets with fetch(). 'el'
+// is plain <audio> elements, for a game opened straight off disk: fetch()
+// cannot read a file:// URL, so on that path the buffers never arrive and the
+// good engine is silent. The element engine loses the seamless loop and the
+// four-second hand-off is a timer rather than a schedule, but it makes noise.
+let engine = null;
+const elemPool = Object.create(null);   // url -> { pool: [Audio], i } for effects
+let elVoices = [];                      // <audio> elements playing music now
+let elTimer = 0;                        // the victory loop's pending start
+
+const audioReady = () => engine === 'el' || !!(engine === 'wa' && ac && ac.state === 'running');
 
 function loadClip(url) {
   if (!ac) return Promise.resolve(null);
@@ -1429,15 +1440,83 @@ function preload() {
     .catch(() => {});
 }
 
+// Three copies of each effect, so a bounce landing on top of a squeak does not
+// cut it off. An <audio> element can only play one thing at a time.
+function preloadElements() {
+  for (const k in SFX) for (const n of SFX[k]) {
+    const url = SFX_DIR + n + '.wav';
+    if (elemPool[url]) continue;
+    const pool = [];
+    for (let j = 0; j < 3; j++) {
+      const a = new Audio(url);
+      a.preload = 'auto';
+      pool.push(a);
+    }
+    elemPool[url] = { pool: pool, i: 0 };
+  }
+}
+
+// There is no gain node to ramp, so a fade is a volume walked by hand.
+function elFade(a, to, ms, stop) {
+  const from = a.volume, t0 = performance.now();
+  const tick = () => {
+    const u = Math.min(1, (performance.now() - t0) / Math.max(1, ms));
+    try { a.volume = Math.max(0, Math.min(1, from + (to - from) * u)); } catch (e) {}
+    if (u < 1) requestAnimationFrame(tick);
+    else if (stop) { try { a.pause(); } catch (e) {} }
+  };
+  tick();
+}
+
+function elStart(url, loop) {
+  const a = new Audio(url);
+  a.loop = !!loop;
+  a.volume = 0;
+  elVoices.push(a);
+  a.play().then(() => elFade(a, muted ? 0 : MUSIC_GAIN, 300, false), () => {});
+  return a;
+}
+
+function elStopMusic(ms) {
+  const voices = elVoices;
+  elVoices = [];
+  if (elTimer) { clearTimeout(elTimer); elTimer = 0; }
+  for (const a of voices) {
+    if (ms > 0) elFade(a, 0, ms, true);
+    else { try { a.pause(); } catch (e) {} }
+  }
+}
+
+// Web Audio got the context but not the bytes -- almost always a file:// page
+// where a stricter browser refused the fetch. Hand everything to the elements
+// and start the track that was wanted.
+function downgrade() {
+  if (engine !== 'wa') return;
+  waStop(0);
+  engine = 'el';
+  preloadElements();
+  const want = wantTrack;
+  curTrack = null;
+  if (want) playMusic(want);
+}
+
 // Called on the first key or tap, and harmlessly on every one after it.
 function ensureAudio() {
+  if (engine === 'el') return;
+  if (!engine) {
+    // fetch() only speaks http(s). Opened from the filesystem -- which is how
+    // this game is usually played -- the element engine is the only one that
+    // can hear anything, so do not even build a context.
+    engine = /^https?:$/.test(location.protocol) ? 'wa' : 'el';
+    if (engine === 'el') { preloadElements(); applyWantedTrack(); return; }
+  }
   if (ac) {
     if (ac.state === 'suspended') ac.resume().then(applyWantedTrack, () => {});
     return;
   }
   const AC = window.AudioContext || window.webkitAudioContext;
   if (!AC) return;
-  try { ac = new AC(); } catch (e) { ac = null; return; }
+  try { ac = new AC(); } catch (e) { ac = null; engine = 'el'; preloadElements(); applyWantedTrack(); return; }
   musicBus = ac.createGain(); musicBus.gain.value = muted ? 0 : MUSIC_GAIN;
   sfxBus = ac.createGain();   sfxBus.gain.value   = muted ? 0 : SFX_GAIN;
   musicBus.connect(ac.destination);
@@ -1457,13 +1536,40 @@ function playSfx(group, gain, rate) {
   if (!audioReady() || muted) return;
   const names = SFX[group];
   if (!names) return;
-  const now = ac.currentTime;
+  // The debounce runs on the wall clock rather than the audio clock, because in
+  // element mode there is no audio clock to run on.
+  const now = performance.now() / 1000;
   if (now - (sfxAt[group] || -99) < SFX_CD[group]) return;
   // Randomise the variant, never twice running: three clips played straight
   // through are more obviously three clips than three clips shuffled.
   let i = Math.floor(Math.random() * names.length) % names.length;
   if (names.length > 1 && i === sfxPrev[group]) i = (i + 1) % names.length;
-  const buf = clips[SFX_DIR + names[i] + '.wav'];
+  const url = SFX_DIR + names[i] + '.wav';
+  const vol = Math.max(0, Math.min(1.5, gain === undefined ? 1 : gain));
+
+  if (engine === 'el') {
+    const p = elemPool[url];
+    if (!p) return;
+    sfxPrev[group] = i;
+    sfxAt[group] = now;
+    const a = p.pool[p.i = (p.i + 1) % p.pool.length];
+    try {
+      a.pause();
+      a.currentTime = 0;
+      a.volume = Math.max(0, Math.min(1, vol * SFX_GAIN));
+      // Without this the browser time-stretches instead of pitching, and the
+      // rim loses the short, high character the rate change is there for.
+      a.preservesPitch = false;
+      a.mozPreservesPitch = false;
+      a.webkitPreservesPitch = false;
+      a.playbackRate = rate || 1;
+      const q = a.play();
+      if (q && q.catch) q.catch(() => {});
+    } catch (e) {}
+    return;
+  }
+
+  const buf = clips[url];
   if (!buf) return;
   sfxPrev[group] = i;
   sfxAt[group] = now;
@@ -1472,7 +1578,7 @@ function playSfx(group, gain, rate) {
     src.buffer = buf;
     if (rate) src.playbackRate.value = rate;
     const gn = ac.createGain();
-    gn.gain.value = Math.max(0, Math.min(1.5, gain === undefined ? 1 : gain));
+    gn.gain.value = vol;
     src.connect(gn); gn.connect(sfxBus);
     src.start();
   } catch (e) {}
@@ -1505,6 +1611,11 @@ function musicLoop(buf, at, fade) {
 // later is stopped before it ever begins, which is what makes leaving the
 // victory screen during the sting safe.
 function fadeOutMusic(fade) {
+  if (engine === 'el') { elStopMusic(fade * 1000); return; }
+  waStop(fade);
+}
+
+function waStop(fade) {
   const voices = musicVoices;
   musicVoices = [];
   if (!ac) return;
@@ -1525,8 +1636,13 @@ function playMusic(name) {
   curTrack = name;
   if (name === 'victory') { victorySequence(); return; }
   fadeOutMusic(MUSIC_FADE);
+  if (engine === 'el') { elStart(TRACKS[name], true); return; }
   loadClip(TRACKS[name]).then(buf => {
-    if (!buf || curTrack !== name || !audioReady()) return;
+    if (curTrack !== name) return;
+    // The context came up but the bytes did not. Nothing the Web Audio path can
+    // do from here; the elements can still read the file.
+    if (!buf) { downgrade(); return; }
+    if (!audioReady()) return;
     musicLoop(buf, ac.currentTime + 0.02, MUSIC_FADE);
   });
 }
@@ -1534,6 +1650,16 @@ function playMusic(name) {
 // The sting once, then the loop, four seconds later to the sample.
 function victorySequence() {
   fadeOutMusic(0.25);
+  if (engine === 'el') {
+    elStart(VICTORY_STING, false);
+    // A timer, not a schedule. It will not land on the sample, but the sting
+    // ends in silence, so a few milliseconds either way is not audible.
+    elTimer = setTimeout(() => {
+      elTimer = 0;
+      if (curTrack === 'victory') elStart(TRACKS.victory, true);
+    }, STING_LEN * 1000);
+    return;
+  }
   Promise.all([loadClip(VICTORY_STING), loadClip(TRACKS.victory)]).then(pair => {
     const sting = pair[0], loop = pair[1];
     if (curTrack !== 'victory' || !audioReady()) return;
@@ -1570,11 +1696,12 @@ function paintMute() {
 function setMute(on, announce) {
   muted = !!on;
   try { localStorage.setItem('hoop.mute', muted ? '1' : '0'); } catch (e) {}
-  if (ac) {
+  if (ac && musicBus) {
     const t = ac.currentTime;
     musicBus.gain.setTargetAtTime(muted ? 0 : MUSIC_GAIN, t, 0.02);
     sfxBus.gain.setTargetAtTime(muted ? 0 : SFX_GAIN, t, 0.02);
   }
+  for (const a of elVoices) { try { a.volume = muted ? 0 : MUSIC_GAIN; } catch (e) {} }
   paintMute();
   if (announce) toast(muted ? 'Sound off' : 'Sound on');
 }
@@ -2193,6 +2320,7 @@ window.__hoop = {
     get track() { return curTrack; },
     get wanted() { return wantTrack; },
     get muted() { return muted; },
+    get engine() { return engine; },
     get loaded() { return Object.keys(clips).filter(u => clips[u]); },
     get voices() { return musicVoices.length; },
     get clipmap() { return clips; },

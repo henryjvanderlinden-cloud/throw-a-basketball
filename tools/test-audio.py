@@ -7,7 +7,7 @@
 Runs the browser with autoplay unlocked, because a synthetic key event is not
 a trusted gesture and would leave the AudioContext suspended forever.
 """
-import sys, time
+import sys, time, pathlib
 from playwright.sync_api import sync_playwright
 
 URL = "http://localhost:8899/index.html"
@@ -205,6 +205,52 @@ with sync_playwright() as pw:
     check("the game still reaches a match", p2.evaluate("__hoop.state.ms") == "PLAY")
 
     check("no console errors overall", not errors, errors[:3])
+
+    # The game is normally played by opening index.html, not by serving it, and
+    # fetch() will not read a file:// URL -- so the whole Web Audio path is
+    # silent there. This is the check that says whether a player hears anything.
+    section("opened straight off disk, not served")
+    f = b.new_page()
+    ferrs = []
+    f.on("pageerror", lambda e: ferrs.append(str(e)))
+    f.goto("file://" + str(pathlib.Path(__file__).resolve().parent.parent / "index.html"))
+    f.wait_for_function("window.__hoop && window.__hoop.audio")
+    f.evaluate("""() => {
+      window.__playLog = [];
+      const play = HTMLMediaElement.prototype.play;
+      HTMLMediaElement.prototype.play = function () {
+        __playLog.push((this.currentSrc || this.src || '').split('/').pop());
+        return play.apply(this, arguments);
+      };
+    }""")
+    f.keyboard.press("ArrowLeft")
+    f.wait_for_timeout(800)
+    check("falls back to the element engine", f.evaluate("__hoop.audio.engine") == "el",
+          f.evaluate("__hoop.audio.engine"))
+    check("no context is built at all", f.evaluate("__hoop.audio.context") is None)
+    heard = f.evaluate("__playLog")
+    check("the menu music actually starts",
+          any("full-court-pressure" in c for c in heard), heard)
+
+    f.evaluate("__playLog = []; __hoop.setMode(2); __hoop.pick(0,0); __hoop.pick(1,1);")
+    f.wait_for_timeout(400)
+    check("the in-game anthem actually starts",
+          any("overtime-overdrive" in c for c in f.evaluate("__playLog")), f.evaluate("__playLog"))
+
+    f.evaluate("__playLog = []")
+    for _ in range(4):
+        f.wait_for_timeout(160)
+        f.evaluate("for (let i = 0; i < 30; i++) __hoop.step(1/60)")
+    heard = f.evaluate("__playLog")
+    check("effects actually play", any("floor-bounce" in c for c in heard), heard)
+
+    f.evaluate("__playLog = []")
+    f.evaluate("__hoop.state.clockOn = true; __hoop.state.clock = 0.001; __hoop.step(0.05);")
+    f.wait_for_timeout(300)
+    check("the victory sting actually starts",
+          any("victory-sting" in c for c in f.evaluate("__playLog")), f.evaluate("__playLog"))
+    check("no page errors off the filesystem", not ferrs, ferrs[:3])
+
     b.close()
 
 print("\n" + ("ALL PASS" if not fails else "FAILURES: " + ", ".join(fails)))
