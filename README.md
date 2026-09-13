@@ -350,9 +350,21 @@ The protocol check is made once, on the first gesture. In element mode no
   *wants* and starts it on the first key, tap or click. Everything is
   best-effort: a missing file, a refused context, or a browser with no Web Audio
   leaves a silent game and never a broken one.
-- **Loading is a ladder.** The twelve effects first (they are small and wanted
-  within seconds), then the two anthems, then the victory pair, so the menu
-  music is not queued behind six megabytes of anthem.
+- **Loading is a ladder, and the music is on the top rung.** Whatever the player
+  can hear right now loads alone; everything else queues behind it, in the order
+  it will be wanted: the in-game anthem, then one voice of each effect, then the
+  victory pair, then the spare voices. In element mode the queue is strictly one
+  file at a time and is held shut until the music is actually playing.
+
+  This is not tidiness. Media elements created together all start reading
+  together, and the first version created thirty-six of them before asking for
+  the music. Where a read is cheap nobody notices; where every read is scanned
+  first — a Windows repo folder under ransomware protection is the case that
+  found it — the music waits at the back and the game is silent for minutes.
+
+- **`__hoop.audio.timeline`** is a timestamped list of what was chosen and what
+  loaded when. It is the first thing to read when the sound is late, because it
+  distinguishes a bug from a slow disk.
 - **The victory hand-off is scheduled, not fired** (on the Web Audio path). The
   sting is exactly four seconds and the loop is written to begin where it ends,
   so the loop is scheduled at `stingStart + 4` on the audio clock. Waiting for

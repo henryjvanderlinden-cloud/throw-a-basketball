@@ -1403,9 +1403,15 @@ try { muted = localStorage.getItem('hoop.mute') === '1'; } catch (e) {}
 // good engine is silent. The element engine loses the seamless loop and the
 // four-second hand-off is a timer rather than a schedule, but it makes noise.
 let engine = null;
-const elemPool = Object.create(null);   // url -> { pool: [Audio], i } for effects
+const elemPool = Object.create(null);   // url -> { pool: [Audio], i }
 let elVoices = [];                      // <audio> elements playing music now
 let elTimer = 0;                        // the victory loop's pending start
+
+// Every milestone, timestamped. Read it with __hoop.audio.timeline when the
+// sound is late: it says which engine was chosen and how long each file took,
+// which is the difference between a bug and a slow disk.
+const audioLog = [];
+const mark = what => { if (audioLog.length < 300) audioLog.push([Math.round(performance.now()), what]); };
 
 const audioReady = () => engine === 'el' || !!(engine === 'wa' && ac && ac.state === 'running');
 
@@ -1426,34 +1432,100 @@ function loadClip(url) {
   return clipReq[url];
 }
 
-// Effects first -- they are small and wanted within seconds of the first tap --
-// then the two long tracks, then the victory pair, which nobody needs until the
-// buzzer. Each rung waits for the one above so the menu music is not queued
-// behind six megabytes of anthem.
+// The menu track first: it is the only thing audible on the screen the player
+// is looking at, and twelve parallel fetches in front of it is twelve files'
+// worth of waiting on a slow disk. Then the effects, then the in-game anthem,
+// then the victory pair, which nobody needs until the buzzer. Each rung waits
+// for the one above.
 function preload() {
-  const small = [];
-  for (const k in SFX) for (const n of SFX[k]) small.push(loadClip(SFX_DIR + n + '.wav'));
-  Promise.all(small)
-    .then(() => loadClip(TRACKS.menu))
-    .then(() => loadClip(TRACKS.play))
-    .then(() => { loadClip(VICTORY_STING); loadClip(TRACKS.victory); })
+  loadClip(TRACKS.menu)
+    .then(() => {
+      mark('decoded the menu track');
+      const small = [];
+      for (const k in SFX) for (const n of SFX[k]) small.push(loadClip(SFX_DIR + n + '.wav'));
+      return Promise.all(small);
+    })
+    .then(() => { mark('decoded the effects'); return loadClip(TRACKS.play); })
+    .then(() => { mark('decoded the anthem'); loadClip(VICTORY_STING); loadClip(TRACKS.victory); })
     .catch(() => {});
 }
 
-// Three copies of each effect, so a bounce landing on top of a squeak does not
-// cut it off. An <audio> element can only play one thing at a time.
-function preloadElements() {
-  for (const k in SFX) for (const n of SFX[k]) {
-    const url = SFX_DIR + n + '.wav';
-    if (elemPool[url]) continue;
-    const pool = [];
-    for (let j = 0; j < 3; j++) {
-      const a = new Audio(url);
-      a.preload = 'auto';
-      pool.push(a);
-    }
-    elemPool[url] = { pool: pool, i: 0 };
-  }
+// Loading order is the whole game here. Thirty-odd media elements created at
+// once all start reading at once, and the music -- the one thing the player is
+// listening to -- waits at the back of that queue. On a disk where every read
+// is cheap nobody notices; on one where every read is scanned first (a Windows
+// repo folder under ransomware protection is the case that found this) it is
+// minutes of silence. So: the current track loads alone, and everything else
+// loads one file at a time behind it, in the order it will be wanted.
+let elJobs = [];          // [url, wantedCopies]
+let elBusy = false;       // a file is being read right now
+let elGate = true;        // held shut until the music is actually playing
+
+function elemAdd(url) {
+  const p = elemPool[url] || (elemPool[url] = { pool: [], i: 0 });
+  const a = new Audio(url);
+  a.preload = 'auto';
+  p.pool.push(a);
+  return a;
+}
+
+// An element to play this instant: a loaded one if there is one, otherwise a
+// fresh one, which will simply arrive late rather than not at all.
+function elemTake(url) {
+  const p = elemPool[url];
+  if (!p || !p.pool.length) return elemAdd(url);
+  return p.pool[p.i = (p.i + 1) % p.pool.length];
+}
+
+function elQueue(url, copies) { elJobs.push([url, copies || 1]); elPump(); }
+
+function elPump() {
+  if (elGate || elBusy || !elJobs.length) return;
+  const job = elJobs.shift();
+  const p = elemPool[job[0]];
+  if (p && p.pool.length >= job[1]) { elPump(); return; }
+  elBusy = true;
+  const a = elemAdd(job[0]);
+  const name = job[0].split('/').pop();
+  let settled = false;
+  const next = why => {
+    if (settled) return;
+    settled = true;
+    mark('loaded ' + name + ' (' + why + ')');
+    elBusy = false;
+    elPump();
+  };
+  a.addEventListener('canplaythrough', () => next('ok'));
+  a.addEventListener('error', () => next('failed'));
+  // One file that never settles either way must not stall everything behind it.
+  setTimeout(() => next('timed out'), 8000);
+}
+
+// Opened by the music, so nothing competes with it for the disk.
+function elOpenGate() {
+  if (!elGate) return;
+  elGate = false;
+  mark('preload queue open');
+  elPump();
+}
+
+// In the order they are wanted: the anthem within seconds of the menu, then one
+// voice of every effect so everything can at least make a noise, then the
+// victory pair, and only then the spare voices that stop an overlapping bounce
+// cutting a squeak off.
+function elQueueRest() {
+  elQueue(TRACKS.play, 1);
+  for (const k in SFX) for (const n of SFX[k]) elQueue(SFX_DIR + n + '.wav', 1);
+  elQueue(VICTORY_STING, 1);
+  elQueue(TRACKS.victory, 1);
+  for (const k in SFX) for (const n of SFX[k]) elQueue(SFX_DIR + n + '.wav', 3);
+}
+
+function elBoot() {
+  mark('engine: elements');
+  applyWantedTrack();          // the music, alone, first
+  elQueueRest();               // everything else, behind the gate
+  setTimeout(elOpenGate, 4000);  // and open it anyway if the music never starts
 }
 
 // There is no gain node to ramp, so a fade is a volume walked by hand.
@@ -1469,11 +1541,17 @@ function elFade(a, to, ms, stop) {
 }
 
 function elStart(url, loop) {
-  const a = new Audio(url);
+  const a = elemTake(url);
   a.loop = !!loop;
   a.volume = 0;
+  try { a.currentTime = 0; } catch (e) {}
   elVoices.push(a);
-  a.play().then(() => elFade(a, muted ? 0 : MUSIC_GAIN, 300, false), () => {});
+  mark('starting ' + url.split('/').pop());
+  a.play().then(() => {
+    mark('playing ' + url.split('/').pop());
+    elFade(a, muted ? 0 : MUSIC_GAIN, 300, false);
+    elOpenGate();
+  }, () => elOpenGate());
   return a;
 }
 
@@ -1494,10 +1572,7 @@ function downgrade() {
   if (engine !== 'wa') return;
   waStop(0);
   engine = 'el';
-  preloadElements();
-  const want = wantTrack;
-  curTrack = null;
-  if (want) playMusic(want);
+  elBoot();
 }
 
 // Called on the first key or tap, and harmlessly on every one after it.
@@ -1508,7 +1583,7 @@ function ensureAudio() {
     // this game is usually played -- the element engine is the only one that
     // can hear anything, so do not even build a context.
     engine = /^https?:$/.test(location.protocol) ? 'wa' : 'el';
-    if (engine === 'el') { preloadElements(); applyWantedTrack(); return; }
+    if (engine === 'el') { elBoot(); return; }
   }
   if (ac) {
     if (ac.state === 'suspended') ac.resume().then(applyWantedTrack, () => {});
@@ -1516,11 +1591,12 @@ function ensureAudio() {
   }
   const AC = window.AudioContext || window.webkitAudioContext;
   if (!AC) return;
-  try { ac = new AC(); } catch (e) { ac = null; engine = 'el'; preloadElements(); applyWantedTrack(); return; }
+  try { ac = new AC(); } catch (e) { ac = null; engine = 'el'; elBoot(); return; }
   musicBus = ac.createGain(); musicBus.gain.value = muted ? 0 : MUSIC_GAIN;
   sfxBus = ac.createGain();   sfxBus.gain.value   = muted ? 0 : SFX_GAIN;
   musicBus.connect(ac.destination);
   sfxBus.connect(ac.destination);
+  mark('engine: web audio');
   preload();
   if (ac.state === 'suspended') ac.resume().then(applyWantedTrack, () => {});
   else applyWantedTrack();
@@ -2321,6 +2397,7 @@ window.__hoop = {
     get wanted() { return wantTrack; },
     get muted() { return muted; },
     get engine() { return engine; },
+    get timeline() { return audioLog.slice(); },
     get loaded() { return Object.keys(clips).filter(u => clips[u]); },
     get voices() { return musicVoices.length; },
     get clipmap() { return clips; },

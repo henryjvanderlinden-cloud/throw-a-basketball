@@ -216,6 +216,12 @@ with sync_playwright() as pw:
     f.goto("file://" + str(pathlib.Path(__file__).resolve().parent.parent / "index.html"))
     f.wait_for_function("window.__hoop && window.__hoop.audio")
     f.evaluate("""() => {
+      // Which files are requested, in order. Media elements created at once all
+      // read at once, and on a slow disk the music ends up waiting behind the
+      // effects -- which cost minutes of silence once.
+      window.__openLog = [];
+      const A = window.Audio;
+      window.Audio = function (u) { __openLog.push(String(u).split('/').pop()); return new A(u); };
       window.__playLog = [];
       const play = HTMLMediaElement.prototype.play;
       HTMLMediaElement.prototype.play = function () {
@@ -231,6 +237,11 @@ with sync_playwright() as pw:
     heard = f.evaluate("__playLog")
     check("the menu music actually starts",
           any("full-court-pressure" in c for c in heard), heard)
+    opened = f.evaluate("__openLog")
+    check("the music is the first file asked for, not the last",
+          opened and "full-court-pressure" in opened[0], opened[:4])
+    check("the effects queue up behind it, one at a time",
+          not any("squeak" in c for c in opened[:2]), opened[:4])
 
     f.evaluate("__playLog = []; __hoop.setMode(2); __hoop.pick(0,0); __hoop.pick(1,1);")
     f.wait_for_timeout(400)
