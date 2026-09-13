@@ -166,6 +166,18 @@ with sync_playwright() as pw:
     check("back on the menu track", page.evaluate("__hoop.audio.track") == "menu",
           page.evaluate("__hoop.audio.track"))
 
+    section("the mute button has a corner of its own")
+    box = page.evaluate("""() => {
+      const r = n => { const b = document.getElementById(n).getBoundingClientRect();
+                       return {x: b.x, y: b.y, w: b.width, h: b.height}; };
+      return {mute: r('muteBtn'), fs: r('fsBtn'), clock: r('clockHud')};
+    }""")
+    def clear(a, b):
+        return (a["x"] + a["w"] <= b["x"] + 0.5 or b["x"] + b["w"] <= a["x"] + 0.5
+                or a["y"] + a["h"] <= b["y"] + 0.5 or b["y"] + b["h"] <= a["y"] + 0.5)
+    check("mute does not overlap the fullscreen button", clear(box["mute"], box["fs"]), box)
+    check("mute does not overlap the shot clock", clear(box["mute"], box["clock"]), box)
+
     section("mute")
     page.keyboard.press("m")
     page.wait_for_timeout(100)

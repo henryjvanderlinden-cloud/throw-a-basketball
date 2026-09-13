@@ -280,13 +280,15 @@
 
   <!-- Sound and fullscreen. Last, so they stay on top of the menu screens and
        can still be tapped there -- on a tablet that is where you want them, and
-       the mute button is the only way to silence the game without a keyboard. -->
+       the mute button is the only way to silence the game without a keyboard.
+       It sits under the fullscreen button rather than beside it: the shot clock
+       runs out to x=884 and the pair would have shared that corner. -->
   <g id="muteBtn" style="cursor:pointer">
-    <rect x="844" y="16" width="44" height="40" rx="11" fill="var(--panel)" fill-opacity="0.72"
+    <rect x="896" y="64" width="44" height="40" rx="11" fill="var(--panel)" fill-opacity="0.72"
           stroke="var(--line)" stroke-width="2"/>
     <g id="muteIcon" stroke="var(--ink)" stroke-width="2.4" fill="none" stroke-linecap="round"
        stroke-linejoin="round">
-      <path d="M856,31 h5 l6,-6 v22 l-6,-6 h-5 z" fill="var(--ink)" stroke-width="2"/>
+      <path d="M908,79 h5 l6,-6 v22 l-6,-6 h-5 z" fill="var(--ink)" stroke-width="2"/>
     </g>
   </g>
   <g id="fsBtn" opacity="0" style="cursor:pointer">
@@ -1558,11 +1560,11 @@ function syncMusic() {
 
 function paintMute() {
   // A speaker, with the waves drawn beside it or a cross through it.
-  const cone = 'M856,31 h5 l6,-6 v22 l-6,-6 h-5 z';
+  const cone = 'M908,79 h5 l6,-6 v22 l-6,-6 h-5 z';
   const body = '<path d="' + cone + '" fill="var(--ink)" stroke-width="2"/>';
   el.muteIcon.innerHTML = muted
-    ? body + '<path d="M872,30 l10,12 M882,30 l-10,12"/>'
-    : body + '<path d="M871,31 a6,6 0 0 1 0,10 M875,27 a11,11 0 0 1 0,18"/>';
+    ? body + '<path d="M924,78 l10,12 M934,78 l-10,12"/>'
+    : body + '<path d="M923,79 a6,6 0 0 1 0,10 M927,75 a11,11 0 0 1 0,18"/>';
 }
 
 function setMute(on, announce) {
