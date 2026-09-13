@@ -1,0 +1,41 @@
+{
+  "title": "Victory Lap",
+  "bpm": 120,
+  "key": "C major",
+  "sampleRate": 11025,
+  "channels": 1,
+  "textureBits": 8,
+  "sting": {
+    "file": "victory-sting.wav",
+    "pcm8File": "victory-sting-pcm8.wav",
+    "durationSeconds": 4,
+    "loop": false
+  },
+  "loop": {
+    "file": "victory-lap-loop.wav",
+    "pcm8File": "victory-lap-loop-pcm8.wav",
+    "durationSeconds": 24,
+    "bars": 12,
+    "loopStartFrame": 0,
+    "loopEndFrameExclusive": 264600
+  },
+  "sequence": {
+    "stingStartSeconds": 0,
+    "loopStartSeconds": 4,
+    "loopEntryFadeMilliseconds": 5
+  },
+  "loopSections": [
+    {
+      "name": "Victory theme",
+      "startSeconds": 0
+    },
+    {
+      "name": "Keyboard reply",
+      "startSeconds": 8
+    },
+    {
+      "name": "Celebration return",
+      "startSeconds": 16
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "title": "Full Court Pressure",
+  "durationSeconds": 120,
+  "bpm": 128,
+  "timeSignature": "4/4",
+  "bars": 64,
+  "sampleRate": 11025,
+  "channels": 1,
+  "textureBits": 8,
+  "loopStartFrame": 0,
+  "loopEndFrameExclusive": 1323000,
+  "defaultFile": "full-court-pressure.wav",
+  "pcm8File": "full-court-pressure-pcm8.wav",
+  "sections": [
+    {
+      "name": "Tip-off hook",
+      "startSeconds": 0
+    },
+    {
+      "name": "Hook variation",
+      "startSeconds": 15
+    },
+    {
+      "name": "Second hook",
+      "startSeconds": 30
+    },
+    {
+      "name": "Bass and drums break",
+      "startSeconds": 45
+    },
+    {
+      "name": "Main hook returns",
+      "startSeconds": 60
+    },
+    {
+      "name": "Keyboard contrast",
+      "startSeconds": 75
+    },
+    {
+      "name": "Second hook lift",
+      "startSeconds": 90
+    },
+    {
+      "name": "Final hook and turnaround",
+      "startSeconds": 105
+    }
+  ]
+}

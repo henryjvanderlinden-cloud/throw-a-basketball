@@ -278,8 +278,17 @@
           font-family="ui-sans-serif,system-ui">Press ↑ or R to play again</text>
   </g>
 
-  <!-- Fullscreen toggle. Last, so it stays on top of the menu screens and can
-       still be tapped there -- on a tablet that is where you want it. -->
+  <!-- Sound and fullscreen. Last, so they stay on top of the menu screens and
+       can still be tapped there -- on a tablet that is where you want them, and
+       the mute button is the only way to silence the game without a keyboard. -->
+  <g id="muteBtn" style="cursor:pointer">
+    <rect x="844" y="16" width="44" height="40" rx="11" fill="var(--panel)" fill-opacity="0.72"
+          stroke="var(--line)" stroke-width="2"/>
+    <g id="muteIcon" stroke="var(--ink)" stroke-width="2.4" fill="none" stroke-linecap="round"
+       stroke-linejoin="round">
+      <path d="M856,31 h5 l6,-6 v22 l-6,-6 h-5 z" fill="var(--ink)" stroke-width="2"/>
+    </g>
+  </g>
   <g id="fsBtn" opacity="0" style="cursor:pointer">
     <rect x="896" y="16" width="44" height="40" rx="11" fill="var(--panel)" fill-opacity="0.72"
           stroke="var(--line)" stroke-width="2"/>
@@ -293,7 +302,7 @@
 <p class="legend" id="legend">
   <b>Player 1</b> <kbd>←</kbd> <kbd>→</kbd> move &amp; aim · <kbd>↑</kbd> pick up, aim, hold to charge, release to shoot · <kbd>↓</kbd> steal.
   <b>Player 2</b> <kbd>A</kbd> <kbd>D</kbd> · <kbd>W</kbd> · <kbd>S</kbd>.
-  <kbd>R</kbd> restart · <kbd>C</kbd> or <kbd>1</kbd>–<kbd>4</kbd> switch court · <kbd>F</kbd> fullscreen.
+  <kbd>R</kbd> restart · <kbd>C</kbd> or <kbd>1</kbd>–<kbd>4</kbd> switch court · <kbd>F</kbd> fullscreen · <kbd>M</kbd> sound on/off.
   The shot clock runs only while somebody has the ball: every throw resets it and holds it until the rebound is
   gathered. Let it hit zero and the game is over.
 </p>
@@ -335,6 +344,10 @@ const PICKUP_DIST = 62;
 // detection, which trips over things like the monkey's tail.
 const DRIBBLE_HAND_H = 0.42;
 const PICKUP_LOCKOUT = 0.35;    // s after release before the shooter can re-catch
+// A shoe squeaks when a player who is running turns round. Standing still long
+// enough and then setting off the other way is not a turn, so a run that has
+// been stopped for longer than this forgets which way it was going.
+const RUN_TURN_GAP = 0.25;
 
 // Stealing. The radius is horizontal only -- both players stand on the same
 // baseline. Immunity is what stops two players trading the ball every frame;
@@ -374,7 +387,8 @@ const el = {
   sbR: $('sbR'), sbRPts: $('sbRPts'), sbRMade: $('sbRMade'), sbRName: $('sbRName'),
   sbDiv: $('sbDiv'), clockHud: $('clockHud'), clockText: $('clockText'),
   sbClock: $('sbClock'), sbClockLabel: $('sbClockLabel'),
-  fsBtn: $('fsBtn'), fsIcon: $('fsIcon'), stagewrap: $('stagewrap'), stage: $('stage')
+  fsBtn: $('fsBtn'), fsIcon: $('fsIcon'), stagewrap: $('stagewrap'), stage: $('stage'),
+  muteBtn: $('muteBtn'), muteIcon: $('muteIcon')
 };
 
 // ---------------------------------------------------------------- courts
@@ -762,6 +776,8 @@ function makePlayer(n) {
     angle: 74, power: 0,
     made: 0, points: 0,
     dribT: 0, animT: 0, throwT: 99,
+    dribPh: 0,                      // which bounce of the dribble we are in
+    runDir: 0, runIdle: 9,          // for the shoe squeak on a change of direction
     turnT: 0, pickupT: 0, celebT: 0, celebSeq: null,
     breakSeq: null, breakT: 0, breakAt: BREAK_MIN + Math.random() * (BREAK_MAX - BREAK_MIN),
     stillT: 0, lockout: 0, stealCd: 0, mirrorPose: false,
@@ -822,7 +838,7 @@ function startMatch() {
     p.throwT = 99; p.turnT = 0; p.pickupT = 0; p.celebT = 0; p.celebSeq = null;
     p.breakSeq = null; p.breakT = 0; p.stillT = 0; p.lockout = 0; p.stealCd = 0;
     p.overSeq = null; p.overT = 0;
-    p.dribT = 0; p.animT = 0;
+    p.dribT = 0; p.animT = 0; p.dribPh = 0; p.runDir = 0; p.runIdle = 9;
     p.px = (numPlayers === 1) ? SOLO_X : START_X[p.n];
     p.facing = p.n === 0 ? 1 : -1;
   }
@@ -852,6 +868,7 @@ function syncScreens() {
   paintSplash();
   el.overlay.setAttribute('opacity', g.ms === MS.OVER ? '1' : '0');
   layoutBand();
+  syncMusic();
 }
 
 // ---------------------------------------------------------------- menus
@@ -1273,6 +1290,9 @@ window.addEventListener('keydown', e => {
   // Everything below is an edge, so auto-repeat is not one of them: holding R
   // used to restart the game over and over at the keyboard's repeat rate.
   if (e.repeat) return;
+  // A key press is a gesture, so this is where a keyboard player's audio wakes up.
+  ensureAudio();
+  if (k === 'KeyM') { setMute(!muted, true); return; }
   if (k === 'KeyR') { reset(); return; }
   if (k === 'KeyC') { applyCourt(courtIdx + 1, true); return; }
   if (k === 'KeyF') { toggleFullscreen(); return; }
@@ -1333,6 +1353,237 @@ if (fsSupported) {
   el.fsBtn.setAttribute('pointer-events', 'none');
 }
 
+// ---------------------------------------------------------------- audio
+// One AudioContext, two buses: music and effects. A browser will not start
+// audio before the player has touched something, so nothing is built until the
+// first key or tap. Until then the game only remembers which track it *wants*,
+// and starts it on the way in. Everything here is best-effort: a missing file,
+// a refused context or a browser with no Web Audio at all leaves a silent game,
+// never a broken one -- which is also what keeps the headless tests green.
+const SFX_DIR = 'audio/basketball-natural/wav/';
+const TRACKS = {
+  menu:    'audio/full-court-pressure/full-court-pressure.wav',
+  play:    'audio/overtime-overdrive/overtime-overdrive.wav',
+  victory: 'audio/victory-lap/victory-lap-loop.wav'
+};
+const VICTORY_STING = 'audio/victory-lap/victory-sting.wav';
+// The sting is exactly four seconds and the loop is written to begin where it
+// ends, so the hand-off is scheduled on the audio clock. Waiting for an 'ended'
+// event instead would arrive late and leave a hole in the middle of the tune.
+const STING_LEN = 4;
+const LOOP_ENTRY_FADE = 0.005;   // 5 ms, and only on the loop's first entry
+const MUSIC_FADE = 0.4;          // crossfade between tracks
+const MUSIC_GAIN = 0.30, SFX_GAIN = 0.9;
+
+const SFX = {
+  squeak: ['shoe-squeak-01', 'shoe-squeak-02', 'shoe-squeak-03'],
+  board:  ['backboard-01', 'backboard-02', 'backboard-03'],
+  swish:  ['net-swish-01', 'net-swish-02', 'net-swish-03'],
+  bounce: ['floor-bounce-01', 'floor-bounce-02', 'floor-bounce-03']
+};
+// Per-group debounce. A frame runs three physics sub-steps and a ball can rattle
+// between the two rim nubs inside one of them; without this it machine-guns.
+const SFX_CD = { squeak: 0.18, board: 0.07, swish: 0.4, bounce: 0.07 };
+
+let ac = null, musicBus = null, sfxBus = null;
+const clips = Object.create(null);      // url -> AudioBuffer (null once it has failed)
+const clipReq = Object.create(null);    // url -> in-flight promise
+const sfxAt = Object.create(null), sfxPrev = Object.create(null);
+let curTrack = null, wantTrack = null;
+let musicVoices = [];                   // every music source currently scheduled
+let muted = false;
+try { muted = localStorage.getItem('hoop.mute') === '1'; } catch (e) {}
+
+const audioReady = () => !!(ac && ac.state === 'running');
+
+function loadClip(url) {
+  if (!ac) return Promise.resolve(null);
+  if (clips[url] !== undefined) return Promise.resolve(clips[url]);
+  if (clipReq[url]) return clipReq[url];
+  clipReq[url] = fetch(url)
+    .then(r => r.ok ? r.arrayBuffer() : Promise.reject(new Error(String(r.status))))
+    .then(a => new Promise((res, rej) => {
+      // Safari's decodeAudioData still returns undefined, so take the callbacks
+      // as well as the promise and let whichever arrives first win.
+      const q = ac.decodeAudioData(a, res, rej);
+      if (q && q.then) q.then(res, rej);
+    }))
+    .then(buf => { clips[url] = buf; return buf; })
+    .catch(() => { clips[url] = null; return null; });
+  return clipReq[url];
+}
+
+// Effects first -- they are small and wanted within seconds of the first tap --
+// then the two long tracks, then the victory pair, which nobody needs until the
+// buzzer. Each rung waits for the one above so the menu music is not queued
+// behind six megabytes of anthem.
+function preload() {
+  const small = [];
+  for (const k in SFX) for (const n of SFX[k]) small.push(loadClip(SFX_DIR + n + '.wav'));
+  Promise.all(small)
+    .then(() => loadClip(TRACKS.menu))
+    .then(() => loadClip(TRACKS.play))
+    .then(() => { loadClip(VICTORY_STING); loadClip(TRACKS.victory); })
+    .catch(() => {});
+}
+
+// Called on the first key or tap, and harmlessly on every one after it.
+function ensureAudio() {
+  if (ac) {
+    if (ac.state === 'suspended') ac.resume().then(applyWantedTrack, () => {});
+    return;
+  }
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return;
+  try { ac = new AC(); } catch (e) { ac = null; return; }
+  musicBus = ac.createGain(); musicBus.gain.value = muted ? 0 : MUSIC_GAIN;
+  sfxBus = ac.createGain();   sfxBus.gain.value   = muted ? 0 : SFX_GAIN;
+  musicBus.connect(ac.destination);
+  sfxBus.connect(ac.destination);
+  preload();
+  if (ac.state === 'suspended') ac.resume().then(applyWantedTrack, () => {});
+  else applyWantedTrack();
+}
+
+function applyWantedTrack() {
+  const want = wantTrack;
+  curTrack = null;
+  if (want) playMusic(want);
+}
+
+function playSfx(group, gain, rate) {
+  if (!audioReady() || muted) return;
+  const names = SFX[group];
+  if (!names) return;
+  const now = ac.currentTime;
+  if (now - (sfxAt[group] || -99) < SFX_CD[group]) return;
+  // Randomise the variant, never twice running: three clips played straight
+  // through are more obviously three clips than three clips shuffled.
+  let i = Math.floor(Math.random() * names.length) % names.length;
+  if (names.length > 1 && i === sfxPrev[group]) i = (i + 1) % names.length;
+  const buf = clips[SFX_DIR + names[i] + '.wav'];
+  if (!buf) return;
+  sfxPrev[group] = i;
+  sfxAt[group] = now;
+  try {
+    const src = ac.createBufferSource();
+    src.buffer = buf;
+    if (rate) src.playbackRate.value = rate;
+    const gn = ac.createGain();
+    gn.gain.value = Math.max(0, Math.min(1.5, gain === undefined ? 1 : gain));
+    src.connect(gn); gn.connect(sfxBus);
+    src.start();
+  } catch (e) {}
+}
+
+// A wall is the floor sample held well down: the same ball hitting another hard
+// flat surface, but nobody in the building is looking at it.
+function wallSound(speed) {
+  if (speed > 120) playSfx('bounce', Math.min(0.5, 0.15 + speed / 1800));
+}
+
+// Start a looping track. loopEnd is the whole buffer: both anthems and the
+// victory loop are written so their tails wrap across the repeat point, which
+// only works with the audio engine's own sample-accurate looping.
+function musicLoop(buf, at, fade) {
+  const src = ac.createBufferSource();
+  src.buffer = buf;
+  src.loop = true;
+  src.loopStart = 0;
+  src.loopEnd = buf.duration;
+  const gn = ac.createGain();
+  gn.gain.setValueAtTime(0.0001, at);
+  gn.gain.linearRampToValueAtTime(1, at + Math.max(0.005, fade));
+  src.connect(gn); gn.connect(musicBus);
+  src.start(at);
+  musicVoices.push({ src, gn });
+}
+
+// Fade down and stop everything on the music bus. A voice scheduled to start
+// later is stopped before it ever begins, which is what makes leaving the
+// victory screen during the sting safe.
+function fadeOutMusic(fade) {
+  const voices = musicVoices;
+  musicVoices = [];
+  if (!ac) return;
+  const t = ac.currentTime;
+  for (const v of voices) {
+    try {
+      v.gn.gain.cancelScheduledValues(t);
+      v.gn.gain.setValueAtTime(Math.max(0.0001, v.gn.gain.value), t);
+      v.gn.gain.linearRampToValueAtTime(0.0001, t + fade);
+      v.src.stop(t + fade + 0.02);
+    } catch (e) {}
+  }
+}
+
+function playMusic(name) {
+  wantTrack = name;
+  if (!audioReady() || curTrack === name) return;
+  curTrack = name;
+  if (name === 'victory') { victorySequence(); return; }
+  fadeOutMusic(MUSIC_FADE);
+  loadClip(TRACKS[name]).then(buf => {
+    if (!buf || curTrack !== name || !audioReady()) return;
+    musicLoop(buf, ac.currentTime + 0.02, MUSIC_FADE);
+  });
+}
+
+// The sting once, then the loop, four seconds later to the sample.
+function victorySequence() {
+  fadeOutMusic(0.25);
+  Promise.all([loadClip(VICTORY_STING), loadClip(TRACKS.victory)]).then(pair => {
+    const sting = pair[0], loop = pair[1];
+    if (curTrack !== 'victory' || !audioReady()) return;
+    const t0 = ac.currentTime + 0.05;
+    if (sting) {
+      try {
+        const src = ac.createBufferSource();
+        src.buffer = sting;
+        const gn = ac.createGain();
+        src.connect(gn); gn.connect(musicBus);
+        src.start(t0);
+        musicVoices.push({ src, gn });
+      } catch (e) {}
+    }
+    if (loop) musicLoop(loop, t0 + (sting ? STING_LEN : 0), LOOP_ENTRY_FADE);
+  });
+}
+
+// Which track belongs to the screen we are on. Called from syncScreens, so
+// every route into a screen -- keys, pads, clicks, the buzzer -- goes past it.
+function syncMusic() {
+  playMusic(g.ms === MS.OVER ? 'victory' : (g.ms === MS.PLAY ? 'play' : 'menu'));
+}
+
+function paintMute() {
+  // A speaker, with the waves drawn beside it or a cross through it.
+  const cone = 'M856,31 h5 l6,-6 v22 l-6,-6 h-5 z';
+  const body = '<path d="' + cone + '" fill="var(--ink)" stroke-width="2"/>';
+  el.muteIcon.innerHTML = muted
+    ? body + '<path d="M872,30 l10,12 M882,30 l-10,12"/>'
+    : body + '<path d="M871,31 a6,6 0 0 1 0,10 M875,27 a11,11 0 0 1 0,18"/>';
+}
+
+function setMute(on, announce) {
+  muted = !!on;
+  try { localStorage.setItem('hoop.mute', muted ? '1' : '0'); } catch (e) {}
+  if (ac) {
+    const t = ac.currentTime;
+    musicBus.gain.setTargetAtTime(muted ? 0 : MUSIC_GAIN, t, 0.02);
+    sfxBus.gain.setTargetAtTime(muted ? 0 : SFX_GAIN, t, 0.02);
+  }
+  paintMute();
+  if (announce) toast(muted ? 'Sound off' : 'Sound on');
+}
+
+el.muteBtn.addEventListener('click', ev => { ev.preventDefault(); ensureAudio(); setMute(!muted, true); });
+paintMute();
+// Any gesture at all unlocks audio. The listeners stay for the life of the page
+// because a tab can be suspended and need unlocking a second time.
+window.addEventListener('pointerdown', ensureAudio, true);
+window.addEventListener('touchstart', ensureAudio, true);
+
 // ---------------------------------------------------------------- possession
 function opponentOf(p) { return players[1 - p.n] || null; }
 
@@ -1341,7 +1592,7 @@ function giveBall(p, viaPickup) {
   if (prev && prev !== p) prev.state = PS.IDLE;
   g.owner = p.n;
   p.state = PS.DRIBBLE;
-  p.dribT = 0; p.stillT = 0;
+  p.dribT = 0; p.stillT = 0; p.dribPh = 0;
   p.breakSeq = null; p.breakT = 0;
   if (viaPickup) p.pickupT = PICKUP_TIME;
   g.stealImmune = STEAL_IMMUNE;
@@ -1426,13 +1677,17 @@ function endMatch() {
 }
 
 // ---------------------------------------------------------------- collisions
+// Both of these return the speed the ball came in at along the contact normal,
+// so the caller can make the sound as loud as the hit was. Zero means no hit --
+// or a touch with no approach left in it, which is a ball resting against the
+// rim and should stay silent.
 function collideRect(b, r, rest) {
   const cx = Math.max(r.x, Math.min(b.x, r.x + r.w));
   const cy = Math.max(r.y, Math.min(b.y, r.y + r.h));
   let dx = b.x - cx, dy = b.y - cy;
   let d = Math.hypot(dx, dy);
   let nx, ny;
-  if (d > b.r) return false;
+  if (d > b.r) return 0;
   if (d < 1e-6) {                                    // centre inside the rect
     const left = b.x - r.x, right = r.x + r.w - b.x, top = b.y - r.y, bot = r.y + r.h - b.y;
     const m = Math.min(left, right, top, bot);
@@ -1450,15 +1705,16 @@ function collideRect(b, r, rest) {
     const tx = b.vx - vn * nx, ty = b.vy - vn * ny;
     b.vx = tx * FRICTION - vn * nx * rest;
     b.vy = ty * FRICTION - vn * ny * rest;
+    return -vn;
   }
-  return true;
+  return 0;
 }
 
 function collideCircle(b, cx, cy, cr, rest) {
   let dx = b.x - cx, dy = b.y - cy;
   let d = Math.hypot(dx, dy);
   const min = b.r + cr;
-  if (d > min) return false;
+  if (d > min) return 0;
   if (d < 1e-6) { dx = 0; dy = -1; d = 1; }
   const nx = dx / d, ny = dy / d;
   b.x = cx + nx * min; b.y = cy + ny * min;
@@ -1467,8 +1723,9 @@ function collideCircle(b, cx, cy, cr, rest) {
     const tx = b.vx - vn * nx, ty = b.vy - vn * ny;
     b.vx = tx * FRICTION - vn * nx * rest;
     b.vy = ty * FRICTION - vn * ny * rest;
+    return -vn;
   }
-  return true;
+  return 0;
 }
 
 // ---------------------------------------------------------------- update
@@ -1506,7 +1763,20 @@ function step(dt) {
       let vx = 0;
       if (left) vx -= PLAYER_SPEED;
       if (right) vx += PLAYER_SPEED;
-      if (vx !== 0) p.facing = Math.sign(vx);
+      if (vx !== 0) {
+        // Shoes squeak on the turn, not on the run: the foot has to have been
+        // going one way and then be going the other. Holding both keys stops a
+        // player without ending the run, which is how a change of direction is
+        // actually made on a keyboard, so the gap is timed rather than broken
+        // by the first frame of standing still.
+        const dir = Math.sign(vx);
+        if (p.runDir && p.runDir !== dir && p.runIdle < RUN_TURN_GAP) playSfx('squeak', 0.85);
+        p.runDir = dir; p.runIdle = 0;
+        p.facing = dir;
+      } else {
+        p.runIdle += dt;
+        if (p.runIdle >= RUN_TURN_GAP) p.runDir = 0;
+      }
       p.px = Math.max(PLAYER_MIN_X, Math.min(PLAYER_MAX_X, p.px + vx * dt));
       if (p.state === PS.DRIBBLE) p.dribT += dt * (vx !== 0 ? 9 : 7);
     }
@@ -1543,6 +1813,11 @@ function step(dt) {
       b.y = GROUND - BALL_R - h;
       b.spin += dt * 300 * p.facing;
       b.vx = 0; b.vy = 0;
+      // The ball is on the floor every time sin(dribT) crosses zero, so counting
+      // half-turns of dribT counts bounces. Quiet: it is the heartbeat under the
+      // music, not an event.
+      const ph = Math.floor(p.dribT / Math.PI);
+      if (ph !== p.dribPh) { p.dribPh = ph; playSfx('bounce', 0.34); }
     } else {
       [b.x, b.y] = holdPos(p);
     }
@@ -1558,24 +1833,33 @@ function step(dt) {
     b.spin += b.vx * dt * 1.6;
 
     // walls / ceiling / floor
-    if (b.x - b.r < 0) { b.x = b.r; b.vx = -b.vx * REST_WALL; }
-    if (b.x + b.r > W) { b.x = W - b.r; b.vx = -b.vx * REST_WALL; }
+    if (b.x - b.r < 0) { wallSound(-b.vx); b.x = b.r; b.vx = -b.vx * REST_WALL; }
+    if (b.x + b.r > W) { wallSound(b.vx); b.x = W - b.r; b.vx = -b.vx * REST_WALL; }
     if (b.y - b.r < 10) { b.y = 10 + b.r; b.vy = -b.vy * REST_WALL; }
     if (b.y + b.r > GROUND) {
+      const hit = b.vy;
       b.y = GROUND - b.r;
       b.vy = -b.vy * REST_FLOOR;
       b.vx *= 0.94;
       if (Math.abs(b.vy) < 55) { b.vy = 0; }
+      // Below this the ball is settling rather than bouncing, and the last few
+      // taps of a ball coming to rest are not worth hearing.
+      if (hit > 90) playSfx('bounce', Math.min(1, 0.25 + hit / 1200));
     }
     if (b.y + b.r >= GROUND - 0.6 && Math.abs(b.vy) < 1 && Math.abs(b.vx) < 12) {
       b.vx = 0; b.rest = true;
     }
 
     // hoop rig
-    collideRect(b, BEAM, REST_BOARD);
-    for (const r of BOARDS) collideRect(b, r, REST_BOARD);
-    collideCircle(b, HOOP.cx - HOOP.halfW, HOOP.rimY, HOOP.nubR, REST_RIM);
-    collideCircle(b, HOOP.cx + HOOP.halfW, HOOP.rimY, HOOP.nubR, REST_RIM);
+    let board = collideRect(b, BEAM, REST_BOARD);
+    for (const r of BOARDS) board = Math.max(board, collideRect(b, r, REST_BOARD));
+    const rimL = collideCircle(b, HOOP.cx - HOOP.halfW, HOOP.rimY, HOOP.nubR, REST_RIM);
+    const rimR = collideCircle(b, HOOP.cx + HOOP.halfW, HOOP.rimY, HOOP.nubR, REST_RIM);
+    const rim = Math.max(rimL, rimR);
+    // There is no rim sample, so the rim is a backboard hit played short and
+    // high: the same wood, struck on a smaller piece of it.
+    if (board > 80) playSfx('board', Math.min(1, 0.3 + board / 1400));
+    else if (rim > 80) playSfx('board', Math.min(0.8, 0.25 + rim / 1800), 1.35);
 
     // score: centre crosses the rim plane downward, inside the ring
     if (!g.scoredThisShot && prevY < HOOP.rimY && b.y >= HOOP.rimY && b.vy > 0) {
@@ -1589,6 +1873,7 @@ function step(dt) {
         g.clockLimit = clockLimitFor(totalPoints());
         g.clock = g.clockLimit;              // a make also refreshes the clock
         g.flash = 0.5;
+        playSfx('swish', 1);
         [s.celebSeq, s.celebT] = pickCelebration(s);
       }
     }
@@ -1901,6 +2186,16 @@ window.__hoop = {
   press: (n, dir) => setKey(n, dir, 'test', true),
   release: (n, dir) => setKey(n, dir, 'test', false),
   setMode: n => { modeIdx = n - 1; paintMode(); confirmMode(); },
+  audio: {
+    get context() { return ac; },
+    get track() { return curTrack; },
+    get wanted() { return wantTrack; },
+    get muted() { return muted; },
+    get loaded() { return Object.keys(clips).filter(u => clips[u]); },
+    get voices() { return musicVoices.length; },
+    get clipmap() { return clips; },
+    setMute, ensureAudio, playSfx, TRACKS, SFX_DIR
+  },
   pick: (n, i) => {
     if (!players[n]) return false;
     picker = n; buildCharacter(players[n], i); paintSelection(); confirmPick(); return true;

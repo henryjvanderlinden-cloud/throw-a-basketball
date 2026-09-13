@@ -1,0 +1,52 @@
+{
+  "title": "Overtime Overdrive",
+  "durationSeconds": 120,
+  "bpm": 144,
+  "bars": 72,
+  "timeSignature": "4/4",
+  "sampleRate": 11025,
+  "channels": 1,
+  "textureBits": 8,
+  "loopStartFrame": 0,
+  "loopEndFrameExclusive": 1323000,
+  "defaultFile": "overtime-overdrive.wav",
+  "pcm8File": "overtime-overdrive-pcm8.wav",
+  "sections": [
+    {
+      "name": "Opening anthem",
+      "startSeconds": 0.0
+    },
+    {
+      "name": "Anthem variation",
+      "startSeconds": 13.333333
+    },
+    {
+      "name": "Organ and bass groove",
+      "startSeconds": 26.666667
+    },
+    {
+      "name": "Second soaring hook",
+      "startSeconds": 40.0
+    },
+    {
+      "name": "Stadium breakdown",
+      "startSeconds": 53.333333
+    },
+    {
+      "name": "Rebuild and snare rise",
+      "startSeconds": 66.666667
+    },
+    {
+      "name": "Anthem returns",
+      "startSeconds": 80.0
+    },
+    {
+      "name": "Second hook peak",
+      "startSeconds": 93.333333
+    },
+    {
+      "name": "Final drive and turnaround",
+      "startSeconds": 106.666667
+    }
+  ]
+}

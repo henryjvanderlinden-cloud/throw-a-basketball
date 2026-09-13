@@ -23,3 +23,20 @@ scratch/
 artwork/basketball-players/* frames/
 # Screenshots the Claude desktop app drops into the folder
 Claude outputs/
+
+# Audio: the game uses the 16-bit WAVs. Everything else in audio/ is an
+# audition aid or a second copy, and tools/build-*.py regenerates all of it.
+audio/basketball-arcade/
+audio/**/pcm8/
+audio/**/*-pcm8.wav
+audio/**/*.zip
+audio/**/preview.html
+audio/**/preview.wav
+audio/**/loop-seam-preview.wav
+audio/**/victory-sequence-preview.wav
+audio/**/score.json
+audio/**/validation.json
+
+# Tarballs staged out to the cloud workspace, and Python bytecode
+_stage/
+__pycache__/

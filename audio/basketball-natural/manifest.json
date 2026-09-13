@@ -1,0 +1,80 @@
+{
+  "sampleRate": 11025,
+  "channels": 1,
+  "textureBits": 8,
+  "source": "Original material-inspired synthesis; not field recordings",
+  "effects": {
+    "shoe-squeak-01": {
+      "file": "wav/shoe-squeak-01.wav",
+      "pcm8": "pcm8/shoe-squeak-01.wav",
+      "durationMs": 180,
+      "previewStartSeconds": 0.25
+    },
+    "shoe-squeak-02": {
+      "file": "wav/shoe-squeak-02.wav",
+      "pcm8": "pcm8/shoe-squeak-02.wav",
+      "durationMs": 285,
+      "previewStartSeconds": 0.86
+    },
+    "shoe-squeak-03": {
+      "file": "wav/shoe-squeak-03.wav",
+      "pcm8": "pcm8/shoe-squeak-03.wav",
+      "durationMs": 220,
+      "previewStartSeconds": 1.575
+    },
+    "backboard-01": {
+      "file": "wav/backboard-01.wav",
+      "pcm8": "pcm8/backboard-01.wav",
+      "durationMs": 295,
+      "previewStartSeconds": 2.605
+    },
+    "backboard-02": {
+      "file": "wav/backboard-02.wav",
+      "pcm8": "pcm8/backboard-02.wav",
+      "durationMs": 340,
+      "previewStartSeconds": 3.33
+    },
+    "backboard-03": {
+      "file": "wav/backboard-03.wav",
+      "pcm8": "pcm8/backboard-03.wav",
+      "durationMs": 260,
+      "previewStartSeconds": 4.1
+    },
+    "net-swish-01": {
+      "file": "wav/net-swish-01.wav",
+      "pcm8": "pcm8/net-swish-01.wav",
+      "durationMs": 310,
+      "previewStartSeconds": 5.17
+    },
+    "net-swish-02": {
+      "file": "wav/net-swish-02.wav",
+      "pcm8": "pcm8/net-swish-02.wav",
+      "durationMs": 370,
+      "previewStartSeconds": 5.91
+    },
+    "net-swish-03": {
+      "file": "wav/net-swish-03.wav",
+      "pcm8": "pcm8/net-swish-03.wav",
+      "durationMs": 260,
+      "previewStartSeconds": 6.711
+    },
+    "floor-bounce-01": {
+      "file": "wav/floor-bounce-01.wav",
+      "pcm8": "pcm8/floor-bounce-01.wav",
+      "durationMs": 260,
+      "previewStartSeconds": 7.781
+    },
+    "floor-bounce-02": {
+      "file": "wav/floor-bounce-02.wav",
+      "pcm8": "pcm8/floor-bounce-02.wav",
+      "durationMs": 300,
+      "previewStartSeconds": 8.471
+    },
+    "floor-bounce-03": {
+      "file": "wav/floor-bounce-03.wav",
+      "pcm8": "pcm8/floor-bounce-03.wav",
+      "durationMs": 230,
+      "previewStartSeconds": 9.201
+    }
+  }
+}
