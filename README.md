@@ -10,8 +10,8 @@ Two can play, sharing one keyboard and one ball.
 ## Controls
 
 Every run opens on the mode select — one player or two — and then the character
-select. In a two-player game player 1 picks first, then player 2; they may pick
-the same character.
+select. Both are painted screens (see *Splash screens* below). In a two-player
+game player 1 picks first, then player 2; they may pick the same character.
 
 | | Player 1 | Player 2 |
 | --- | --- | --- |
@@ -96,6 +96,49 @@ The artwork is framed so that when it is drawn 960×720 and top-aligned inside t
 960×640 viewBox, the *painted* rim lands on the *play* rim. Any new court should
 follow the same framing: 4:3, hoop centred, rim about 24 % of the way down.
 Your court choice is remembered in `localStorage`.
+
+## Splash screens
+
+The two menus are paintings with a black panel left in them for the game to draw
+into. `splash/` holds them, generated from `artwork/Splash Screens/`:
+
+```
+python tools/build-splash.py     # 4:3 PNGs -> splash/*.webp at 1280px
+```
+
+The sources are about 3 MB each, which is silly for a game that otherwise fits in
+one file, so they come out as WebP — six frames, 2.1 MB the lot.
+
+**The number-of-players screen has five frames.** One base, and four variations
+in which a single character does something — a wink, a blink, a point, a shout.
+The game sits on the base for 2.4–4.2 s, cuts to a variation for about a second,
+cuts back, and picks a different character next time. Because the frames are
+identical apart from that one character, a straight swap of the whole picture
+reads as movement. That only holds if they are in exact register: the generator
+returned one frame at 1447×1087 against the others' 1448×1086, which is enough to
+make the entire image jump, so the build resamples every frame of a screen to the
+base frame's size and says when it had to.
+
+**The panels are measured, not guessed.** The rectangles in `PANEL` are the
+largest solid black region of each painting, expressed as fractions of the image,
+so they still land correctly if the art is re-rendered at another size. The
+menus lay themselves out inside whichever panel they are on.
+
+**The character select is the v02 layout**, the one with the four characters in a
+row along the top, because the plates below can then sit under the faces they
+belong to — `SPLASH_CHAR_ORDER` puts them in the painting's left-to-right order
+rather than the manifest's. The alternative layout scatters the characters around
+a smaller panel, which leaves nothing to line the plates up with.
+
+The paintings are 4:3 and the court is 3:2, so the picture is fitted whole —
+nothing of it is ever cropped, which matters because the title runs close to the
+top edge — and the slack down each side is filled with the same picture blown up
+to cover and dimmed almost to black. It reads as a vignette rather than as two
+letterbox bars.
+
+If `splash/` is missing or a frame fails to load, the menus fall back to a plain
+dark screen with their own titles, exactly as they looked before. It is
+all-or-nothing per set: half a painting is worse than none.
 
 ## How it works
 
