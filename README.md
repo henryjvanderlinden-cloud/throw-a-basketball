@@ -306,14 +306,50 @@ and `release` take `(playerIndex, 'left'|'right'|'up'|'down')` and go in through
 the same path as a real key, so a test can play the game rather than set its
 variables. `setMode(1|2)` and `pick(player, charIndex)` skip the menus.
 
+### Tests
+
+There is a headless harness. It needs Playwright, and it needs the game served
+over HTTP rather than opened as a file, because the sprites and splash frames
+are fetched:
+
+```
+pip install playwright && playwright install chromium
+python -m http.server 8899          # from the repo root, in another shell
+python tools/test-game.py           # ~140 checks, a few seconds
+python tools/fuzz-game.py           # random two-player input, four rounds
+```
+
+`test-game.py` plays the game through `window.__hoop` — pressing keys and
+clicking pads rather than setting variables — and screenshots each stage into a
+temp folder (`HOOP_SHOTS=` to put them somewhere else). Point it at another host
+with `python tools/test-game.py http://host:port/`.
+
+The checks are about behaviour that has actually broken at least once, not about
+coverage: a touch button left stuck down by a screen change, a charge with no way
+out of it, a player anchored to one shoe, two splash frames that do not line up,
+a clock that runs when it should be held. When one of them fails it is usually
+telling the truth — three of them were written after the bug, and each has caught
+a regression since.
+
+`fuzz-game.py` bashes both players' controls at random and asserts, every frame,
+the things that must hold whatever is pressed: at most one ball-holder, the
+holder's state agreeing with who owns the ball, nobody off the court, no NaN, no
+negative clock.
+
 ## Layout
 
 ```
-index.html                 the whole game
-sprites/                   generated - manifest.js + 8 frames per character
-artwork/basketball-courts/ court backdrops
-artwork/basketball-players/ source poses (input to the build script)
-tools/build-sprites.py     regenerates sprites/ from artwork/
+index.html                  the whole game
+sprites/                    generated - manifest.js + frames per character
+splash/                     generated - the painted menu screens and banners
+artwork/basketball-courts/  court backdrops
+artwork/basketball-players/ source poses and strips (input to the build)
+artwork/Splash Screens/     source paintings for the menus
+tools/build-sprites.py      regenerates sprites/ from artwork/
+tools/slice-strips.py       cuts generated strips into frames
+tools/build-splash.py       regenerates splash/ from artwork/
+tools/test-game.py          headless checks - see Tests above
+tools/fuzz-game.py          random input, invariants only
 ```
 
 ## Credits
