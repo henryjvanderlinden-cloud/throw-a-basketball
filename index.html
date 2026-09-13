@@ -733,6 +733,12 @@ function buildSelectCards() {
   el.selCards.textContent = '';
   const n = CHARS.length, cw = 200, gap = 24;
   const x0 = (W - (n * cw + (n - 1) * gap)) / 2;
+  // One scale for every card, so the picker shows how big they actually are
+  // next to each other. Sizing each card to fill its own box would make the
+  // monkey the same height as the professional, which is the thing the build
+  // stopped doing.
+  const tallest = Math.max(...CHARS.map(c => c.sequences.dribble_idle[0].h));
+  const k = 250 / tallest;
   CHARS.forEach((c, i) => {
     const x = x0 + i * (cw + gap), y = 134, ch = 400;
     const grp = document.createElementNS(SVGNS, 'g');
@@ -748,7 +754,7 @@ function buildSelectCards() {
     card.setAttribute('stroke-width', '3');
     grp.appendChild(card);
 
-    const f = c.sequences.dribble_idle[0], k = 250 / f.h;
+    const f = c.sequences.dribble_idle[0];
     const im = document.createElementNS(SVGNS, 'image');
     im.setAttribute('href', f.src);
     im.setAttribute('width', f.w * k); im.setAttribute('height', f.h * k);
