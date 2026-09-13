@@ -21,3 +21,5 @@ scratch/
 
 # Sliced intermediates, regenerate with tools/slice-strips.py
 artwork/basketball-players/* frames/
+# Screenshots the Claude desktop app drops into the folder
+Claude outputs/

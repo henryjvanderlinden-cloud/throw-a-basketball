@@ -75,6 +75,39 @@ SEQ_SCALE = {
     },
 }
 
+# How big each character is, as a multiple of the standing height above.
+# Normalising everyone to the same total height is not the same as making them
+# the same size: the monkey stands in a crouch, so matching his overall height
+# scaled his body up until he was the biggest thing on the court. These are
+# measured by eye, side by side on one baseline.
+CHAR_SCALE = {
+    "monkey": 0.88,          # a monkey, and crouched, so the shortest of them
+    "nba": 1.10,             # the pro: taller and heavier than everybody
+    "highschooler": 0.97,    # a teenager next to a professional
+    "zombie": 1.00,
+}
+
+# Per-pose scale corrections for the old eight-pose art, keyed by pose number.
+#
+# Each of those poses was drawn to fill its own canvas, so a pose with the arms
+# overhead has a SMALLER body -- the character visibly shrank at the moment it
+# shot. These bring every pose back to the body scale of that character's
+# standing pose. The landmark is the top of the kit: the jersey sits at the
+# shoulders and does not move when the arms do, unlike the bounding box, and a
+# pose used by two sequences measures the same from both, which is what says it
+# is reading scale rather than posture.
+#
+# This table is scaffolding for the placeholder art and goes with it. Strips
+# carry a calibration frame instead, which measures the same thing exactly.
+POSE_SCALE = {
+    "nba":         {1: 1.000, 2: 1.029, 4: 1.116, 5: 1.015,
+                     6: 1.034, 7: 1.150, 8: 1.210},
+    "highschooler":{1: 1.000, 2: 1.000, 3: 1.018, 4: 1.040,
+                     5: 1.116, 6: 1.092, 7: 1.132, 8: 1.079},
+    "zombie":      {1: 1.000, 2: 1.025, 3: 1.014, 4: 1.090,
+                     5: 1.075, 6: 1.119, 7: 1.066, 8: 1.089},
+}
+
 # Which side of the body the ball sits on, +1 = viewer's right. Measured from
 # the art: the generator put the monkey's dribbling hand on the viewer's LEFT
 # for the standing poses, not the right the prompt asked for.
@@ -100,6 +133,27 @@ def mask_of(im: Image.Image) -> np.ndarray:
 def bbox(m: np.ndarray) -> tuple[int, int, int, int]:
     ys, xs = np.where(m)
     return int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1
+
+
+# The point on the floor the character stands on -- the middle of the stance,
+# read off a band at the bottom of the silhouette.
+#
+# The band has to be deep enough to hold BOTH shoes. Most stances put one foot a
+# little lower than the other, and a shallow band then sees only that shoe and
+# anchors the whole character on it. At a thirtieth of the figure's height the
+# High Schooler's standing pose anchored at 91% of his own width and the NBA
+# player's charge at 18%, which drew both of them most of a body-width away from
+# where the game thought they were standing. A tenth clears every shoe in the
+# current art, and the measurement stops moving well before that depth -- from a
+# tenth to a sixth it does not change at all -- so it is not a knife edge.
+FOOT_BAND = 10
+
+
+def foot_centre(m: np.ndarray, box) -> float:
+    y1 = box[3]
+    band = m[max(0, y1 - max(4, (y1 - box[1]) // FOOT_BAND)):y1, :]
+    xs = np.where(band.any(axis=0))[0]
+    return float((xs.min() + xs.max()) / 2) if len(xs) else (box[0] + box[2]) / 2
 
 
 def write_frame(im: Image.Image, box, scale: float, dest: Path) -> tuple[float, float]:
@@ -135,13 +189,8 @@ def build_from_sequences(key: str, stem: str, label: str) -> dict | None:
         ref_file = sorted(ref_dir.glob("*.png"))[0]
     ref = Image.open(ref_file).convert("RGBA")
     rx0, ry0, rx1, ry1 = bbox(mask_of(ref))
-    scale = STANDING_H / (ry1 - ry0)
-
-    def foot_cx(m, box):
-        y1 = box[3]
-        band = m[max(0, y1 - max(4, (y1 - box[1]) // 12)):y1, :]
-        xs = np.where(band.any(axis=0))[0]
-        return float((xs.min() + xs.max()) / 2) if len(xs) else (box[0] + box[2]) / 2
+    target_h = STANDING_H * CHAR_SCALE.get(key, 1.0)
+    scale = target_h / (ry1 - ry0)
 
     seq_scale = SEQ_SCALE.get(key, {})
     sequences = {}
@@ -162,7 +211,7 @@ def build_from_sequences(key: str, stem: str, label: str) -> dict | None:
 
         if calib is not None:
             ch = bbox(mask_of(Image.open(calib).convert("RGBA")))
-            s = STANDING_H / (ch[3] - ch[1])
+            s = target_h / (ch[3] - ch[1])
             auto.append(d.name)
         else:
             s = scale * seq_scale.get(d.name, 1.0)
@@ -180,7 +229,7 @@ def build_from_sequences(key: str, stem: str, label: str) -> dict | None:
             # A travelling pose anchors on the cell, because its feet are
             # mid-stride and move on purpose. A planted pose anchors on its own
             # feet, so the character cannot drift sideways through the loop.
-            ax = cell_cx if travelling else foot_cx(m, box)
+            ax = cell_cx if travelling else foot_centre(m, box)
             dest = OUT / key / d.name / f"{i:02d}.png"
             w, h = write_frame(im, box, s, dest)
             frames.append({
@@ -208,23 +257,19 @@ def build_from_poses(key: str, stem: str, label: str) -> dict | None:
     boxes = [bbox(m) for m in masks]
 
     idle = boxes[LEGACY_IDLE_POSE - 1]
-    scale = STANDING_H / (idle[3] - idle[1])
-
-    def foot_centre(m, box):
-        y1 = box[3]
-        band = m[max(0, y1 - max(4, (y1 - box[1]) // 30)):y1, :]
-        xs = np.where(band.any(axis=0))[0]
-        return float((xs.min() + xs.max()) / 2) if len(xs) else m.shape[1] / 2
+    scale = STANDING_H * CHAR_SCALE.get(key, 1.0) / (idle[3] - idle[1])
+    pose_scale = POSE_SCALE.get(key, {})
 
     def frame_for(pose: int, seq: str, idx: int) -> dict:
         im, m, box = ims[pose - 1], masks[pose - 1], boxes[pose - 1]
+        s = scale * pose_scale.get(pose, 1.0)
         dest = OUT / key / seq / f"{idx:02d}.png"
-        w, h = write_frame(im, box, scale, dest)
+        w, h = write_frame(im, box, s, dest)
         return {
             "src": f"sprites/{key}/{seq}/{idx:02d}.png",
             "w": w, "h": h,
-            "footX": round((foot_centre(m, box) - box[0]) * scale, 2),
-            "footY": round((box[3] - box[1]) * scale, 2),
+            "footX": round((foot_centre(m, box) - box[0]) * s, 2),
+            "footY": round((box[3] - box[1]) * s, 2),
         }
 
     p = LEGACY_POSES[key]
