@@ -236,15 +236,11 @@
   </g>
 
   <!-- ===== splash artwork, behind both menus =====
-       The paintings are 4:3 and the court is 3:2, so the picture is fitted
-       whole (nothing of it is ever cropped) and the slack down each side is
-       filled with the same picture blown up to cover and dimmed almost to
-       black. That reads as the art continuing into a vignette rather than as
-       two letterbox bars. -->
+       The paintings are 4:3, and while a menu is up the stage is 960x720 --
+       4:3 exactly -- so a painting fills it edge to edge with nothing cropped
+       and nothing left over. The control band is below that and simply out of
+       frame: the menus are all clickable, so nothing is lost by it. -->
   <g id="splash" opacity="0" pointer-events="none">
-    <image id="splashFill" x="0" y="0" width="960" height="640"
-           preserveAspectRatio="xMidYMid slice" href=""/>
-    <rect x="0" y="0" width="960" height="640" fill="#05060a" opacity="0.72"/>
     <g id="splashFrames"></g>
   </g>
 
@@ -273,6 +269,9 @@
     <rect x="0" y="0" width="960" height="640" fill="#000" opacity="0.62"/>
     <text id="ovTitle" x="480" y="272" text-anchor="middle" font-size="52" font-weight="800" fill="#fff"
           font-family="ui-sans-serif,system-ui">TIME'S UP</text>
+    <!-- word art, when there is a winner to name. Its frames are injected here
+         by buildSplash, so they load with the rest of the artwork. -->
+    <g id="ovBanner" opacity="0"></g>
     <text id="ovScore" x="480" y="324" text-anchor="middle" font-size="24" fill="#e6e9f0"
           font-family="ui-monospace,monospace">0 points</text>
     <text id="ovHint" x="480" y="380" text-anchor="middle" font-size="17" fill="#aab2c0"
@@ -357,13 +356,14 @@ const el = {
   ballg: $('ballg'), aim: $('aimline'),
   power: $('power'), pwBg: $('pwBg'), pwFill: $('pwFill'),
   overlay: $('overlay'), ovTitle: $('ovTitle'), ovScore: $('ovScore'), ovHint: $('ovHint'),
+  ovBanner: $('ovBanner'),
   net: $('net'),
   aimg: $('aimg'), aimBg: $('aimlineBg'),
   select: $('select'), selCards: $('selCards'), selTitle: $('selTitle'), selHint: $('selHint'),
   selScrim: $('selScrim'),
   mode: $('mode'), modeCards: $('modeCards'), modeHint: $('modeHint'),
   modeScrim: $('modeScrim'), modeTitle: $('modeTitle'),
-  splash: $('splash'), splashFill: $('splashFill'), splashFrames: $('splashFrames'),
+  splash: $('splash'), splashFrames: $('splashFrames'),
   court: $('court'), scrim: $('scrim'), vectorScene: $('vectorScene'),
   ceiling: $('ceiling'), floorLine: $('floorLine'),
   shP: [$('shP0'), $('shP1')], shBall: $('shBall'),
@@ -457,8 +457,12 @@ const PANEL = {
   mode:   { x0: 0.3092, y0: 0.5561, x1: 0.6882, y1: 0.9175 },
   select: { x0: 0.0171, y0: 0.6632, x1: 0.9816, y1: 0.9772 }
 };
-// Fit the whole picture inside the court, centred. Height-limited at 3:2.
-const ART_H = H, ART_W = H * SPLASH_AR, ART_X = (W - ART_W) / 2, ART_Y = 0;
+// While a menu is up the stage is exactly as tall as the art is wide over 4:3,
+// so the painting is the screen: no bars, no crop, no offset.
+const MENU_H = Math.round(W / SPLASH_AR);           // 720
+const ART_W = W, ART_H = MENU_H, ART_X = 0, ART_Y = 0;
+const VIEW_PLAY = `0 0 ${W} ${BAND_Y + BAND_H}`;
+const VIEW_MENU = `0 0 ${W} ${MENU_H}`;
 const artX = f => ART_X + f * ART_W;
 const artY = f => ART_Y + f * ART_H;
 const panelRect = k => {
@@ -466,50 +470,101 @@ const panelRect = k => {
   return { x: artX(p.x0), y: artY(p.y0), w: artX(p.x1) - artX(p.x0), h: artY(p.y1) - artY(p.y0) };
 };
 
+// The winner's banner, laid across the court. Wide enough to read from across
+// the room, high enough to clear the players celebrating underneath it.
+const BANNER_W = 760, BANNER_Y = 116;
+// The word art is far taller than the line of text it replaces, so the score
+// and the hint drop down out of its way when it is up.
+const OV_TEXT = { banner: [346, 396], plain: [324, 380] };
+
+function showBanner(n) {
+  const name = (n === null) ? null : 'won-' + (n + 1);
+  for (const k of ['won-1', 'won-2']) {
+    const im = splashEls[k];
+    if (im) im.setAttribute('opacity', k === name ? '1' : '0');
+  }
+  const ok = !!(name && splashLoaded[name]);
+  el.ovBanner.setAttribute('opacity', ok ? '1' : '0');
+  // With art, the banner names the winner; without it, the text still does.
+  el.ovTitle.setAttribute('opacity', ok ? '0' : '1');
+  const [sy, hy] = ok ? OV_TEXT.banner : OV_TEXT.plain;
+  el.ovScore.setAttribute('y', sy); el.ovHint.setAttribute('y', hy);
+  if (!ok) return;
+  const im = splashEls[name];
+  const nat = im.naturalWidth ? (im.naturalHeight / im.naturalWidth) : (223 / 1024);
+  const h = BANNER_W * nat;
+  im.setAttribute('x', ((W - BANNER_W) / 2).toFixed(1));
+  im.setAttribute('y', BANNER_Y.toFixed(1));
+  im.setAttribute('width', BANNER_W); im.setAttribute('height', h.toFixed(1));
+  im.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+}
+
 // The mode screen sits on its base frame and every few seconds cuts to one of
 // the variations -- a wink, a blink, a point -- then cuts back. The frames are
 // identical but for the one character, so a straight swap reads as movement.
-const SPLASH_HOLD = [2.4, 4.2];     // seconds on the base frame
-const SPLASH_BEAT = 1.15;           // seconds on a variation
-let splashEls = {}, splashReady = false, splashFrame = 0;
+const SPLASH_HOLD = [0.7, 1.4];     // seconds on the base frame
+const SPLASH_BEAT = 1.0;            // seconds on a variation
+let splashEls = {}, splashLoaded = {}, splashReady = false, splashSettled = false;
+let splashFrame = 0;
 let splashT = SPLASH_HOLD[0], splashOn = false, splashLast = -1;
 
+// The menus lay themselves out differently depending on whether there is a
+// painting to sit in, so nothing is shown until the first one has arrived or
+// failed. Waiting on the whole set would mean a second of the bare layout on
+// screen first, which is the flash this avoids.
+function splashSettle(ok) {
+  if (splashSettled) return;
+  splashSettled = true;
+  splashReady = ok;
+  if (CHARS.length) { buildModeCards(); buildSelectCards(); paintMode(); paintSelection(); }
+  syncScreens();
+}
+
 function buildSplash() {
-  const names = SPLASH_MODE.concat([SPLASH_SELECT]);
-  let pending = names.length;
+  const names = SPLASH_MODE.concat([SPLASH_SELECT, 'won-1', 'won-2']);
   for (const name of names) {
     const im = document.createElementNS(SVGNS, 'image');
     im.setAttribute('href', SPLASH_DIR + name + '.webp');
-    im.setAttribute('x', ART_X.toFixed(2)); im.setAttribute('y', ART_Y);
-    im.setAttribute('width', ART_W.toFixed(2)); im.setAttribute('height', ART_H);
-    im.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    im.setAttribute('x', ART_X); im.setAttribute('y', ART_Y);
+    im.setAttribute('width', ART_W); im.setAttribute('height', ART_H);
+    // slice, not meet: if a re-render ever comes back a hair off 4:3, crop the
+    // hair rather than leave a seam of court showing through.
+    im.setAttribute('preserveAspectRatio', 'xMidYMid slice');
     im.setAttribute('opacity', '0');
     // One frame missing and the whole set is untrustworthy, so the menus fall
     // back to plain panels rather than showing half a picture.
     im.addEventListener('load', () => {
-      if (--pending !== 0) return;
-      splashReady = true;
-      // The menus were laid out for a bare screen; rebuild them into the panels
-      // the paintings leave for them.
-      if (CHARS.length) { buildModeCards(); buildSelectCards(); paintMode(); paintSelection(); }
-      paintSplash();
+      splashLoaded[name] = true;
+      if (name === SPLASH_MODE[0]) splashSettle(true);
+      paintSplash();                       // a late arrival can now be shown
     });
-    im.addEventListener('error', () => { splashReady = false; pending = -1; paintSplash(); });
-    el.splashFrames.appendChild(im);
+    im.addEventListener('error', () => {
+      if (name === SPLASH_MODE[0]) splashSettle(false);
+    });
+    if (name.startsWith('won-')) { el.ovBanner.appendChild(im); im.removeAttribute('x'); }
+    else el.splashFrames.appendChild(im);
     splashEls[name] = im;
   }
+  // Nothing is on disk forever: if the first frame neither loads nor errors,
+  // fall back rather than leave the player looking at a blank stage.
+  setTimeout(() => splashSettle(false), 4000);
 }
 
 function splashShow(name) {
   if (splashLast === name) return;
   for (const k in splashEls) splashEls[k].setAttribute('opacity', k === name ? '1' : '0');
-  el.splashFill.setAttribute('href', SPLASH_DIR + name + '.webp');
   splashLast = name;
 }
 
 // Which picture belongs to the screen we are on, and whether it is showing.
 function paintSplash() {
-  const on = splashReady && (g.ms === MS.MODE || g.ms === MS.SELECT);
+  const menu = (g.ms === MS.MODE || g.ms === MS.SELECT);
+  // The stage itself changes shape for the menus: 4:3 for a painting, and the
+  // control band out of frame, which is what lets the art run to every edge.
+  el.stage.setAttribute('viewBox', (splashReady && menu) ? VIEW_MENU : VIEW_PLAY);
+  el.band.setAttribute('opacity', (splashReady && menu) ? '0' : '1');
+  el.band.setAttribute('pointer-events', (splashReady && menu) ? 'none' : 'auto');
+  const on = splashReady && menu;
   el.splash.setAttribute('opacity', on ? '1' : '0');
   // With a painting behind them the menus lose their flat dimmer and their own
   // titles; without one they keep both and look exactly as they did before.
@@ -519,8 +574,9 @@ function paintSplash() {
   // select title does not: it says whose turn it is, and lives in the strip.
   el.modeTitle.setAttribute('opacity', splashReady ? '0' : '1');
   if (!on) return;
-  if (g.ms === MS.SELECT) splashShow(SPLASH_SELECT);
-  else splashShow(SPLASH_MODE[splashOn ? splashFrame : 0]);
+  const want = (g.ms === MS.SELECT) ? SPLASH_SELECT
+             : SPLASH_MODE[splashOn && splashLoaded[SPLASH_MODE[splashFrame]] ? splashFrame : 0];
+  if (splashLoaded[want]) splashShow(want);
 }
 
 // Runs off the same clock as everything else, and only on the mode screen.
@@ -709,6 +765,7 @@ function makePlayer(n) {
     turnT: 0, pickupT: 0, celebT: 0, celebSeq: null,
     breakSeq: null, breakT: 0, breakAt: BREAK_MIN + Math.random() * (BREAK_MAX - BREAK_MIN),
     stillT: 0, lockout: 0, stealCd: 0, mirrorPose: false,
+    overSeq: null, overT: 0,        // the winner's lap of honour
     // One direction can have more than one key on it (Space and Up both shoot
     // in a one-player game), so the keyboard source counts keys rather than
     // holding a flag -- otherwise letting go of one cancels the other.
@@ -727,6 +784,7 @@ function reset() {
     owner: null,            // index of the player holding the ball, or null
     shooter: 0,             // who released the last shot
     scoredThisShot: false,
+    winner: null,
     stealImmune: 0,
     clockOn: false, clockLimit: CLOCK_BASE, clock: CLOCK_BASE,
     flash: 0
@@ -763,6 +821,7 @@ function startMatch() {
     p.made = 0; p.points = 0; p.power = 0; p.angle = 74;
     p.throwT = 99; p.turnT = 0; p.pickupT = 0; p.celebT = 0; p.celebSeq = null;
     p.breakSeq = null; p.breakT = 0; p.stillT = 0; p.lockout = 0; p.stealCd = 0;
+    p.overSeq = null; p.overT = 0;
     p.dribT = 0; p.animT = 0;
     p.px = (numPlayers === 1) ? SOLO_X : START_X[p.n];
     p.facing = p.n === 0 ? 1 : -1;
@@ -788,8 +847,8 @@ function syncScreens() {
     node.setAttribute('opacity', on ? '1' : '0');
     node.setAttribute('pointer-events', on ? 'auto' : 'none');
   };
-  show(el.mode, g.ms === MS.MODE);
-  show(el.select, g.ms === MS.SELECT);
+  show(el.mode, splashSettled && g.ms === MS.MODE);
+  show(el.select, splashSettled && g.ms === MS.SELECT);
   paintSplash();
   el.overlay.setAttribute('opacity', g.ms === MS.OVER ? '1' : '0');
   layoutBand();
@@ -1342,6 +1401,7 @@ function endMatch() {
   for (const p of players) {
     if (p.state === PS.AIM || p.state === PS.CHARGE) { p.state = PS.DRIBBLE; p.power = 0; }
   }
+  g.winner = null;
   if (numPlayers === 1) {
     el.ovTitle.textContent = "TIME'S UP";
     el.ovTitle.setAttribute('fill', '#fff');
@@ -1350,11 +1410,18 @@ function endMatch() {
     const [a, b] = players;
     const draw = a.points === b.points;
     const win = a.points > b.points ? 0 : 1;
+    g.winner = draw ? null : win;
     el.ovTitle.textContent = draw ? 'DRAW' : `PLAYER ${win + 1} WINS`;
     el.ovTitle.setAttribute('fill', draw ? '#fff' : (win === 0 ? '#7fb0ff' : '#ff8a72'));
     el.ovScore.textContent = `${a.points} – ${b.points}`;
   }
   el.ovHint.textContent = numPlayers > 1 ? 'Press ↑ / W or R to play again' : 'Press ↑ or R to play again';
+  // Start the winner panting; the lap of honour follows.
+  if (g.winner !== null) {
+    const w = players[g.winner];
+    w.overSeq = null; w.overT = pantsTime(w); w.animT = 0;
+  }
+  showBanner(g.winner);
   syncScreens();
 }
 
@@ -1425,7 +1492,7 @@ function step(dt) {
     g.clock -= dt;
     if (g.clock <= 0) endMatch();
   }
-  if (g.ms === MS.OVER) return;
+  if (g.ms === MS.OVER) { stepVictory(dt); return; }
 
   // ---- movement / aiming
   for (const p of players) {
@@ -1543,6 +1610,34 @@ function step(dt) {
   g.flash = Math.max(0, g.flash - dt);
 }
 
+// Three breaths of the panting loop, then one celebration, then three more --
+// the winner gets to keep showing off, and the loser keeps panting.
+const VICTORY_PANTS = 3;
+const pantsTime = p => {
+  const seq = seqOf(p, 'gameover');
+  return seq ? VICTORY_PANTS * seq.length / ANIM_HZ.gameover : 2.4;
+};
+
+// Any celebration the character has, the handspring included -- on the win
+// screen it is the one worth waiting for, so it is not held back here the way
+// it is after a basket.
+function pickVictory(p) {
+  const names = Object.keys(p.char ? p.char.sequences : {}).filter(n => n.startsWith('celebrate'));
+  if (!names.length) return [null, pantsTime(p)];
+  const name = names[Math.floor(Math.random() * names.length)];
+  return [name, seqOf(p, name).length / (CELEB_HZ[name] || CELEB_HZ_DEFAULT)];
+}
+
+function stepVictory(dt) {
+  if (g.winner === null) return;
+  const p = players[g.winner];
+  if (!p || !p.char) return;
+  p.overT -= dt;
+  if (p.overT > 0) return;
+  if (p.overSeq) { p.overSeq = null; p.overT = pantsTime(p); }
+  else { [p.overSeq, p.overT] = pickVictory(p); }
+}
+
 // green -> yellow -> red, written as literal rgb() so every renderer agrees
 function powerColor(p) {
   const stops = [[63, 191, 95], [232, 200, 60], [226, 87, 43]];
@@ -1572,6 +1667,12 @@ function animatePlayer(p) {
   const right = p.facing >= 0;
 
   if (g.ms === MS.OVER) {
+    if (p.overSeq && seqOf(p, p.overSeq)) {
+      const n = seqOf(p, p.overSeq).length;
+      const hz = CELEB_HZ[p.overSeq] || CELEB_HZ_DEFAULT;
+      const k = Math.floor((n / hz - p.overT) * hz);
+      return showFrame(p, p.overSeq, Math.min(n - 1, Math.max(0, k)));
+    }
     const name = firstSeq(p, 'gameover', 'dribble_idle');
     return showFrame(p, name, Math.floor(p.animT * ANIM_HZ.gameover) % seqOf(p, name).length);
   }
@@ -1650,6 +1751,9 @@ function animatePlayer(p) {
 function render() {
   const b = g.ball;
   const menus = (g.ms === MS.MODE || g.ms === MS.SELECT);
+  // Once the buzzer has gone the ball is out of play, and a winner turning a
+  // handspring should not have one hanging in the air beside him.
+  const noBall = menus || g.ms === MS.OVER;
 
   players.forEach((p, i) => {
     p.rig.root.setAttribute('transform', `translate(${p.px.toFixed(1)},${GROUND})`);
@@ -1680,10 +1784,10 @@ function render() {
   const hAir = Math.max(0, Math.min(1, (GROUND - BALL_R - b.y) / 420));
   el.shBall.setAttribute('cx', b.x.toFixed(1));
   el.shBall.setAttribute('rx', (12 * (1 - 0.55 * hAir)).toFixed(1));
-  el.shBall.setAttribute('opacity', menus ? '0' : (0.20 * (1 - 0.7 * hAir)).toFixed(3));
+  el.shBall.setAttribute('opacity', noBall ? '0' : (0.20 * (1 - 0.7 * hAir)).toFixed(3));
   el.ballg.setAttribute('transform',
     `translate(${b.x.toFixed(1)},${b.y.toFixed(1)}) rotate(${(b.spin % 360).toFixed(1)})`);
-  el.ballg.setAttribute('opacity', menus ? '0' : '1');
+  el.ballg.setAttribute('opacity', noBall ? '0' : '1');
 
   // aim line and power meter belong to whoever has the ball, and go away the
   // moment the clock does

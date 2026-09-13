@@ -13,6 +13,10 @@ Two screens come out of it:
                                         frame and four variations, each with a
                                         different character doing something
     splash/select.webp                  the character select
+    splash/won-1.webp, won-2.webp       the winner's banner, laid over the court
+
+The banners are transparent word art rather than whole screens, so they are
+trimmed to their own ink and keep their alpha.
 
 Every frame of a screen must share its composition exactly -- the game crossfades
 nothing, it swaps the whole picture, which only reads as a wink or a blink if
@@ -23,6 +27,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -43,6 +48,16 @@ FRAMES = {
     "mode-4": "throw-a-basketball-13-blink.png",
     "select": "Splash_Select_Player_v02.png",
 }
+
+# Transparent word art, which lives a folder up. Trimmed to its own ink: as
+# drawn, a third of the height is empty margin, and a banner that carries its
+# margin around cannot be positioned by its lettering.
+BANNERS = {
+    "won-1": "player-1-has-won-blue.png",
+    "won-2": "player-2-has-won-red.png",
+}
+BANNER_W = 1024
+BANNER_Q = 88
 
 
 def main() -> None:
@@ -69,6 +84,31 @@ def main() -> None:
         kb = dest.stat().st_size / 1024
         total += kb
         print(f"{name:<10} {im.width}x{im.height}  {kb:6.0f} KB   <- {fname}{drift}")
+    for name, fname in BANNERS.items():
+        src = SRC.parent / fname
+        if not src.exists():
+            print(f"{name:<10} SKIPPED (no {fname})")
+            continue
+        im = Image.open(src).convert("RGBA")
+        a = np.array(im.getchannel("A"))
+        ys, xs = np.where(a > 8)
+        im = im.crop((int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1))
+        # The RGB beneath fully transparent pixels is the generator's
+        # transparency checkerboard. Lossy compression happily drags that into
+        # the visible edge, so flatten it first.
+        arr = np.array(im)
+        clear = arr[..., 3] < 8
+        for c in range(3):
+            arr[..., c][clear] = 0
+        im = Image.fromarray(arr)
+        if im.width != BANNER_W:
+            im = im.resize((BANNER_W, round(im.height * BANNER_W / im.width)), Image.LANCZOS)
+        dest = OUT / f"{name}.webp"
+        im.save(dest, "WEBP", quality=BANNER_Q, method=6)
+        kb = dest.stat().st_size / 1024
+        total += kb
+        print(f"{name:<10} {im.width}x{im.height}  {kb:6.0f} KB   <- {fname} (trimmed)")
+
     print(f"\n{total/1024:.1f} MB total")
 
 
