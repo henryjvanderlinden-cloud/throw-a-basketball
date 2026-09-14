@@ -434,8 +434,29 @@ async def main():
           };
         }""")
         check("all six frames are in the page", sp["n"] == 6, sp["n"])
-        check("every frame is drawn at one size (no jump on the swap)",
-              len(sp["sizes"]) == 1, sp["sizes"])
+        # The mode screen is a base painting plus a small patch laid over it, so
+        # the frames are deliberately NOT all one size any more. What must hold
+        # is that the full-screen paintings agree with each other, and that every
+        # patch lands inside the picture where the manifest says.
+        geo = await pg.evaluate("""() => {
+          const all=[...document.querySelectorAll('#splashFrames image')];
+          const full=all.filter(i => !i.hasAttribute('data-patch'));
+          const patch=all.filter(i => i.hasAttribute('data-patch'));
+          const box=i => [+i.getAttribute('x'), +i.getAttribute('y'),
+                          +i.getAttribute('width'), +i.getAttribute('height')];
+          const vb=document.getElementById('stage').getAttribute('viewBox').split(' ').map(Number);
+          return {fullSizes:[...new Set(full.map(i => box(i).slice(2).join('x')))],
+                  nPatch:patch.length, patches:patch.map(box), vw:vb[2], vh:vb[3]};
+        }""")
+        check("the full-screen paintings are all one size",
+              len(geo["fullSizes"]) == 1, geo["fullSizes"])
+        check("there is a patch per variation", geo["nPatch"] == 4, geo["nPatch"])
+        check("every patch lands inside the painting",
+              all(x >= 0 and y >= 0 and x + w <= geo["vw"] + 0.5 and y + h <= geo["vh"] + 0.5
+                  for x, y, w, h in geo["patches"]), geo["patches"])
+        check("and every patch is a patch, not a whole screen",
+              all(w * h < 0.25 * geo["vw"] * geo["vh"] for x, y, w, h in geo["patches"]),
+              [f"{w}x{h}" for x, y, w, h in geo["patches"]])
         check("the splash shows on the mode screen", sp["shown"] == "1")
         check("the menu's own title gives way to the painted one", sp["title"] == "0")
         # the menu stage is exactly 4:3, so the art runs to every edge
@@ -454,17 +475,26 @@ async def main():
 
         # the idle cycle: base, a variation, base, a different variation
         seen = []
+        base_dropped = False
         for _ in range(70):
             cur = await pg.evaluate("""() => {
-              const f=[...document.querySelectorAll('#splashFrames image')];
-              return f.findIndex(i => i.getAttribute('opacity') === '1');
+              const all=[...document.querySelectorAll('#splashFrames image')];
+              const patch=all.filter(i => i.hasAttribute('data-patch'));
+              const base=all.find(i => !i.hasAttribute('data-patch'));
+              return {p: patch.findIndex(i => i.getAttribute('opacity') === '1'),
+                      base: base.getAttribute('opacity')};
             }""")
-            if not seen or seen[-1] != cur: seen.append(cur)
+            if cur["base"] != "1":
+                base_dropped = True
+            if not seen or seen[-1] != cur["p"]: seen.append(cur["p"])
             await pg.wait_for_timeout(180)
-        variations = [x for x in seen if x > 0]
+        variations = [x for x in seen if x >= 0]
         check("the mode screen cycles through variations", len(variations) >= 2, seen)
-        check("it returns to the base frame between them",
-              all(not (seen[i] > 0 and seen[i+1] > 0) for i in range(len(seen)-1)), seen)
+        # The whole point of patching rather than swapping whole frames: the
+        # painting underneath never reloads, so the swap cannot flicker.
+        check("the base painting never blinks out during a swap", not base_dropped)
+        check("it returns to the bare base between them",
+              all(not (seen[i] >= 0 and seen[i+1] >= 0) for i in range(len(seen)-1)), seen)
         check("never the same variation twice running",
               all(variations[i] != variations[i+1] for i in range(len(variations)-1)), variations)
 

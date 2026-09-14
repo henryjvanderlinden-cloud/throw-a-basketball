@@ -20,10 +20,13 @@ from playwright.sync_api import sync_playwright
 URL = "http://localhost:8899/index.html"
 FILE_URL = "file://" + str(pathlib.Path(__file__).resolve().parent.parent / "index.html")
 
-# The page, the sprite manifest, the inlined effects, and the one painting the
-# menu is made of. Anything else in front of the menu is a regression.
-MAX_FILES = 5
-MAX_KB = 800
+# The page, the sprite manifest, the inlined effects, the splash manifest, and
+# the one painting the menu is made of. Anything else in front of the menu is a
+# regression. The painting is full-resolution now -- it is pixel art and
+# resampling it to 1280 turned the dithering to mush -- so the budget is what one
+# unresampled frame costs, and no more.
+MAX_FILES = 6
+MAX_KB = 900
 
 fails = []
 
@@ -75,6 +78,34 @@ with sync_playwright() as pw:
           sum(1 for n in r["names"] if n.endswith(".webp")) <= 1, r["names"])
     check("the effects are inlined, not fetched",
           not any("shoe-squeak" in n or "floor-bounce" in n for n in r["names"]), r["names"])
+
+    section("and nothing is visible until the menu is")
+    c = b.new_page(viewport={"width": 800, "height": 700})
+    c.add_init_script("""
+      window.__boot = [];
+      const tick = () => {
+        const el = document.getElementById('boot');
+        const sp = document.getElementById('splash');
+        __boot.push([Math.round(performance.now()),
+                     el ? (el.classList.contains('gone') ? 'fading' : 'solid') : 'removed',
+                     sp ? sp.getAttribute('opacity') : '-']);
+        if (el) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    """)
+    c.goto(URL)
+    c.wait_for_function("!document.getElementById('boot')", timeout=30000)
+    samples = c.evaluate("__boot")
+    solid = [s_ for s_ in samples if s_[1] == "solid"]
+    # The curtain may only come up once there is a painted menu underneath it.
+    # A sample with the splash still at zero and no curtain is the player looking
+    # at a white page and a half-drawn hoop, which is the thing it exists to stop.
+    naked = [s_ for s_ in samples if s_[2] == "0" and s_[1] != "solid"]
+    check("the curtain is solid while the menu is still loading", bool(solid),
+          "%d samples" % len(solid))
+    check("it never lifts on an unpainted menu", not naked, naked[:3])
+    check("and it is gone once the menu is up", samples[-1][1] == "removed", samples[-1])
+    c.close()
 
     section("but everything does arrive, in the end")
     for want in ["select.webp", "mode-4.webp", "won-1.webp"]:
