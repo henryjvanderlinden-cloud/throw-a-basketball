@@ -1626,7 +1626,10 @@ const SFX = {
 };
 // Per-group debounce. A frame runs three physics sub-steps and a ball can rattle
 // between the two rim nubs inside one of them; without this it machine-guns.
-const SFX_CD = { squeak: 0.18, board: 0.07, swish: 0.4, bounce: 0.07 };
+// The squeak's is longer than the others because the clips are 180-285 ms and a
+// player tapping left and right can ask for one every 180 ms, which had the
+// sample overlapping itself. 300 ms lets each one finish.
+const SFX_CD = { squeak: 0.30, board: 0.07, swish: 0.4, bounce: 0.07 };
 
 let ac = null, musicBus = null, sfxBus = null;
 let musicVia = null;                    // 'fetch' on http(s), 'element' otherwise
@@ -1941,10 +1944,13 @@ function ensureAudio() {
   else applyWantedTrack();
 }
 
+// Idempotent, and it has to be: ensureAudio() runs on *every* key press and
+// every tap, not just the first. Nulling curTrack here meant each keystroke
+// restarted the music from the top with a fresh fade -- audibly a mess during
+// play, and the reason it never sounded like it had arrived. playMusic already
+// ignores a request for the track it is on, so simply asking is enough.
 function applyWantedTrack() {
-  const want = wantTrack;
-  curTrack = null;
-  if (want) playMusic(want);
+  if (wantTrack) playMusic(wantTrack);
 }
 
 // Which track belongs to the screen we are on. Called from syncScreens, so

@@ -76,6 +76,26 @@ with sync_playwright() as pw:
     check("context is running", True, page.evaluate("__hoop.audio.context.state"))
     check("menu music is playing", page.evaluate("__hoop.audio.track") == "menu")
 
+    section("playing keeps playing")
+    # ensureAudio() runs on every key press and every tap, not just the first,
+    # and for one commit applyWantedTrack() nulled curTrack each time -- so every
+    # keystroke restarted the music from the top with a fresh fade. Thirteen key
+    # presses, thirteen restarts, and it sounded exactly as bad as that reads.
+    before = len([t for t in page.evaluate("__hoop.audio.timeline")
+                  if t[1].startswith("playing")])
+    for _ in range(8):
+        page.keyboard.press("ArrowRight")
+        page.wait_for_timeout(80)
+        page.keyboard.press("ArrowLeft")
+        page.wait_for_timeout(80)
+    page.wait_for_timeout(400)
+    after = len([t for t in page.evaluate("__hoop.audio.timeline")
+                 if t[1].startswith("playing")])
+    check("sixteen key presses do not restart the track", after == before,
+          "started %d more time(s)" % (after - before))
+    check("and only one music voice is alive", page.evaluate("__hoop.audio.voices") == 1,
+          page.evaluate("__hoop.audio.voices"))
+
     section("every clip the game references decodes")
     page.wait_for_function("__hoop.audio.loaded.length >= 12", timeout=20000)
     want = page.evaluate("""() => {
