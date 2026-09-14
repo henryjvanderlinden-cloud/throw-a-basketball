@@ -325,6 +325,57 @@ actually made on a keyboard -- so the run is only forgotten after
 <kbd>M</kbd> or the speaker button silences everything; the choice is remembered
 in `localStorage`. The button is there because a tablet has no <kbd>M</kbd>.
 
+### The music is synthesised, not loaded
+
+The tracks were never recordings. `tools/build-*.py` generate them from a list of
+note and percussion events using plain oscillator and envelope arithmetic, so the
+score plus the synth *is* the music — and the score is a fraction of the size.
+`audio/synth.js` is a port of `build-full-court-soundtrack.py` and the voice set
+`build-overtime-anthem.py` layers over it; the game renders the menu track and the
+in-game anthem in the browser and never fetches their audio at all.
+
+| | as audio | as a score |
+| --- | --- | --- |
+| Menu track | 667 KB FLAC | 201 KB (`score-data.js`, with the percussion) |
+| In-game anthem | 728 KB FLAC | 71 KB (`score-rest.js`) |
+
+Menu on screen to music ready, measured against the FLAC path:
+
+| disk | synthesised | from FLAC |
+| --- | --- | --- |
+| ~300 KB/s | 1.2 s | 4.1 s |
+| ~800 KB/s | 0.75 s | 1.8 s |
+
+The slower the disk the more it buys, which is the right shape for the machine
+this game lives on. A synthesised track is an `AudioBuffer`, so it also plays
+through Web Audio off the filesystem, where the element path leaves the loop seam
+at the browser's mercy.
+
+**The gate was matching, not sounding right.** `tools/test-synth.js` renders each
+track and compares it with the WAV Python produced, sample for sample: 99.998%
+and 99.991% identical, with no sample off by more than one 8-bit step — the
+smallest difference the format can express. Two things had to be got exactly
+right rather than approximately:
+
+- **Python's `round()` is half-to-even and `Math.round` is half-up.** Thirty-one
+  of this score's placements land on exactly `.5`, and a one-sample shift smears
+  across a whole note. 18,230 samples differed before `rint()` existed.
+- **The percussion cannot be ported.** It is built from numpy's PCG64 noise, and
+  reproducing that stream means reimplementing PCG64 and SeedSequence exactly.
+  The thirteen buffers ship as float32 data instead. int16 was tried first and
+  left 829 samples differing, because its 1.5e-5 error survived into the master
+  peak — a max, which cannot average away.
+
+The FLAC files stay: they are the fallback for a missing score, a failed render
+or a browser without generators, and they are what `test-synth.js` checks
+against. The victory music is deliberately still FLAC — it uses a second engine,
+with its own arrangement class and echo measured in seconds rather than beats.
+
+**Regenerating:** `build-*.py` writes `score.json`, then
+`tools/export-score-data.py` turns those into `audio/score-data.js` and
+`score-rest.js`. Run the exporter after any build script that changes a score,
+and run `node tools/test-synth.js` afterwards.
+
 ### Two engines, because of how the game is opened
 
 The game is usually opened by double-clicking `index.html`, not served, and
@@ -479,6 +530,7 @@ python tools/test-game.py           # ~140 checks, a few seconds
 python tools/fuzz-game.py           # random two-player input, four rounds
 python tools/test-audio.py          # music, effects and the events behind them
 python tools/test-startup.py        # what is read before the first menu appears
+node tools/test-synth.js            # the JS synth still matches Python's WAVs
 ```
 
 `test-game.py` plays the game through `window.__hoop` — pressing keys and
@@ -532,6 +584,9 @@ tools/test-game.py          headless checks - see Tests above
 tools/fuzz-game.py          random input, invariants only
 tools/test-audio.py         music and effect checks - see Tests above
 tools/test-startup.py       what is read before the first menu - see Tests above
+tools/test-synth.js         the JS synth against Python's WAVs - see Tests above
+tools/export-score-data.py  scores + percussion -> audio/score-data.js, score-rest.js
+audio/synth.js              the music, rendered in the browser from its score
 tools/build-audio-web.py    FLAC for the music, the effects inlined as base64
 tools/build-courts.py       the court backdrops as WebP
 audio/                      generated - the music and effect packs
