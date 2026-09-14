@@ -275,20 +275,25 @@ with sync_playwright() as pw:
     check("and the effects are decoded into it",
           f.evaluate("__hoop.audio.loaded.filter(u => u.indexOf('bounce') >= 0).length") == 3,
           f.evaluate("__hoop.audio.loaded.length"))
-    heard = f.evaluate("__playLog")
-    check("the menu music actually starts",
-          any("full-court-pressure" in c for c in heard), heard)
+    # The menu track is synthesised from its score, so it plays through Web Audio
+    # even here -- no media element, and a sample-accurate loop off the filesystem.
+    f.wait_for_function("__hoop.audio.track === 'menu'", timeout=60000)
+    check("the menu music actually starts", True, "track=" + f.evaluate("__hoop.audio.track"))
+    check("and it is a Web Audio voice, not an element",
+          f.evaluate("__hoop.audio.voices") >= 1, f.evaluate("__hoop.audio.voices"))
+    check("rendered rather than loaded",
+          any("rendered menu" in t[1] for t in f.evaluate("__hoop.audio.timeline")),
+          [t[1] for t in f.evaluate("__hoop.audio.timeline") if "render" in t[1]])
     opened = f.evaluate("__openLog")
-    check("the music is the first audio file asked for",
-          opened and "full-court-pressure" in opened[0], opened[:4])
+    check("no audio file is fetched for it at all",
+          not any("full-court" in c for c in opened), opened[:6])
     check("no effect is ever fetched as a file",
           not any(k in c for c in opened
                   for k in ("squeak", "bounce", "swish", "backboard")), opened[:6])
 
-    f.evaluate("__playLog = []; __hoop.setMode(2); __hoop.pick(0,0); __hoop.pick(1,1);")
-    f.wait_for_timeout(400)
-    check("the in-game anthem actually starts",
-          any("overtime-overdrive" in c for c in f.evaluate("__playLog")), f.evaluate("__playLog"))
+    f.evaluate("__hoop.setMode(2); __hoop.pick(0,0); __hoop.pick(1,1);")
+    f.wait_for_function("__hoop.audio.track === 'play'", timeout=60000)
+    check("the in-game anthem actually starts", True, "track=" + f.evaluate("__hoop.audio.track"))
 
     # Effects are Web Audio here too, not elements, so they are counted the same
     # way as on the served pass.

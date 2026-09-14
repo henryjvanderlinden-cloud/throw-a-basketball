@@ -103,13 +103,17 @@ def hit(kind, beat, gain, variant=0):
     place('drums',percussion(kind,variant),beat,gain)
     if kind == 'kick':
         KICKS.append(beat)
-    EVENTS.append({'part':kind,'beat':round(beat,4),'gain':gain})
+    # variant picks which of the cached noise buffers this is; without it the
+    # score cannot be re-rendered, only read.
+    EVENTS.append({'part':kind,'beat':round(beat,4),'gain':gain,'variant':variant})
 
 
 def note(kind, midi, beat, beats, gain, echo=False):
     bus = 'bass' if kind=='bass' else 'lead' if kind=='lead' else 'fx' if kind=='riser' else 'keys'
     place(bus,instrument(kind,midi,beats),beat,gain,echo)
-    EVENTS.append({'part':kind,'note':midi,'beat':round(beat,4),'lengthBeats':beats,'gain':gain})
+    # echo adds two delayed taps in place(); a score without it renders dry.
+    EVENTS.append({'part':kind,'note':midi,'beat':round(beat,4),'lengthBeats':beats,
+                   'gain':gain,'echo':bool(echo)})
 
 
 def write_wav(path, pcm, bits=16):

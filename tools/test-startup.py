@@ -88,10 +88,12 @@ with sync_playwright() as pw:
             if pred(n):
                 return i
         return 10 ** 6
-    music = first(lambda n: "full-court" in n)
-    check("the menu track is requested at all", music < 10 ** 6, order[:8])
+    # The menu track is synthesised from score-data.js now, so that is the file
+    # the first sound waits on; the FLAC is only the fallback.
+    music = first(lambda n: "score-data" in n or "full-court" in n)
+    check("the menu track's data is requested at all", music < 10 ** 6, order[:8])
     for later, what in [("select.webp", "the next screen's painting"),
-                        ("overtime", "the in-game anthem"),
+                        ("score-rest", "the anthem's score"),
                         ("victory", "the victory music")]:
         i = first(lambda n, l=later: l in n)
         check("it comes before %s" % what, music < i, "%d vs %d" % (music, i))
@@ -159,9 +161,10 @@ with sync_playwright() as pw:
     check("the menu still appears", menu_at >= 0, "%d ms" % menu_at)
     # Resource Timing does not cover file://, so count what Chrome actually asked
     # for instead. The order is the thing under test either way.
-    head = [n for n in opened if n.endswith((".png", ".webp", ".js"))][:4]
+    # Pictures only: the scripts in <head> are not what this is about.
+    head = [n for n in opened if n.endswith((".png", ".webp"))][:3]
     check("the base splash frame comes before any other picture",
-          "mode-0.webp" in head, head)
+          head and head[0] == "mode-0.webp", head)
     check("no page errors off the filesystem", not ferrs, ferrs[:2])
 
     b.close()
