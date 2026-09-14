@@ -55,10 +55,19 @@ with sync_playwright() as pw:
     page.goto(URL)
     page.wait_for_function("window.__hoop && window.__hoop.audio")
 
-    section("audio stays out of the way until the player touches something")
-    check("no context before a gesture", page.evaluate("__hoop.audio.context") is None)
-    check("but the menu track is already wanted",
+    section("the music loads without waiting for the player")
+    # Loading audio needs no gesture; only playing it does. Conflating the two is
+    # what kept the music arriving seconds late -- it was not even asked for
+    # until a key was pressed, by which time the queue was deep into something
+    # else and could not be preempted.
+    page.wait_for_function("__hoop.audio.context", timeout=15000)
+    check("a context is built as soon as there is a menu, gesture or not",
+          page.evaluate("__hoop.audio.context") is not None)
+    check("the menu track is the one it wants",
           page.evaluate("__hoop.audio.wanted") == "menu")
+    page.wait_for_function(
+        "__hoop.audio.loaded.some(u => u.indexOf('full-court') >= 0)", timeout=30000)
+    check("and it is fetched before anybody has pressed anything", True)
 
     section("the first gesture unlocks it")
     page.keyboard.press("ArrowLeft")
@@ -216,12 +225,13 @@ with sync_playwright() as pw:
     f = b.new_page()
     ferrs = []
     f.on("pageerror", lambda e: ferrs.append(str(e)))
-    f.goto("file://" + str(pathlib.Path(__file__).resolve().parent.parent / "index.html"))
-    f.wait_for_function("window.__hoop && window.__hoop.audio")
-    f.evaluate("""() => {
+    # Installed BEFORE the page script runs, not after: the menu track is now
+    # fetched as soon as there is a menu, without waiting for a gesture, so a
+    # probe injected after load would miss the very request it is checking for.
+    f.add_init_script("""
       // Which files are requested, in order. Media elements created at once all
       // read at once, and on a slow disk the music ends up waiting behind the
-      // effects -- which cost minutes of silence once.
+      // rest -- which cost minutes of silence once.
       window.__openLog = [];
       const A = window.Audio;
       window.Audio = function (u) { __openLog.push(String(u).split('/').pop()); return new A(u); };
@@ -231,7 +241,9 @@ with sync_playwright() as pw:
         __playLog.push((this.currentSrc || this.src || '').split('/').pop());
         return play.apply(this, arguments);
       };
-    }""")
+    """)
+    f.goto("file://" + str(pathlib.Path(__file__).resolve().parent.parent / "index.html"))
+    f.wait_for_function("window.__hoop && window.__hoop.audio")
     f.keyboard.press("ArrowLeft")
     f.wait_for_timeout(800)
     check("the music falls back to <audio> elements",

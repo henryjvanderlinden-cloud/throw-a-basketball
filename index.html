@@ -440,9 +440,24 @@ const mark = what => {
   if (loadLog.length < 400) loadLog.push([Math.round(performance.now()), what]);
 };
 
+// What gets loaded first, by name rather than by whichever line of boot code
+// happened to run first. This used to be incidental -- the court backdrop was
+// first in the queue purely because applyCourt() runs early -- and incidental is
+// not a policy. Lower number, sooner.
+const PRI = {
+  MUSIC:   0,   // the menu track: the first thing the player will hear
+  SCREEN:  1,   // the select painting: the next screen he will look at
+  PICKER:  2,   // the four character thumbnails that sit on it
+  WINK:    3,   // the variation patches, tiny, wanted within seconds
+  ANTHEM:  4,   // the in-game track, wanted when a match starts
+  COURT:   5,   // the backdrop, hidden until then
+  LATER:   6,   // the victory music and the winner's banners
+  SPRITES: 7    // a character's frames, queued when he is confirmed
+};
+
 const Q = {
-  jobs: [], busy: false, gate: true, holds: 0,
-  push(job) { Q.jobs.push(job); Q.pump(); },
+  jobs: [], busy: false, gate: true, holds: 0, seq: 0,
+  push(job, pri) { Q.jobs.push({ job, pri: pri === undefined ? PRI.LATER : pri, n: Q.seq++ }); Q.pump(); },
   // Opened once the first screen is actually on screen. Nothing loads in front
   // of the picture the player is waiting for.
   open() { if (!Q.gate) return; Q.gate = false; mark('queue open (' + Q.jobs.length + ' waiting)'); Q.pump(); },
@@ -451,7 +466,14 @@ const Q = {
   release() { Q.holds = Math.max(0, Q.holds - 1); Q.pump(); },
   pump() {
     if (Q.gate || Q.busy || Q.holds || !Q.jobs.length) return;
-    const job = Q.jobs.shift();
+    // Lowest priority wins; ties go to whichever was pushed first, so the order
+    // within a band stays the order it was written in.
+    let at = 0;
+    for (let i = 1; i < Q.jobs.length; i++) {
+      const a = Q.jobs[i], b = Q.jobs[at];
+      if (a.pri < b.pri || (a.pri === b.pri && a.n < b.n)) at = i;
+    }
+    const job = Q.jobs.splice(at, 1)[0].job;
     Q.busy = true;
     let done = false;
     const next = () => { if (done) return; done = true; Q.busy = false; Q.pump(); };
@@ -462,13 +484,13 @@ const Q = {
 };
 
 // Hand an <image> its source when the queue gets to it.
-function qImage(im, src) {
+function qImage(im, src, pri) {
   Q.push(done => {
     if (im.getAttribute('href')) return done();
     im.addEventListener('load', done, { once: true });
     im.addEventListener('error', done, { once: true });
     im.setAttribute('href', src);
-  });
+  }, pri);
 }
 
 // ---------------------------------------------------------------- courts
@@ -496,7 +518,7 @@ function applyCourt(i, announce, now) {
   const c = COURTS[courtIdx];
   if (c.src) {
     el.court.removeAttribute('href');
-    if (now) el.court.setAttribute('href', c.src); else qImage(el.court, c.src);
+    if (now) el.court.setAttribute('href', c.src); else qImage(el.court, c.src, PRI.COURT);
     el.court.setAttribute('opacity', '1');
     el.scrim.setAttribute('opacity', '0.12');
     el.vectorScene.setAttribute('opacity', '0');
@@ -637,6 +659,7 @@ function splashSettle(ok) {
   splashReady = ok;
   mark('first menu on screen');
   Q.open();                    // everything else may load now, one at a time
+  prepareAudio();              // and the music starts fetching, ahead of it all
   // Paint the menu before the curtain comes up, not after, or the first thing
   // revealed is the frame the menu is about to replace.
   requestAnimationFrame(() => requestAnimationFrame(raiseCurtain));
@@ -673,7 +696,8 @@ function buildSplash() {
     const v = SPLASH_VARS.find(x => x.name === name);
     const im = document.createElementNS(SVGNS, 'image');
     if (name === SPLASH_BASE) im.setAttribute('href', SPLASH_DIR + name + '.webp');
-    else qImage(im, SPLASH_DIR + name + '.webp');
+    else qImage(im, SPLASH_DIR + name + '.webp',
+                v ? PRI.WINK : (name === SPLASH_SELECT ? PRI.SCREEN : PRI.LATER));
     if (v) {
       // A patch sits at its own place in the picture, at its own size.
       im.setAttribute('data-patch', name);
@@ -877,7 +901,7 @@ function queueCharacter(p) {
         if (!armFrame(im)) return done();
         im.addEventListener('load', done, { once: true });
         im.addEventListener('error', done, { once: true });
-      });
+      }, PRI.SPRITES);
     }
   }
 }
@@ -1188,7 +1212,7 @@ function buildSelectCards() {
 
     const f = c.sequences.dribble_idle[0];
     const im = document.createElementNS(SVGNS, 'image');
-    qImage(im, f.src);
+    qImage(im, f.src, PRI.PICKER);
     im.setAttribute('width', (f.w * k).toFixed(1)); im.setAttribute('height', (f.h * k).toFixed(1));
     im.setAttribute('x', (x + cw / 2 - f.footX * k).toFixed(1));
     im.setAttribute('y', (y + ch - 26 - f.footY * k).toFixed(1));
@@ -1691,21 +1715,40 @@ function loadClip(url) {
   return clipReq[url];
 }
 
-// The tracks nobody is listening to yet, behind everything else in the queue.
-function queueSpareTracks() {
-  const later = [trackUrl('play'), stingUrl(), trackUrl('victory')];
-  for (const url of later) {
+// One <audio> per track, kept, so the element that was preloaded is the element
+// that plays. A fresh `new Audio(url)` at play time would read the file a second
+// time, which is the whole cost we are trying to avoid.
+const musicEls = Object.create(null);
+function musicElement(url) {
+  let a = musicEls[url];
+  if (!a) { a = musicEls[url] = new Audio(url); a.preload = 'auto'; }
+  return a;
+}
+
+// Queue every track, the one about to be heard first.
+//
+// This runs when the first menu appears, NOT on the first key press. Loading
+// audio needs no user gesture; only *playing* it does, and conflating the two is
+// what kept the music arriving seconds late: it was not even asked for until a
+// key was pressed, by which time the queue was already several files deep into
+// something else and could not be preempted.
+function queueTracks() {
+  const want = [[trackUrl('menu'), PRI.MUSIC], [trackUrl('play'), PRI.ANTHEM],
+                [stingUrl(), PRI.LATER], [trackUrl('victory'), PRI.LATER]];
+  for (const [url, pri] of want) {
     Q.push(done => {
-      if (musicVia === 'fetch') { loadClip(url).then(done, done); return; }
-      const a = new Audio(url);
-      a.preload = 'auto';
-      spare.push(a);                       // keep it alive so the load sticks
+      if (musicVia === 'fetch') {
+        loadClip(url).then(done, done);
+        return;
+      }
+      const a = musicElement(url);
+      if (a.readyState >= 3) return done();   // already there
       a.addEventListener('canplaythrough', done, { once: true });
       a.addEventListener('error', done, { once: true });
-    });
+      a.load();
+    }, pri);
   }
 }
-const spare = [];
 
 // There is no gain node on an <audio> element, so a fade is a volume walked by
 // hand.
@@ -1722,9 +1765,10 @@ function elFade(a, to, ms, stop) {
 
 function elStart(url, loop) {
   const name = url.split('/').pop();
-  const a = new Audio(url);
+  const a = musicElement(url);
   a.loop = !!loop;
   a.volume = 0;
+  try { a.currentTime = 0; } catch (e) {}
   elVoices.push(a);
   // The track the player is about to hear gets the disk to itself.
   Q.hold();
@@ -1817,6 +1861,7 @@ function playMusic(name) {
     // the music over to the elements, which can still read the file.
     if (!buf) { if (musicExt === '.flac') { musicExt = '.wav'; curTrack = null; playMusic(name); } else downgrade(); return; }
     if (!audioReady()) return;
+    mark('playing ' + trackUrl(name).split('/').pop());
     musicLoop(buf, ac.currentTime + 0.02, MUSIC_FADE);
   });
 }
@@ -1866,11 +1911,13 @@ function downgrade() {
 
 // ---- waking up --------------------------------------------------------------
 // Called on the first key or tap, and harmlessly on every one after it.
-function ensureAudio() {
-  if (ac) {
-    if (ac.state === 'suspended') ac.resume().then(applyWantedTrack, () => {});
-    return;
-  }
+// Build everything and start fetching. No gesture needed: an AudioContext may be
+// constructed at any time -- it simply starts suspended -- and decodeAudioData
+// works perfectly well on a suspended one. Called as soon as there is a menu on
+// screen, so by the time anybody presses a key the track is already decoded and
+// playing is instant.
+function prepareAudio() {
+  if (ac) return;
   const AC = window.AudioContext || window.webkitAudioContext;
   if (!AC) return;
   try { ac = new AC(); } catch (e) { ac = null; return; }
@@ -1881,14 +1928,17 @@ function ensureAudio() {
   // fetch() only speaks http(s); off the filesystem the music has to come
   // through an element. The effects do not care either way.
   musicVia = /^https?:$/.test(location.protocol) ? 'fetch' : 'element';
-  mark('audio up, music via ' + musicVia + ' (' + musicExt + ')');
+  mark('audio prepared, music via ' + musicVia + ' (' + musicExt + ')');
   decodeInlineSfx();
-  // Strictly in this order: the track being listened to claims the disk (it
-  // calls Q.hold), and only then do the tracks nobody is listening to yet get
-  // queued behind it. Reversed, the queue starts the in-game anthem first.
-  const kick = () => { applyWantedTrack(); queueSpareTracks(); };
-  if (ac.state === 'suspended') ac.resume().then(kick, kick);
-  else kick();
+  queueTracks();
+}
+
+// The gesture only has to unlock and press play.
+function ensureAudio() {
+  prepareAudio();
+  if (!ac) return;
+  if (ac.state === 'suspended') ac.resume().then(applyWantedTrack, () => {});
+  else applyWantedTrack();
 }
 
 function applyWantedTrack() {

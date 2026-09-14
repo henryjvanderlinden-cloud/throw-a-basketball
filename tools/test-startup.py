@@ -79,6 +79,23 @@ with sync_playwright() as pw:
     check("the effects are inlined, not fetched",
           not any("shoe-squeak" in n or "floor-bounce" in n for n in r["names"]), r["names"])
 
+    section("the music is asked for before anything else the player cannot hear")
+    order = p.evaluate("""() => performance.getEntriesByType('resource')
+        .slice().sort((a, b) => a.startTime - b.startTime)
+        .map(e => e.name.split('/').pop())""")
+    def first(pred):
+        for i, n in enumerate(order):
+            if pred(n):
+                return i
+        return 10 ** 6
+    music = first(lambda n: "full-court" in n)
+    check("the menu track is requested at all", music < 10 ** 6, order[:8])
+    for later, what in [("select.webp", "the next screen's painting"),
+                        ("overtime", "the in-game anthem"),
+                        ("victory", "the victory music")]:
+        i = first(lambda n, l=later: l in n)
+        check("it comes before %s" % what, music < i, "%d vs %d" % (music, i))
+
     section("and nothing is visible until the menu is")
     c = b.new_page(viewport={"width": 800, "height": 700})
     c.add_init_script("""
