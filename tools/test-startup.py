@@ -135,10 +135,9 @@ with sync_playwright() as pw:
     check("no page errors", not errors, errors[:2])
 
     section("the court waits for the menus to be over")
-    # The default court is the vector one, which is no file at all, so pick a
-    # painted one first. Pressing 2 is how a player does it.
-    p.keyboard.press("2")
-    p.wait_for_timeout(300)
+    # Every court is a painting now, and which one comes from who player 1 picks
+    # -- the monkey here, so the graffiti court. It is queued, not read, until
+    # the menus are over; that it has a source at all is what is asserted.
     p.evaluate("__hoop.setMode(2); __hoop.pick(0,0); __hoop.pick(1,1);")
     p.wait_for_timeout(1500)
     href = p.evaluate("document.getElementById('court').getAttribute('href')")

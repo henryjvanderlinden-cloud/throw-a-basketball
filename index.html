@@ -225,11 +225,11 @@
     </g>
   </g>
 
-  <!-- court name / steal toast -->
+  <!-- court name / steal toast; beside the court button, which owns the corner -->
   <g id="toast" opacity="0">
-    <rect id="toastBox" x="20" y="20" width="150" height="30" rx="10" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>
-    <text id="toastText" x="95" y="40" text-anchor="middle" font-size="13" fill="var(--ink)"
-          font-family="ui-sans-serif,system-ui">Court: Vector</text>
+    <rect id="toastBox" x="72" y="20" width="150" height="30" rx="10" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>
+    <text id="toastText" x="147" y="40" text-anchor="middle" font-size="13" fill="var(--ink)"
+          font-family="ui-sans-serif,system-ui">Court: NBA</text>
   </g>
 
   <!-- ===== control band (scoreboard + touch pads) ===== -->
@@ -317,13 +317,26 @@
       <path d="M906,32 v-6 h6 M930,32 v-6 h-6 M906,40 v6 h6 M930,40 v6 h-6"/>
     </g>
   </g>
+  <!-- Change the backdrop: one push, the next court. The far corner from the
+       sound and fullscreen pair, and hidden on the menus, where the court is
+       behind the artwork and the button would visibly do nothing. -->
+  <g id="courtBtn" opacity="0" pointer-events="none" style="cursor:pointer">
+    <rect x="16" y="16" width="44" height="40" rx="11" fill="var(--panel)" fill-opacity="0.72"
+          stroke="var(--line)" stroke-width="2"/>
+    <g stroke="var(--ink)" stroke-width="2.2" fill="none" stroke-linecap="round"
+       stroke-linejoin="round">
+      <rect x="26" y="25" width="28" height="21" rx="3"/>
+      <path d="M28,41 l7,-8 l5,6 l4,-4 l6,6"/>
+      <circle cx="33" cy="31" r="2.1" fill="var(--ink)" stroke="none"/>
+    </g>
+  </g>
 </svg>
 </div>
 
 <p class="legend" id="legend">
   <b>Player 1</b> <kbd>←</kbd> <kbd>→</kbd> move &amp; aim · <kbd>↑</kbd> pick up, aim, hold to charge, release to shoot · <kbd>↓</kbd> steal.
   <b>Player 2</b> <kbd>A</kbd> <kbd>D</kbd> · <kbd>W</kbd> · <kbd>S</kbd>.
-  <kbd>R</kbd> restart · <kbd>C</kbd> or <kbd>1</kbd>–<kbd>4</kbd> switch court · <kbd>F</kbd> fullscreen · <kbd>M</kbd> sound on/off.
+  <kbd>R</kbd> restart · <kbd>C</kbd> or <kbd>1</kbd>–<kbd>3</kbd> switch court · <kbd>F</kbd> fullscreen · <kbd>M</kbd> sound on/off.
   The shot clock runs only while somebody has the ball: every throw resets it and holds it until the rebound is
   gathered. Let it hit zero and the game is over.
 </p>
@@ -420,7 +433,7 @@ const el = {
   sbDiv: $('sbDiv'), clockHud: $('clockHud'), clockText: $('clockText'),
   sbClock: $('sbClock'), sbClockLabel: $('sbClockLabel'),
   fsBtn: $('fsBtn'), fsIcon: $('fsIcon'), stagewrap: $('stagewrap'), stage: $('stage'),
-  muteBtn: $('muteBtn'), muteIcon: $('muteIcon')
+  muteBtn: $('muteBtn'), muteIcon: $('muteIcon'), courtBtn: $('courtBtn')
 };
 
 // ---------------------------------------------------------------- assets
@@ -505,11 +518,19 @@ const COURT_DIR = 'artwork/basketball-courts/';
 // drawn; the PNG stays as the fallback for an un-run build or a browser without
 // WebP. tools/build-courts.py makes the pair.
 const COURTS = [
-  { id: 'vector',   label: 'Vector',   src: null },
   { id: 'nba',      label: 'NBA',      src: COURT_DIR + 'nba.webp',      png: COURT_DIR + 'nba.png' },
   { id: 'school',   label: 'School',   src: COURT_DIR + 'school.webp',   png: COURT_DIR + 'school.png' },
   { id: 'graffiti', label: 'Graffiti', src: COURT_DIR + 'graffiti.webp', png: COURT_DIR + 'graffiti.png' }
 ];
+// Where each character plays. The two kids share the school gym, the pro gets
+// the arena, the monkey gets the street. It is player 1's pick that decides,
+// and it is a *default*: the button and the C key override it for the rest of
+// the match, and the next tip-off derives it again.
+const HOME_COURT = { nba: 'nba', highschooler: 'school', zombie: 'school', monkey: 'graffiti' };
+function courtFor(charKey) {
+  const i = COURTS.findIndex(c => c.id === HOME_COURT[charKey]);
+  return i >= 0 ? i : 0;
+}
 let courtIdx = 0, toastT = 0;
 
 function toast(msg, secs) { el.toastText.textContent = msg; toastT = secs || 1.6; }
@@ -520,41 +541,46 @@ function toast(msg, secs) { el.toastText.textContent = msg; toastT = secs || 1.6
 function applyCourt(i, announce, now) {
   courtIdx = ((i % COURTS.length) + COURTS.length) % COURTS.length;
   const c = COURTS[courtIdx];
-  if (c.src) {
-    el.court.removeAttribute('href');
-    if (now) el.court.setAttribute('href', c.src); else qImage(el.court, c.src, PRI.COURT);
-    el.court.setAttribute('opacity', '1');
-    el.scrim.setAttribute('opacity', '0.12');
-    el.vectorScene.setAttribute('opacity', '0');
-    el.ceiling.setAttribute('opacity', '0.25');
-    el.floorLine.setAttribute('opacity', '0.35');
-    el.bbL.setAttribute('opacity', '0.5'); el.bbR.setAttribute('opacity', '0.5');
-  } else {
-    el.court.setAttribute('opacity', '0');
-    el.scrim.setAttribute('opacity', '0');
-    el.vectorScene.setAttribute('opacity', '1');
-    el.ceiling.setAttribute('opacity', '1');
-    el.floorLine.setAttribute('opacity', '0');
-    el.bbL.setAttribute('opacity', '1'); el.bbR.setAttribute('opacity', '1');
-  }
-  try { localStorage.setItem('hoop.court', c.id); } catch (e) {}
+  el.court.removeAttribute('href');
+  if (now) el.court.setAttribute('href', c.src); else qImage(el.court, c.src, PRI.COURT);
+  el.court.setAttribute('opacity', '1');
+  el.scrim.setAttribute('opacity', '0.12');
+  el.vectorScene.setAttribute('opacity', '0');
+  el.ceiling.setAttribute('opacity', '0.25');
+  el.floorLine.setAttribute('opacity', '0.35');
+  el.bbL.setAttribute('opacity', '0.5'); el.bbR.setAttribute('opacity', '0.5');
   if (announce) toast('Court: ' + c.label);
 }
-// A missing WebP drops to the PNG; a missing PNG (e.g. opened without the repo
-// folder) drops to the vector court.
+
+// The bare vector stage is no longer a court anybody can ask for -- it is the
+// last resort when the artwork cannot be read at all, e.g. index.html opened on
+// its own without the repo folder beside it. An empty stage is not a backdrop
+// anyone chooses, so it is not in COURTS and the button cannot reach it.
+function showVectorCourt() {
+  el.court.setAttribute('opacity', '0');
+  el.scrim.setAttribute('opacity', '0');
+  el.vectorScene.setAttribute('opacity', '1');
+  el.ceiling.setAttribute('opacity', '1');
+  el.floorLine.setAttribute('opacity', '0');
+  el.bbL.setAttribute('opacity', '1'); el.bbR.setAttribute('opacity', '1');
+}
+
+// A missing WebP drops to the PNG; a missing PNG drops to the vector stage.
 el.court.addEventListener('error', () => {
   const c = COURTS[courtIdx];
   if (c && c.png && el.court.getAttribute('href') === c.src) {
     el.court.setAttribute('href', c.png);
     return;
   }
-  if (courtIdx !== 0) applyCourt(0, false, true);
+  showVectorCourt();
 });
 (() => {
-  let saved = null;
-  try { saved = localStorage.getItem('hoop.court'); } catch (e) {}
-  const i = Math.max(0, COURTS.findIndex(c => c.id === saved));
-  applyCourt(i >= 0 ? i : 0, false);
+  // Player 1's character picks the court, and at boot that is last match's
+  // character -- so the right backdrop is queued behind the menus rather than
+  // read at tip-off, which is the whole point of queuing it.
+  let key = null;
+  try { key = localStorage.getItem('hoop.char'); } catch (e) {}
+  applyCourt(courtFor(key), false);
 })();
 
 // net strings (static)
@@ -1072,9 +1098,9 @@ function startMatch() {
   g.clockOn = false; g.clockLimit = CLOCK_BASE; g.clock = CLOCK_BASE;
   g.ms = MS.PLAY;
   for (const q of players) queueCharacter(q);
-  // The backdrop has been waiting behind the menus; it is on screen now.
-  const court = COURTS[courtIdx];
-  if (court && court.src && !el.court.getAttribute('href')) el.court.setAttribute('href', court.src);
+  // The backdrop has been waiting behind the menus; it is on screen now, and
+  // which one is player 1's doing -- he brings his home court with him.
+  applyCourt(courtFor((CHARS[players[0].charIdx] || {}).key), false, true);
   clearInput();                    // nothing held on the select screen carries in
   syncScreens();
   try {
@@ -1093,6 +1119,7 @@ function syncScreens() {
   show(el.select, splashSettled && g.ms === MS.SELECT);
   paintSplash();
   el.overlay.setAttribute('opacity', g.ms === MS.OVER ? '1' : '0');
+  show(el.courtBtn, g.ms === MS.PLAY || g.ms === MS.OVER);
   layoutBand();
   syncMusic();
 }
@@ -1276,6 +1303,9 @@ function paintSelection() {
 function confirmPick() {
   savedChar[picker] = players[picker].charIdx;
   queueCharacter(players[picker]);   // he is in the match now; start fetching him
+  // His court too, if he is player 1 -- queued here rather than read at tip-off,
+  // and queued for the character actually chosen rather than last match's guess.
+  if (picker === 0) applyCourt(courtFor((CHARS[players[0].charIdx] || {}).key), false);
   if (picker + 1 < numPlayers) { picker++; clearInput(); paintSelection(); return; }
   startMatch();
 }
@@ -2077,6 +2107,8 @@ function setMute(on, announce) {
 }
 
 el.muteBtn.addEventListener('click', ev => { ev.preventDefault(); ensureAudio(); setMute(!muted, true); });
+// One push, the next court -- the same thing the C key does.
+el.courtBtn.addEventListener('click', ev => { ev.preventDefault(); applyCourt(courtIdx + 1, true, true); });
 paintMute();
 // Any gesture at all unlocks audio. The listeners stay for the life of the page
 // because a tab can be suspended and need unlocking a second time.
@@ -2707,6 +2739,9 @@ window.__hoop = {
     get clipmap() { return clips; },
     setMute, ensureAudio, playSfx, TRACKS, SFX_DIR
   },
+  get court() { return (COURTS[courtIdx] || {}).id; },
+  get courts() { return COURTS.map(c => c.id); },
+  nextCourt: () => applyCourt(courtIdx + 1, true, true),
   pick: (n, i) => {
     if (!players[n]) return false;
     picker = n; buildCharacter(players[n], i); paintSelection(); confirmPick(); return true;

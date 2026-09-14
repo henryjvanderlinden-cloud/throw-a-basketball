@@ -22,7 +22,8 @@ game player 1 picks first, then player 2; they may pick the same character.
 <kbd>Space</kbd> is a second name for player 1's <kbd>↑</kbd>, but only in a
 one-player game: sharing a keyboard it sits far too close to player 2's hand.
 <kbd>R</kbd> restarts back to the mode select, <kbd>C</kbd> or
-<kbd>1</kbd>–<kbd>4</kbd> switches court, <kbd>F</kbd> toggles fullscreen.
+<kbd>1</kbd>–<kbd>3</kbd> switches court — as does the button in the top left
+corner — and <kbd>F</kbd> toggles fullscreen.
 
 A dotted line shows where you are aiming. The power meter fills green → yellow →
 red while the shoot key is held; release at the strength you want. After the
@@ -84,18 +85,29 @@ whoever is nearest, and a dead heat goes to whoever did *not* take the last shot
 
 ## Courts
 
-Four backdrops, cycled with <kbd>C</kbd>:
+Three backdrops, cycled with the button in the top left corner, with <kbd>C</kbd>,
+or with <kbd>1</kbd>–<kbd>3</kbd>:
 
-1. **Vector** — no artwork, pure SVG. Also the automatic fallback if the PNGs
-   cannot be loaded (for example when `index.html` is opened on its own).
-2. **NBA** — `artwork/basketball-courts/nba.png`
-3. **School** — `artwork/basketball-courts/school.png`
-4. **Graffiti** — `artwork/basketball-courts/graffiti.png`
+1. **NBA** — `artwork/basketball-courts/nba.png`
+2. **School** — `artwork/basketball-courts/school.png`
+3. **Graffiti** — `artwork/basketball-courts/graffiti.png`
+
+**Each baller brings his own court.** The NBA Player tips off in the arena, the
+High Schooler and the Zombie in the school gym, the Monkey on the street. In a
+two-player game it is player 1's pick that decides. That is a *default*: change
+it mid-match and it stays changed until the next tip-off, which derives it again
+from whoever player 1 is playing as.
 
 The artwork is framed so that when it is drawn 960×720 and top-aligned inside the
 960×640 viewBox, the *painted* rim lands on the *play* rim. Any new court should
-follow the same framing: 4:3, hoop centred, rim about 24 % of the way down.
-Your court choice is remembered in `localStorage`.
+follow the same framing: 4:3, hoop centred, rim about 24 % of the way down, and
+an entry in `HOME_COURT` if a character should start there.
+
+There is a fourth state, but it is not a court and cannot be chosen: if the
+artwork cannot be read at all — `index.html` opened on its own, without the repo
+folder beside it — the game falls back to the bare vector stage it started life
+as. A blank backdrop is not something anybody picks on purpose, so it is not in
+the cycle.
 
 ## Splash screens
 

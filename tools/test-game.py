@@ -594,6 +594,70 @@ async def main():
         check("clock is hidden on the menus",
               await pg.evaluate("document.getElementById('clockHud').getAttribute('opacity')") == "0")
 
+        print("\n== the court comes with the character ==")
+        # Each baller has a home court: the gym for the two kids, the arena for
+        # the pro, the street for the monkey. Player 1's pick decides it.
+        keys = await pg.evaluate("__hoop.chars.map(c => c.key)")
+        home = {"monkey": "graffiti", "nba": "nba", "highschooler": "school",
+                "zombie": "school"}
+        for i, k in enumerate(keys):
+            await pg.evaluate(f"__hoop.reset(); __hoop.setMode(1); __hoop.pick(0,{i})")
+            await pg.wait_for_timeout(120)
+            got = await pg.evaluate("__hoop.court")
+            check(f"{k} plays at {home[k]}", got == home[k], got)
+        p1 = keys.index("zombie")
+        p2 = keys.index("nba")
+        await pg.evaluate(f"__hoop.reset(); __hoop.setMode(2); __hoop.pick(0,{p1}); __hoop.pick(1,{p2})")
+        await pg.wait_for_timeout(120)
+        check("in a two-player match it is player 1 who brings the court",
+              await pg.evaluate("__hoop.court") == "school",
+              await pg.evaluate("__hoop.court"))
+
+        print("\n== the blank vector stage is not a court any more ==")
+        courts = await pg.evaluate("__hoop.courts")
+        check("it is not in the list", "vector" not in courts, courts)
+        check("and the list is the three paintings", len(courts) == 3, courts)
+        # Cycling the whole way round must come back where it started and never
+        # land on nothing: the vector stage is reachable only as a load failure.
+        start = await pg.evaluate("__hoop.court")
+        seen = []
+        for _ in range(len(courts)):
+            await pg.keyboard.press("KeyC")
+            await pg.wait_for_timeout(80)
+            seen.append(await pg.evaluate("__hoop.court"))
+        check("C cycles through every painted court", sorted(seen) == sorted(courts), seen)
+        check("and comes back where it started", seen[-1] == start, (start, seen))
+        check("the backdrop is never switched off by cycling",
+              await pg.evaluate("document.getElementById('court').getAttribute('opacity')") == "1")
+        await pg.keyboard.press("Digit4"); await pg.wait_for_timeout(80)
+        check("there is no fourth court to ask for",
+              await pg.evaluate("__hoop.court") == start, await pg.evaluate("__hoop.court"))
+
+        print("\n== the court button ==")
+        box = await pg.evaluate("""() => {
+          const r = document.querySelector('#courtBtn rect');
+          const t = document.getElementById('toastBox');
+          return {x:+r.getAttribute('x'), y:+r.getAttribute('y'),
+                  w:+r.getAttribute('width'), h:+r.getAttribute('height'),
+                  op:+r.getAttribute('fill-opacity'), tx:+t.getAttribute('x'),
+                  vis: document.getElementById('courtBtn').getAttribute('opacity')};
+        }""")
+        check("it is in the top left corner", box["x"] < 80 and box["y"] < 80, box)
+        check("it is semi-transparent", 0 < box["op"] < 1, box["op"])
+        check("it does not sit on top of the toast", box["x"] + box["w"] <= box["tx"], box)
+        check("it is there during a match", box["vis"] == "1", box["vis"])
+        before = await pg.evaluate("__hoop.court")
+        await pg.click("#courtBtn")
+        await pg.wait_for_timeout(120)
+        after = await pg.evaluate("__hoop.court")
+        check("one push moves to the next court", after != before, (before, after))
+        check("and it says which one",
+              (await pg.evaluate("document.getElementById('toastText').textContent")).lower()
+              .endswith(after), await pg.evaluate("document.getElementById('toastText').textContent"))
+        await pg.evaluate("__hoop.reset()"); await pg.wait_for_timeout(150)
+        check("and it is gone on the menus",
+              await pg.evaluate("document.getElementById('courtBtn').getAttribute('opacity')") == "0")
+
         print("\n== every character stands centred on his card ==")
         await pg.evaluate("__hoop.setMode(2)"); await pg.wait_for_timeout(200)
         cards = await pg.evaluate("""() => [...document.getElementById('selCards').children]
