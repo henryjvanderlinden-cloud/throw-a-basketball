@@ -1911,8 +1911,13 @@ function musicLoop(buf, at, fade) {
   musicVoices.push({ src, gn });
 }
 
+// Both lists, always. musicVia says where a *file* would be played, and on
+// file:// that is still 'element' -- but a synthesised track is an AudioBuffer
+// and goes through Web Audio whatever the protocol, so branching here left the
+// old voice running underneath the new one, one more each time the music
+// changed. Each of these is a no-op on an empty list.
 function fadeOutMusic(fade) {
-  if (musicVia === 'element') { elStopMusic(fade * 1000); return; }
+  elStopMusic(fade * 1000);
   waStop(fade);
 }
 
@@ -2698,6 +2703,7 @@ window.__hoop = {
     get timeline() { return loadLog.slice(); },
     get loaded() { return Object.keys(clips).filter(u => clips[u]); },
     get voices() { return musicVoices.length; },
+    get elvoices() { return elVoices.length; },
     get clipmap() { return clips; },
     setMute, ensureAudio, playSfx, TRACKS, SFX_DIR
   },

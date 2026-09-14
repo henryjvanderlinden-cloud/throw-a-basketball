@@ -295,6 +295,15 @@ with sync_playwright() as pw:
     f.wait_for_function("__hoop.audio.track === 'play'", timeout=60000)
     check("the in-game anthem actually starts", True, "track=" + f.evaluate("__hoop.audio.track"))
 
+    # The menu track has to stop when the anthem starts. It once did not: the
+    # fade branched on musicVia, which is 'element' here, so it emptied the list
+    # of media elements -- which is empty -- and left the synthesised menu voice
+    # running underneath the anthem. One more track playing at once per screen
+    # change, and the player hears all of them.
+    f.wait_for_timeout(1500)
+    check("and the menu track is gone, not still playing under it",
+          f.evaluate("__hoop.audio.voices") == 1, f.evaluate("__hoop.audio.voices"))
+
     # Effects are Web Audio here too, not elements, so they are counted the same
     # way as on the served pass.
     f.evaluate(SFX_PROBE)
@@ -311,6 +320,12 @@ with sync_playwright() as pw:
     f.wait_for_timeout(300)
     check("the victory sting actually starts",
           any("victory-sting" in c for c in f.evaluate("__playLog")), f.evaluate("__playLog"))
+    # And the anthem stops for it. The victory music is a file, so it is the
+    # other way round from the switch above: a Web Audio voice has to be faded
+    # out by the element path's fade.
+    f.wait_for_timeout(600)
+    check("the anthem stops for it",
+          f.evaluate("__hoop.audio.voices") == 0, f.evaluate("__hoop.audio.voices"))
     check("no page errors off the filesystem", not ferrs, ferrs[:3])
 
     b.close()
