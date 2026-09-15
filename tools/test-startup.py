@@ -20,12 +20,13 @@ from playwright.sync_api import sync_playwright
 URL = "http://localhost:8899/index.html"
 FILE_URL = "file://" + str(pathlib.Path(__file__).resolve().parent.parent / "index.html")
 
-# The page, the sprite manifest, the inlined effects, the splash manifest, and
-# the one painting the menu is made of. Anything else in front of the menu is a
-# regression. The painting is full-resolution now -- it is pixel art and
-# resampling it to 1280 turned the dithering to mush -- so the budget is what one
-# unresampled frame costs, and no more.
-MAX_FILES = 6
+# The page, the sprite manifest, the inlined effects, the splash manifest, the
+# one painting the menu is made of, and the START button that covers it.
+# Anything else in front of the menu is a regression. The painting is
+# full-resolution now -- it is pixel art and resampling it to 1280 turned the
+# dithering to mush -- so the budget is what one unresampled frame costs, plus
+# the button, and no more.
+MAX_FILES = 7
 MAX_KB = 900
 
 fails = []
@@ -74,10 +75,17 @@ with sync_playwright() as pw:
     check("the court backdrop is not one of them", "court" not in names, r["names"])
     check("no sprite frames are among them",
           not any(n[0].isdigit() and n.endswith(".png") for n in r["names"]), r["names"])
-    check("only the base splash frame, not all eight",
-          sum(1 for n in r["names"] if n.endswith(".webp")) <= 1, r["names"])
+    # Of the eight splash frames only the base one may be here; the start button
+    # is a WebP too, so count paintings rather than WebPs.
+    art = [n for n in r["names"] if n.startswith(("mode-", "select", "won-"))]
+    check("only the base splash frame, not all eight", len(art) <= 1, r["names"])
     check("the effects are inlined, not fetched",
           not any("shoe-squeak" in n or "floor-bounce" in n for n in r["names"]), r["names"])
+    # The start button is the other half of the first screen, so it is the one
+    # thing that was *added* to this budget rather than kept out of it. The
+    # badge that flashes on a steal is not: nobody can be robbed yet.
+    check("the start button is among them", "start.webp" in names, r["names"])
+    check("the steal badge is not", "steal.webp" not in names, r["names"])
 
     section("the music is asked for before anything else the player cannot hear")
     order = p.evaluate("""() => performance.getEntriesByType('resource')
@@ -122,6 +130,8 @@ with sync_playwright() as pw:
     naked = [s_ for s_ in samples if s_[2] == "0" and s_[1] != "solid"]
     check("the curtain is solid while the menu is still loading", bool(solid),
           "%d samples" % len(solid))
+    check("the gate is up the moment the curtain is gone",
+          c.evaluate("__hoop.gate"), c.evaluate("__hoop.gate"))
     check("it never lifts on an unpainted menu", not naked, naked[:3])
     check("and it is gone once the menu is up", samples[-1][1] == "removed", samples[-1])
     c.close()
@@ -160,10 +170,13 @@ with sync_playwright() as pw:
     check("the menu still appears", menu_at >= 0, "%d ms" % menu_at)
     # Resource Timing does not cover file://, so count what Chrome actually asked
     # for instead. The order is the thing under test either way.
-    # Pictures only: the scripts in <head> are not what this is about.
+    # Pictures only: the scripts in <head> are not what this is about. The first
+    # screen is two pictures now -- the painting and the button over it -- and
+    # they are requested together, so the order between those two is not the
+    # point. That nothing else is in front of them is.
     head = [n for n in opened if n.endswith((".png", ".webp"))][:3]
-    check("the base splash frame comes before any other picture",
-          head and head[0] == "mode-0.webp", head)
+    check("the first two pictures are the menu and its start button",
+          sorted(head[:2]) == ["mode-0.webp", "start.webp"], head)
     check("no page errors off the filesystem", not ferrs, ferrs[:2])
 
     b.close()

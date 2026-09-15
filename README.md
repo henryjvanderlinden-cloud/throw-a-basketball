@@ -9,7 +9,14 @@ Two can play, sharing one keyboard and one ball.
 
 ## Controls
 
-Every run opens on the mode select — one player or two — and then the character
+Every run opens on the **start gate**: the first menu, dimmed, with a START
+button over it. Press any key, or tap it, and the gate lifts. It is there for a
+reason that is not decoration — a browser will not play a sound until the player
+has interacted with the page, so without something to press, the first menu is
+silent and reads as broken. With it, the music starts on the same gesture that
+starts the game.
+
+Behind it is the mode select — one player or two — and then the character
 select. Both are painted screens (see *Splash screens* below). In a two-player
 game player 1 picks first, then player 2; they may pick the same character.
 
@@ -76,6 +83,11 @@ opponent who is *dribbling* and the ball is yours. Three things bound it:
   tip-off — protects the ball for 0.9 s. A steal attempt costs the thief 0.5 s
   before they can try again, whether or not it worked, so holding the button
   down is not free. Holding it *does* keep trying, once per cooldown.
+
+A successful steal throws a **STEAL!** badge into the top-left corner for a
+second, popping out of 80% three times on its way through, alongside the toast
+that says which player did it. The artwork is `artwork/overlays/steal.webp`; the
+timing is `STEAL_FLASH` and `STEAL_PULSES` in `index.html`.
 
 A steal does **not** reset the shot clock. Taking the ball off someone late is
 supposed to leave you with their problem, not a fresh ten seconds.
@@ -151,6 +163,30 @@ letterbox bars.
 If `splash/` is missing or a frame fails to load, the menus fall back to a plain
 dark screen with their own titles, exactly as they looked before. It is
 all-or-nothing per set: half a painting is worse than none.
+
+### The start gate
+
+Over the first menu sits a 62%-black layer and the START lettering, built by:
+
+```
+python tools/build-overlays.py   # artwork/*.png -> artwork/overlays/*.webp
+```
+
+Both overlays are cropped to their own alpha and resampled — which is safe for
+airbrushed graffiti and is emphatically *not* safe for the pixel-art splash
+screens, so do not copy that step into `build-splash.py`.
+
+The gate is declared last in the SVG, so nothing underneath it can be touched
+while it is up, including the sound and fullscreen buttons. Any click and any
+key dismisses it, and that first key press does nothing else — a player who
+presses → to pick a mode does not also skip past the gate with it. It only ever
+appears once, at boot, and `raiseCurtain` is what shows it: the boot curtain does
+not lift until **both** the menu painting and the START button are ready, because
+raising it on one without the other shows half of the first screen.
+
+A line of text under the button says what to do, and is the whole gate if the
+artwork is missing — a dark scrim with nothing on it is indistinguishable from a
+hang.
 
 ## How it works
 
@@ -455,10 +491,10 @@ have the 8-bit waveform baked in and decode everywhere.
 
 ## Loading
 
-The game reads **four files and 526 KB** before the first menu is on screen, and
-the menu is up in well under a tenth of a second. It used to be sixty-eight files
-and about seven megabytes, and that is worth writing down, because nothing about
-it was a bug and no test could see it.
+The game reads **seven files and about 870 KB** before the first menu is on
+screen, and the menu is up in well under a tenth of a second. It used to be
+sixty-eight files and about seven megabytes, and that is worth writing down,
+because nothing about it was a bug and no test could see it.
 
 Everything was fetched at once: eight splash paintings when one is on screen, a
 two-megabyte court backdrop that is completely hidden behind the menu, and
@@ -592,6 +628,8 @@ artwork/Splash Screens/     source paintings for the menus
 tools/build-sprites.py      regenerates sprites/ from artwork/
 tools/slice-strips.py       cuts generated strips into frames
 tools/build-splash.py       regenerates splash/ from artwork/
+artwork/overlays/           generated - the START button and the STEAL! badge
+tools/build-overlays.py     regenerates artwork/overlays/ from artwork/
 tools/test-game.py          headless checks - see Tests above
 tools/fuzz-game.py          random input, invariants only
 tools/test-audio.py         music and effect checks - see Tests above

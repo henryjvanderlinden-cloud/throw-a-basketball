@@ -69,6 +69,10 @@
     #stagewrap{max-width:min(980px, calc((100vh - 8px) * 1.218))}
     .legend{display:none}          /* the pads carry their own key labels */
   }
+  /* The start gate fades rather than vanishing; the class is what hides it,
+     so the opacity attribute can still be used to bring it in. */
+  #startGate{transition:opacity .3s ease}
+  #startGate.gone{opacity:0;pointer-events:none}
   .legend{color:var(--muted);font-size:12.5px;text-align:center;max-width:860px}
   .legend b{color:var(--ink);font-weight:600}
   kbd{font:inherit;font-size:11.5px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:1px 5px;background:var(--bg);color:var(--ink)}
@@ -317,6 +321,12 @@
       <path d="M906,32 v-6 h6 M930,32 v-6 h-6 M906,40 v6 h6 M930,40 v6 h-6"/>
     </g>
   </g>
+  <!-- The STEAL! badge. Top left, under the court button, for a second after a
+       successful steal, popping three times on its way out. -->
+  <g id="stealFlash" opacity="0" pointer-events="none">
+    <image id="stealArt" x="16" y="64" width="260" height="140"
+           preserveAspectRatio="xMidYMid meet"/>
+  </g>
   <!-- Change the backdrop: one push, the next court. The far corner from the
        sound and fullscreen pair, and hidden on the menus, where the court is
        behind the artwork and the button would visibly do nothing. -->
@@ -329,6 +339,24 @@
       <path d="M28,41 l7,-8 l5,6 l4,-4 l6,6"/>
       <circle cx="33" cy="31" r="2.1" fill="var(--ink)" stroke="none"/>
     </g>
+  </g>
+
+  <!-- The start gate. Last of all, so nothing underneath it can be touched
+       while it is up: it covers the buttons as well as the menu. It exists for
+       one reason -- a browser will not play a sound until the player has
+       interacted with the page, so without something to press, the first menu
+       is silent and looks broken. With it, the music starts on the same gesture
+       that starts the game. Any click and any key dismisses it; a player who
+       misses the button should never be stuck. -->
+  <g id="startGate" opacity="0" style="cursor:pointer">
+    <rect x="0" y="0" width="960" height="788" fill="#05060a" opacity="0.62"/>
+    <image id="startArt" x="220" y="128" width="520" height="350"
+           preserveAspectRatio="xMidYMid meet"/>
+    <!-- Says what to do, and is the whole gate if the artwork is missing -- a
+         dark scrim with nothing on it would be indistinguishable from a hang. -->
+    <text id="startHint" x="480" y="700" text-anchor="middle" font-size="19"
+          font-weight="700" fill="#ffffff" fill-opacity="0.72" letter-spacing="2"
+          font-family="ui-sans-serif,system-ui">PRESS ANY KEY OR TAP TO START</text>
   </g>
 </svg>
 </div>
@@ -433,7 +461,9 @@ const el = {
   sbDiv: $('sbDiv'), clockHud: $('clockHud'), clockText: $('clockText'),
   sbClock: $('sbClock'), sbClockLabel: $('sbClockLabel'),
   fsBtn: $('fsBtn'), fsIcon: $('fsIcon'), stagewrap: $('stagewrap'), stage: $('stage'),
-  muteBtn: $('muteBtn'), muteIcon: $('muteIcon'), courtBtn: $('courtBtn')
+  muteBtn: $('muteBtn'), muteIcon: $('muteIcon'), courtBtn: $('courtBtn'),
+  startGate: $('startGate'), startArt: $('startArt'),
+  stealFlash: $('stealFlash'), stealArt: $('stealArt')
 };
 
 // ---------------------------------------------------------------- assets
@@ -468,8 +498,9 @@ const PRI = {
   WINK:    3,   // the variation patches, tiny, wanted within seconds
   ANTHEM:  4,   // the in-game track, wanted when a match starts
   COURT:   5,   // the backdrop, hidden until then
-  LATER:   6,   // the victory music and the winner's banners
-  SPRITES: 7    // a character's frames, queued when he is confirmed
+  FLASH:   6,   // the STEAL! badge, wanted the first time somebody is robbed
+  LATER:   7,   // the victory music and the winner's banners
+  SPRITES: 8    // a character's frames, queued when he is confirmed
 };
 
 const Q = {
@@ -532,6 +563,15 @@ function courtFor(charKey) {
   return i >= 0 ? i : 0;
 }
 let courtIdx = 0, toastT = 0;
+
+// The STEAL! badge: a second on screen, three pops on the way through. The box
+// it is drawn in is fixed, and the art is fitted inside it, so the graphic can
+// be regenerated at any aspect ratio without moving anything.
+const STEAL_FLASH = 1.0;      // seconds on screen
+const STEAL_PULSES = 3;       // 80% -> 100% -> 80%, this many times
+const STEAL_MIN = 0.8;        // the 80%
+const STEAL_CX = 16 + 260 / 2, STEAL_CY = 64 + 140 / 2;
+let stealT = 0;
 
 function toast(msg, secs) { el.toastText.textContent = msg; toastT = secs || 1.6; }
 
@@ -695,9 +735,58 @@ function splashSettle(ok) {
   Q.open();                    // everything else may load now, one at a time
   // Paint the menu before the curtain comes up, not after, or the first thing
   // revealed is the frame the menu is about to replace.
-  requestAnimationFrame(() => requestAnimationFrame(raiseCurtain));
+  maybeRaise();
   if (CHARS.length) { buildModeCards(); buildSelectCards(); paintMode(); paintSelection(); }
   syncScreens();
+}
+
+// ---------------------------------------------------------------- start gate
+// Two things have to be ready before the curtain comes up: the menu painting
+// and the START button that sits over it. Raising it on one without the other
+// shows the player half of the first screen.
+const OVERLAY_DIR = 'artwork/overlays/';
+let startSettled = false, gateUp = false;
+
+function buildStartGate() {
+  // Direct href, like the base splash frame and for the same reason: this is
+  // not something that queues behind other things, it *is* the first screen.
+  el.startArt.addEventListener('load', startSettle, { once: true });
+  el.startArt.addEventListener('error', startSettle, { once: true });
+  el.startArt.setAttribute('href', OVERLAY_DIR + 'start.webp');
+  setTimeout(startSettle, 6000);
+  el.startGate.addEventListener('click', ev => { ev.preventDefault(); dismissGate(); });
+  // The badge is not wanted until somebody is robbed, so it queues.
+  qImage(el.stealArt, OVERLAY_DIR + 'steal.webp', PRI.FLASH);
+}
+
+function startSettle() {
+  if (startSettled) return;
+  startSettled = true;
+  maybeRaise();
+}
+
+// Only when both halves of the first screen are there.
+function maybeRaise() {
+  if (!splashSettled || !startSettled) return;
+  requestAnimationFrame(() => requestAnimationFrame(raiseCurtain));
+}
+
+function showGate() {
+  if (gateUp) return;
+  gateUp = true;
+  el.startGate.setAttribute('opacity', '1');
+  mark('start gate up');
+}
+
+// Called by the click on the gate, by the first key press, and by nothing else.
+// ensureAudio() is the point of the whole exercise: this is the gesture the
+// browser was waiting for, so the menu music starts here.
+function dismissGate() {
+  if (!gateUp) return;
+  gateUp = false;
+  ensureAudio();
+  el.startGate.classList.add('gone');
+  mark('start pressed');
 }
 
 // Removed once, whatever happens: the menu settling is the normal way, and the
@@ -707,6 +796,7 @@ function raiseCurtain() {
   if (curtainUp) return;
   curtainUp = true;
   mark('curtain up');
+  showGate();
   const b = document.getElementById('boot');
   if (!b) return;
   b.classList.add('gone');
@@ -1053,7 +1143,7 @@ function reset() {
     clockOn: false, clockLimit: CLOCK_BASE, clock: CLOCK_BASE,
     flash: 0
   };
-  toastT = 0;
+  toastT = 0; stealT = 0;
   if (!HAS_SPRITES) { numPlayers = 1; startMatch(); return; }
   picker = 0;
   buildPlayers(numPlayers);
@@ -1547,8 +1637,12 @@ window.addEventListener('keydown', e => {
   // Everything below is an edge, so auto-repeat is not one of them: holding R
   // used to restart the game over and over at the keyboard's repeat rate.
   if (e.repeat) return;
-  // A key press is a gesture, so this is where a keyboard player's audio wakes up.
+  // A key press is a gesture, so this is where a keyboard player's audio wakes
+  // up -- and if the start gate is still up, that is all this press does. A
+  // keyboard player has no other way past it, and letting the same press also
+  // work the menu underneath would make the gate feel like a dropped frame.
   ensureAudio();
+  if (gateUp) { dismissGate(); return; }
   if (k === 'KeyM') { setMute(!muted, true); return; }
   if (k === 'KeyR') { reset(); return; }
   if (k === 'KeyC') { applyCourt(courtIdx + 1, true, true); return; }
@@ -2146,6 +2240,7 @@ function trySteal(p) {
   opp.celebT = 0; opp.celebSeq = null;
   p.facing = Math.sign(opp.px - p.px) || p.facing;
   toast('PLAYER ' + (p.n + 1) + ' STEALS!', 1.1);
+  stealT = STEAL_FLASH;        // ...and the badge, which says it louder
 }
 
 function shoot(n) {
@@ -2262,6 +2357,7 @@ function collideCircle(b, cx, cy, cr, rest) {
 // ---------------------------------------------------------------- update
 function step(dt) {
   toastT = Math.max(0, toastT - dt);
+  stealT = Math.max(0, stealT - dt);
   stepSplash(dt);
   if (g.ms === MS.MODE || g.ms === MS.SELECT) return;
 
@@ -2672,10 +2768,22 @@ function render() {
   }
 
   el.toast.setAttribute('opacity', Math.min(1, toastT / 0.4).toFixed(2));
+
+  // The badge pops out of 80% and back three times across its second, and fades
+  // on the way out so it does not simply vanish mid-pop.
+  el.stealFlash.setAttribute('opacity', Math.min(1, stealT / 0.18).toFixed(2));
+  if (stealT > 0) {
+    const u = 1 - stealT / STEAL_FLASH;
+    const k = STEAL_MIN + (1 - STEAL_MIN) * Math.sin(((u * STEAL_PULSES) % 1) * Math.PI);
+    el.stealFlash.setAttribute('transform',
+      'translate(' + STEAL_CX + ',' + STEAL_CY + ') scale(' + k.toFixed(4) +
+      ') translate(' + (-STEAL_CX) + ',' + (-STEAL_CY) + ')');
+  }
 }
 
 // ---------------------------------------------------------------- boot
 rigs = [makeRig(0), makeRig(1)];
+buildStartGate();               // wanted whether or not there is any other art
 if (HAS_SPRITES) {
   buildPads();
   buildSplash();
@@ -2739,6 +2847,9 @@ window.__hoop = {
     get clipmap() { return clips; },
     setMute, ensureAudio, playSfx, TRACKS, SFX_DIR
   },
+  get gate() { return gateUp; },
+  dismissGate,
+  get stealFlash() { return stealT; },
   get court() { return (COURTS[courtIdx] || {}).id; },
   get courts() { return COURTS.map(c => c.id); },
   nextCourt: () => applyCourt(courtIdx + 1, true, true),

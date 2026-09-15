@@ -70,7 +70,12 @@ with sync_playwright() as pw:
     check("and it is fetched before anybody has pressed anything", True)
 
     section("the first gesture unlocks it")
-    page.keyboard.press("ArrowLeft")
+    # And the gesture now has somewhere to happen: the start gate exists so that
+    # the player presses something before the first menu, which is what the
+    # browser wants before it will make a sound.
+    check("there is a start gate to press", page.evaluate("__hoop.gate"))
+    page.click("#startGate")
+    check("pressing it takes the gate away", not page.evaluate("__hoop.gate"))
     page.wait_for_function("__hoop.audio.context && __hoop.audio.context.state === 'running'",
                            timeout=5000)
     check("context is running", True, page.evaluate("__hoop.audio.context.state"))
@@ -264,8 +269,13 @@ with sync_playwright() as pw:
     """)
     f.goto("file://" + str(pathlib.Path(__file__).resolve().parent.parent / "index.html"))
     f.wait_for_function("window.__hoop && window.__hoop.audio")
-    f.keyboard.press("ArrowLeft")
+    # Wait for the gate to be up before pressing: it does not appear until the
+    # curtain lifts, and a key pressed before then is not the gesture that
+    # dismisses it.
+    f.wait_for_function("__hoop.gate", timeout=30000)
+    f.keyboard.press("ArrowLeft")        # the gate, off the filesystem too
     f.wait_for_timeout(800)
+    check("the start gate is dismissed here as well", not f.evaluate("__hoop.gate"))
     check("the music falls back to <audio> elements",
           f.evaluate("__hoop.audio.via") == "element", f.evaluate("__hoop.audio.via"))
     # The effects are inlined, so they reach Web Audio even here -- which is the
@@ -277,7 +287,11 @@ with sync_playwright() as pw:
           f.evaluate("__hoop.audio.loaded.length"))
     # The menu track is synthesised from its score, so it plays through Web Audio
     # even here -- no media element, and a sample-accurate loop off the filesystem.
-    f.wait_for_function("__hoop.audio.track === 'menu'", timeout=60000)
+    # Wait for the voice, not for the track name: curTrack is set the moment the
+    # track is *asked* for, which on this path is while the synth is still
+    # rendering it. Waiting on the name raced the render and failed about one run
+    # in three.
+    f.wait_for_function("__hoop.audio.voices >= 1", timeout=60000)
     check("the menu music actually starts", True, "track=" + f.evaluate("__hoop.audio.track"))
     check("and it is a Web Audio voice, not an element",
           f.evaluate("__hoop.audio.voices") >= 1, f.evaluate("__hoop.audio.voices"))
@@ -300,7 +314,10 @@ with sync_playwright() as pw:
     # of media elements -- which is empty -- and left the synthesised menu voice
     # running underneath the anthem. One more track playing at once per screen
     # change, and the player hears all of them.
-    f.wait_for_timeout(1500)
+    # Wait for the anthem to actually be sounding before counting: until its
+    # render lands there are legitimately no voices at all.
+    f.wait_for_function("__hoop.audio.voices >= 1", timeout=60000)
+    f.wait_for_timeout(600)
     check("and the menu track is gone, not still playing under it",
           f.evaluate("__hoop.audio.voices") == 1, f.evaluate("__hoop.audio.voices"))
 

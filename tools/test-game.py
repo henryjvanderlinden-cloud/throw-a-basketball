@@ -41,6 +41,39 @@ async def main():
         await pg.reload()
         await pg.wait_for_timeout(900)
 
+        print("\n== the start gate ==")
+        # It covers everything, including the buttons, so it has to go before
+        # anything else here can be clicked -- which is the point of it: the
+        # browser will not play a sound until the player has pressed something.
+        check("the gate is up at boot", await pg.evaluate("__hoop.gate"))
+        gate = await pg.evaluate("""() => {
+          const g = document.getElementById('startGate');
+          const r = g.querySelector('rect'), im = document.getElementById('startArt');
+          return {op: +g.getAttribute('opacity'), scrim: +r.getAttribute('opacity'),
+                  w: +r.getAttribute('width'), h: +r.getAttribute('height'),
+                  href: im.getAttribute('href') || '',
+                  last: g === g.parentNode.lastElementChild};
+        }""")
+        check("it is visible", gate["op"] == 1, gate)
+        check("the black layer is see-through, not opaque",
+              0 < gate["scrim"] < 1, gate["scrim"])
+        check("and it covers the whole stage",
+              gate["w"] == 960 and gate["h"] >= 720, gate)
+        check("the start artwork is on it", gate["href"].endswith("start.webp"), gate["href"])
+        check("nothing else can be reached past it", gate["last"], gate)
+        # A keyboard player has no button to aim at, so any key does it -- and
+        # that press must not also work the menu underneath.
+        before = await pg.evaluate("__hoop.state.ms")
+        await pg.keyboard.press("ArrowRight")
+        await pg.wait_for_timeout(100)
+        check("the first key press only dismisses the gate",
+              not await pg.evaluate("__hoop.gate"))
+        check("and does not reach the menu behind it",
+              await pg.evaluate("__hoop.state.ms") == before)
+        check("it fades out rather than vanishing",
+              await pg.evaluate("document.getElementById('startGate').classList.contains('gone')"))
+        await pg.wait_for_timeout(350)
+
         print("\n== boot ==")
         ms = await pg.evaluate("__hoop.state.ms")
         check("boots into mode select", ms == "MODE", ms)
@@ -593,6 +626,48 @@ async def main():
         await pg.evaluate("__hoop.reset()"); await pg.wait_for_timeout(150)
         check("clock is hidden on the menus",
               await pg.evaluate("document.getElementById('clockHud').getAttribute('opacity')") == "0")
+
+        print("\n== the steal badge ==")
+        # A second on screen, popping out of 80% three times on the way through.
+        await pg.evaluate("__hoop.reset(); __hoop.setMode(2); __hoop.pick(0,2); __hoop.pick(1,3)")
+        await pg.wait_for_timeout(250)
+        badge = await pg.evaluate("""() => {
+          const im = document.getElementById('stealArt');
+          return {href: im.getAttribute('href') || '', x: +im.getAttribute('x'),
+                  y: +im.getAttribute('y'),
+                  op: +document.getElementById('stealFlash').getAttribute('opacity')};
+        }""")
+        check("the badge artwork is loaded", badge["href"].endswith("steal.webp"), badge["href"])
+        check("it is in the top left corner", badge["x"] < 80 and badge["y"] < 120, badge)
+        check("and it is not showing until somebody is robbed", badge["op"] == 0, badge["op"])
+        await pg.evaluate("""() => {
+          const [a, b] = __hoop.players;
+          a.px = 460; b.px = 500; __hoop.state.stealImmune = 0; __hoop.state.owner = 0;
+          a.state = 'DRIBBLE'; b.state = 'IDLE'; b.stealCd = 0;
+          __hoop.press(1, 'down'); __hoop.step(1 / 60);
+        }""")
+        check("a steal starts the flash",
+              await pg.evaluate("__hoop.stealFlash") > 0.9,
+              await pg.evaluate("__hoop.stealFlash"))
+        # Walk the second in twenty-fourths and collect the scale it is drawn at.
+        scales = []
+        for _ in range(24):
+            await pg.evaluate("__hoop.step(1/24); __hoop.render()")
+            t = await pg.evaluate(
+                "document.getElementById('stealFlash').getAttribute('transform')")
+            scales.append(float(t.split("scale(")[1].split(")")[0]))
+        peaks = sum(1 for i in range(1, len(scales) - 1)
+                    if scales[i] > scales[i - 1] and scales[i] >= scales[i + 1])
+        check("it pops three times", peaks == 3, scales)
+        check("between 80% and 100%",
+              0.79 <= min(scales) <= 0.85 and 0.98 <= max(scales) <= 1.0,
+              (min(scales), max(scales)))
+        check("and it is gone after a second",
+              await pg.evaluate("__hoop.stealFlash") == 0,
+              await pg.evaluate("__hoop.stealFlash"))
+        await pg.wait_for_timeout(120)
+        check("nothing is left on screen",
+              await pg.evaluate("+document.getElementById('stealFlash').getAttribute('opacity')") == 0)
 
         print("\n== the court comes with the character ==")
         # Each baller has a home court: the gym for the two kids, the arena for
