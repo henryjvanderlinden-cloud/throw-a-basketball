@@ -116,6 +116,27 @@ async def main():
         await pg.wait_for_timeout(400)
         await pg.screenshot(path=f"{OUT}/04-play-2p.png")
 
+        print("\n== who starts where ==")
+        # Blue on the right, red on the left -- the halves their pads and their
+        # scores are on, and now their badges too. Before this they were the
+        # other way round from everything else on screen.
+        pos = await pg.evaluate("({a: __hoop.players[0].px, b: __hoop.players[1].px,"
+                                " fa: __hoop.players[0].facing, fb: __hoop.players[1].facing})")
+        check("player 1 starts on the right of player 2", pos["a"] > pos["b"], pos)
+        check("player 1 starts on the right half", pos["a"] > 480, pos)
+        check("player 2 starts on the left half", pos["b"] < 480, pos)
+        check("and each is turned in towards the hoop",
+              pos["fa"] == -1 and pos["fb"] == 1, pos)
+        pads = await pg.evaluate("""() => {
+          const g = [...document.getElementById('pads').children];
+          const x = i => Math.min(...[...g[i].querySelectorAll('rect')]
+                                   .map(r => +r.getAttribute('x')));
+          return {p1: x(0), p2: x(1)};
+        }""")
+        check("each player's pad is on the same side he stands on",
+              (pads["p1"] > 480) == (pos["a"] > 480)
+              and (pads["p2"] < 480) == (pos["b"] < 480), {**pads, **pos})
+
         print("\n== movement / independence ==")
         st = await pg.evaluate("({a:__hoop.players[0].px, b:__hoop.players[1].px})")
         await pg.keyboard.down("ArrowLeft"); await pg.keyboard.down("KeyD")
@@ -678,9 +699,15 @@ async def main():
               and names["bgScore1"] == "score-red.webp"
               and names["bgWow0"] == "incredible-blue.webp"
               and names["bgWow1"] == "incredible-red.webp", names)
+        # Each corner badge lands on its own player's side -- blue right, red
+        # left, the halves their pads, their scores and their starting positions
+        # are already on. The side is what says *who*, so nothing has to be read.
+        check("the blue SCORE! is on player 1's side, the right",
+              [a for a in art if a[0] == "bgScore0"][0][2] == 684, art)
+        check("the red one is on player 2's side, the left",
+              [a for a in art if a[0] == "bgScore1"][0][2] == 16, art)
         corner = [a for a in art if a[0] in ("bgSteal", "bgScore0", "bgScore1")]
-        check("steal and score sit in the top-left corner",
-              all(a[2] < 80 and a[3] < 120 for a in corner), corner)
+        check("and all of them sit along the top", all(a[3] < 120 for a in corner), corner)
         # The banner arrives spinning, and at three turns and full size it sweeps
         # 307 px from its own centre -- off the top and left of the stage from the
         # corner, comfortably inside it from the middle.
@@ -699,6 +726,12 @@ async def main():
         badge = await pg.evaluate("__hoop.badge")
         check("a steal throws up STEAL!",
               badge["art"] == "steal.webp" and not badge["spin"] and badge["t"] > 0.9, badge)
+        # Player 2 did that one, so it is on the left. The graphic is shared
+        # between the players, so this is the one badge that has to move.
+        check("the thief's side is the side it lands on", badge["side"] == "left", badge)
+        stealX = await pg.evaluate(
+            "+document.getElementById('bgSteal').getAttribute('x')")
+        check("...and the graphic moved with it", stealX == 16, stealX)
         frames = await walk(24, 1 / 24)
         scales = [f[1] for f in frames]
         peaks = sum(1 for i in range(1, len(scales) - 1)
@@ -714,16 +747,31 @@ async def main():
         check("nothing is left on screen",
               await pg.evaluate("+document.getElementById('badge').getAttribute('opacity')") == 0)
 
+        # ...and the other way round when player 1 robs player 2.
+        await pg.evaluate("""() => {
+          const [a, b] = __hoop.players;
+          a.px = 460; b.px = 500; __hoop.state.stealImmune = 0; __hoop.state.owner = 1;
+          b.state = 'DRIBBLE'; a.state = 'IDLE'; a.stealCd = 0;
+          __hoop.press(0, 'down'); __hoop.step(1 / 60);
+        }""")
+        back = await pg.evaluate("__hoop.badge")
+        check("a steal the other way lands on the right",
+              back["art"] == "steal.webp" and back["side"] == "right", back)
+        check("...and the graphic moved back", await pg.evaluate(
+            "+document.getElementById('bgSteal').getAttribute('x')") == 684)
+
         first = parts(await score(0))
         b0 = await pg.evaluate("__hoop.badge")
         check("player 1's basket shows the blue SCORE!",
               b0["art"] == "score-blue.webp" and not b0["spin"], b0)
+        check("on the right", b0["side"] == "right", b0)
         check("and it starts at 80%, square on",
               first == (0.0, 0.8), first)
         await score(1)
         b1 = await pg.evaluate("__hoop.badge")
         check("player 2's shows the red one",
               b1["art"] == "score-red.webp" and not b1["spin"], b1)
+        check("on the left", b1["side"] == "left", b1)
 
         await pg.evaluate("__hoop.players[0].made = 9")
         firstWow = parts(await score(0))
@@ -734,6 +782,7 @@ async def main():
         # three full turns out.
         check("it comes in at 10% and three full turns out",
               firstWow == (-1080.0, 0.1), firstWow)
+        check("and belongs to neither side", w["side"] == "centre", w)
         check("...and it is the tenth that gets it, not the ninth",
               await pg.evaluate("__hoop.players[0].made") == 10)
         await score(0)

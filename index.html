@@ -229,7 +229,8 @@
     </g>
   </g>
 
-  <!-- court name / steal toast; beside the court button, which owns the corner -->
+  <!-- The court name, beside the court button that changes it. It is the only
+       thing left that uses the toast; a steal is a badge now. -->
   <g id="toast" opacity="0">
     <rect id="toastBox" x="72" y="20" width="150" height="30" rx="10" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>
     <text id="toastText" x="147" y="40" text-anchor="middle" font-size="13" fill="var(--ink)"
@@ -321,27 +322,6 @@
       <path d="M906,32 v-6 h6 M930,32 v-6 h-6 M906,40 v6 h6 M930,40 v6 h-6"/>
     </g>
   </g>
-  <!-- Badges: a graphic thrown on screen for a second and taken away again.
-       Only one is ever showing, so one group carries the animation and each
-       graphic is just switched on underneath it.
-
-       STEAL! and SCORE! sit in the top-left corner, under the court button.
-       INCREDIBLE! is centred, because it arrives spinning: at three turns and
-       full size a 600-wide banner sweeps 307 px from its own centre, which runs
-       off the top and left of the stage from a corner and does not from the
-       middle. It is also the rarest of them and the middle suits that. -->
-  <g id="badge" opacity="0" pointer-events="none">
-    <image id="bgSteal"  x="16" y="64" width="260" height="140"
-           preserveAspectRatio="xMidYMid meet" opacity="0"/>
-    <image id="bgScore0" x="16" y="64" width="260" height="140"
-           preserveAspectRatio="xMidYMid meet" opacity="0"/>
-    <image id="bgScore1" x="16" y="64" width="260" height="140"
-           preserveAspectRatio="xMidYMid meet" opacity="0"/>
-    <image id="bgWow0" x="180" y="255" width="600" height="130"
-           preserveAspectRatio="xMidYMid meet" opacity="0"/>
-    <image id="bgWow1" x="180" y="255" width="600" height="130"
-           preserveAspectRatio="xMidYMid meet" opacity="0"/>
-  </g>
   <!-- Change the backdrop: one push, the next court. The far corner from the
        sound and fullscreen pair, and hidden on the menus, where the court is
        behind the artwork and the button would visibly do nothing. -->
@@ -354,6 +334,38 @@
       <path d="M28,41 l7,-8 l5,6 l4,-4 l6,6"/>
       <circle cx="33" cy="31" r="2.1" fill="var(--ink)" stroke="none"/>
     </g>
+  </g>
+
+  <!-- Badges: a graphic thrown on screen for a second and taken away again.
+       Only one is ever showing, so one group carries the animation and each
+       graphic is just switched on underneath it.
+
+       STEAL! and SCORE! land on their own player's side of the screen -- blue
+       on the right, red on the left, the same halves their pads, their scores
+       and their starting positions are on. That is what the side is *for*: it
+       says who without anything having to be read. `x` is set when the badge is
+       shown, because the steal graphic is shared and can arrive on either side.
+
+       After the buttons, so the badge passes over them rather than under. It
+       cannot swallow a click -- the whole group is pointer-events:none -- and it
+       is gone in a second.
+
+       INCREDIBLE! is centred, and belongs to nobody's side: it arrives spinning,
+       and at three turns and full size a 600-wide banner sweeps 307 px from its
+       own centre, which runs off the edge of the stage from a corner and has
+       room from the middle. It is also the rarest of them, which the middle
+       suits. -->
+  <g id="badge" opacity="0" pointer-events="none">
+    <image id="bgSteal"  x="16" y="64" width="260" height="140"
+           preserveAspectRatio="xMidYMid meet" opacity="0"/>
+    <image id="bgScore0" x="684" y="64" width="260" height="140"
+           preserveAspectRatio="xMidYMid meet" opacity="0"/>
+    <image id="bgScore1" x="16" y="64" width="260" height="140"
+           preserveAspectRatio="xMidYMid meet" opacity="0"/>
+    <image id="bgWow0" x="180" y="255" width="600" height="130"
+           preserveAspectRatio="xMidYMid meet" opacity="0"/>
+    <image id="bgWow1" x="180" y="255" width="600" height="130"
+           preserveAspectRatio="xMidYMid meet" opacity="0"/>
   </g>
 
   <!-- The start gate. Last of all, so nothing underneath it can be touched
@@ -447,8 +459,11 @@ const STEAL_CD = 0.5;           // s before a player may try again
 const CLOCK_BASE = 10, CLOCK_FLOOR = 3, CLOCK_STEP = 0.5, PTS_PER_STEP = 12;
 const POINTS_PER_BASKET = 3;
 
-const START_X = [W * 0.5 - 170, W * 0.5 + 170];   // player 1, player 2
-const SOLO_X = W * 0.5 - 170;
+// Player 1 (blue) on the right, player 2 (red) on the left -- the halves their
+// pads, their scores and their badges are already on. Everything about a player
+// is now on one side of the screen.
+const START_X = [W * 0.5 + 170, W * 0.5 - 170];
+const SOLO_X = START_X[0];        // alone, you are still player 1
 
 // ---------------------------------------------------------------- elements
 const $ = id => document.getElementById(id);
@@ -593,17 +608,28 @@ const BADGE_SECS = 1.0;
 const BADGE_FADE = 0.18;
 const POP_PULSES = 3, POP_MIN = 0.8;
 const SPIN_IN = 0.5, SPIN_TURNS = 3, SPIN_MIN = 0.1;
-const CORNER_C = [16 + 260 / 2, 64 + 140 / 2];
+const CORNER_W = 260, CORNER_H = 140, CORNER_Y = 64;
+const CORNER_LX = 16, CORNER_RX = W - 16 - CORNER_W;
+const CORNER_LC = [CORNER_LX + CORNER_W / 2, CORNER_Y + CORNER_H / 2];
+const CORNER_RC = [CORNER_RX + CORNER_W / 2, CORNER_Y + CORNER_H / 2];
 const MIDDLE_C = [180 + 600 / 2, 255 + 130 / 2];
 const INCREDIBLE_EVERY = 10;  // baskets, per player
-let badgeT = 0, badgeSpin = false, badgeC = CORNER_C;
+let badgeT = 0, badgeSpin = false, badgeC = CORNER_LC, badgeSide = 'left';
 let BADGES = [];              // filled once the element map exists
 
-function showBadge(which, spin) {
+// `right` is the player's own side -- true for player 1, false for player 2.
+// The steal graphic is shared between them, so the box is placed here rather
+// than in the markup.
+function showBadge(which, spin, right) {
   for (const im of BADGES) im.setAttribute('opacity', im === which ? '1' : '0');
   badgeT = BADGE_SECS;
   badgeSpin = !!spin;
-  badgeC = spin ? MIDDLE_C : CORNER_C;
+  if (spin) { badgeC = MIDDLE_C; badgeSide = 'centre'; }
+  else {
+    which.setAttribute('x', right ? CORNER_RX : CORNER_LX);
+    badgeC = right ? CORNER_RC : CORNER_LC;
+    badgeSide = right ? 'right' : 'left';
+  }
 }
 
 function toast(msg, secs) { el.toastText.textContent = msg; toastT = secs || 1.6; }
@@ -1150,7 +1176,7 @@ function makePlayer(n) {
     rig: rigs[n],
     char: null, charIdx: 0, frameEls: {}, shown: null,
     state: PS.IDLE,
-    px: START_X[n], facing: n === 0 ? 1 : -1,
+    px: START_X[n], facing: n === 0 ? -1 : 1,   // each turned in towards the hoop
     angle: 74, power: 0,
     made: 0, points: 0,
     dribT: 0, animT: 0, throwT: 99,
@@ -1218,7 +1244,7 @@ function startMatch() {
     p.overSeq = null; p.overT = 0;
     p.dribT = 0; p.animT = 0; p.dribPh = 0; p.runDir = 0; p.runIdle = 9;
     p.px = (numPlayers === 1) ? SOLO_X : START_X[p.n];
-    p.facing = p.n === 0 ? 1 : -1;
+    p.facing = p.n === 0 ? -1 : 1;
   }
   // Player 1 picked first, so player 1 starts with the ball -- and the tip-off
   // counts as a change of possession, so it carries the same protection.
@@ -2279,8 +2305,11 @@ function trySteal(p) {
   opp.turnT = TURN_TIME;                     // the victim spins
   opp.celebT = 0; opp.celebSeq = null;
   p.facing = Math.sign(opp.px - p.px) || p.facing;
-  toast('PLAYER ' + (p.n + 1) + ' STEALS!', 1.1);
-  showBadge(el.bgSteal, false);   // ...and the badge, which says it louder
+  // No toast: it used to say PLAYER n STEALS! in the top-left corner, and the
+  // badge now says both halves of that -- the word, and *whose* by which side it
+  // lands on. Keeping it would have put text on one side and the graphic on the
+  // other, which is the corner-clutter this arrangement exists to undo.
+  showBadge(el.bgSteal, false, p.n === 0);
 }
 
 function shoot(n) {
@@ -2546,7 +2575,7 @@ function step(dt) {
         // gets the spinning banner instead of the corner badge.
         const wow = s.made % INCREDIBLE_EVERY === 0;
         showBadge(wow ? (s.n ? el.bgWow1 : el.bgWow0)
-                      : (s.n ? el.bgScore1 : el.bgScore0), wow);
+                      : (s.n ? el.bgScore1 : el.bgScore0), wow, s.n === 0);
         [s.celebSeq, s.celebT] = pickCelebration(s);
       }
     }
@@ -2907,7 +2936,7 @@ window.__hoop = {
   dismissGate,
   get badge() {
     const up = BADGES.filter(im => im.getAttribute('opacity') === '1')[0];
-    return { t: badgeT, spin: badgeSpin,
+    return { t: badgeT, spin: badgeSpin, side: badgeSide,
              art: (up && up.getAttribute('href') || '').split('/').pop() };
   },
   get court() { return (COURTS[courtIdx] || {}).id; },

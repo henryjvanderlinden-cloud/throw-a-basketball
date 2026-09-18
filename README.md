@@ -54,11 +54,11 @@ home screen instead and it opens without browser chrome.
 ## Rules
 
 - **3 points** per made basket. Every one throws a **SCORE!** badge into the
-  top-left corner for a second — blue for player 1, red for player 2, the same
-  colours as their kits and their halves of the scoreboard. Every **tenth**
-  basket a player makes gets **INCREDIBLE!** instead: it spins in across the
-  middle of the court, from a tenth of full size through three full turns in
-  half a second, and holds for another half. Each player counts his own tenth.
+  scorer's own top corner for a second — blue on the right, red on the left.
+  Every **tenth** basket a player makes gets **INCREDIBLE!** instead: it spins in
+  across the middle of the court, from a tenth of full size through three full
+  turns in half a second, and holds for another half. Each player counts his own
+  tenth.
 - The **shot clock** runs only while somebody has the ball. Every throw resets it
   *and holds it*; it starts again when anyone gathers the ball, so the scramble
   for the rebound is free time. Let it reach zero and the game is over. The
@@ -78,6 +78,13 @@ One ball, one basket, one clock — the clock is shared, so stalling costs you a
 much as it costs the other one. Player 1 starts with it. Most points when the
 buzzer goes wins; equal is a draw.
 
+**Everything about a player is on one side of the screen.** Player 1 is blue and
+starts on the **right**; player 2 is red and starts on the **left**. Their touch
+pads, their halves of the scoreboard, their kit colours and their badges all
+follow, so you never have to work out whose anything is — the side says it. (The
+players used to start the other way round from their own pads and scores, which
+is the inconsistency this fixed.)
+
 **Stealing** is the whole game. Press <kbd>↓</kbd> (or <kbd>S</kbd>) next to an
 opponent who is *dribbling* and the ball is yours. Three things bound it:
 
@@ -89,11 +96,20 @@ opponent who is *dribbling* and the ball is yours. Three things bound it:
   before they can try again, whether or not it worked, so holding the button
   down is not free. Holding it *does* keep trying, once per cooldown.
 
-A successful steal throws a **STEAL!** badge into the top-left corner for a
-second, popping out of 80% three times on its way through, alongside the toast
-that says which player did it — the same treatment a basket gets, in the same
-place. All the badges share one group and one set of timings (`BADGE_SECS`,
+A successful steal throws a **STEAL!** badge into the **thief's** top corner for
+a second, popping out of 80% three times on its way through — the same treatment
+a basket gets, in the same place. It is the one badge that moves: there is a
+single STEAL! graphic and either player can earn it, so its box is placed when it
+is shown rather than in the markup.
+
+There is no longer a *PLAYER n STEALS!* toast. The badge says both halves of it —
+the word, and whose by the side it lands on — and keeping the toast would have
+put the text on one side of the screen and the graphic on the other.
+
+All the badges share one group and one set of timings (`BADGE_SECS`,
 `POP_PULSES`, `SPIN_*` in `index.html`) and only one is ever on screen at once.
+They are drawn over the sound, fullscreen and court buttons rather than under
+them; the group is `pointer-events: none`, so a badge can never swallow a tap.
 
 A steal does **not** reset the shot clock. Taking the ball off someone late is
 supposed to leave you with their problem, not a fresh ten seconds.
@@ -637,7 +653,7 @@ artwork/Splash Screens/     source paintings for the menus
 tools/build-sprites.py      regenerates sprites/ from artwork/
 tools/slice-strips.py       cuts generated strips into frames
 tools/build-splash.py       regenerates splash/ from artwork/
-artwork/overlays/           generated - the START button and the STEAL! badge
+artwork/overlays/           generated - the START button and the badges
 tools/build-overlays.py     regenerates artwork/overlays/ from artwork/
 tools/test-game.py          headless checks - see Tests above
 tools/fuzz-game.py          random input, invariants only
