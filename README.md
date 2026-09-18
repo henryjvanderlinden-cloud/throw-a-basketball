@@ -53,7 +53,12 @@ home screen instead and it opens without browser chrome.
 
 ## Rules
 
-- **3 points** per made basket.
+- **3 points** per made basket. Every one throws a **SCORE!** badge into the
+  top-left corner for a second — blue for player 1, red for player 2, the same
+  colours as their kits and their halves of the scoreboard. Every **tenth**
+  basket a player makes gets **INCREDIBLE!** instead: it spins in across the
+  middle of the court, from a tenth of full size through three full turns in
+  half a second, and holds for another half. Each player counts his own tenth.
 - The **shot clock** runs only while somebody has the ball. Every throw resets it
   *and holds it*; it starts again when anyone gathers the ball, so the scramble
   for the rebound is free time. Let it reach zero and the game is over. The
@@ -86,8 +91,9 @@ opponent who is *dribbling* and the ball is yours. Three things bound it:
 
 A successful steal throws a **STEAL!** badge into the top-left corner for a
 second, popping out of 80% three times on its way through, alongside the toast
-that says which player did it. The artwork is `artwork/overlays/steal.webp`; the
-timing is `STEAL_FLASH` and `STEAL_PULSES` in `index.html`.
+that says which player did it — the same treatment a basket gets, in the same
+place. All the badges share one group and one set of timings (`BADGE_SECS`,
+`POP_PULSES`, `SPIN_*` in `index.html`) and only one is ever on screen at once.
 
 A steal does **not** reset the shot clock. Taking the ball off someone late is
 supposed to leave you with their problem, not a fresh ten seconds.
@@ -172,9 +178,12 @@ Over the first menu sits a 62%-black layer and the START lettering, built by:
 python tools/build-overlays.py   # artwork/*.png -> artwork/overlays/*.webp
 ```
 
-Both overlays are cropped to their own alpha and resampled — which is safe for
-airbrushed graffiti and is emphatically *not* safe for the pixel-art splash
-screens, so do not copy that step into `build-splash.py`.
+The same script builds the badges (`steal`, `score-blue`, `score-red`,
+`incredible-blue`, `incredible-red`). Every overlay is cropped to its own alpha
+and resampled — which is safe for airbrushed graffiti and is emphatically *not*
+safe for the pixel-art splash screens, so do not copy that step into
+`build-splash.py`. Only `start.webp` is read before the first menu; the rest
+queue behind everything the player can already see.
 
 The gate is declared last in the SVG, so nothing underneath it can be touched
 while it is up, including the sound and fullscreen buttons. Any click and any

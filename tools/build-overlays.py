@@ -43,6 +43,12 @@ QUALITY = 86
 JOBS = [
     ("start", "start-orange-basketball.png", 640),
     ("steal", "steal-purple-skull-v2.png", 480),
+    ("score-blue", "score-blue-text.png", 480),
+    ("score-red", "score-red-text.png", 480),
+    # Drawn 600 wide across the middle of the stage rather than 260 in the
+    # corner, so it gets the extra resolution.
+    ("incredible-blue", "incredible-blue-text.png", 720),
+    ("incredible-red", "incredible-red-text.png", 720),
 ]
 
 

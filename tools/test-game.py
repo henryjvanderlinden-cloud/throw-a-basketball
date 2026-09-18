@@ -627,47 +627,147 @@ async def main():
         check("clock is hidden on the menus",
               await pg.evaluate("document.getElementById('clockHud').getAttribute('opacity')") == "0")
 
-        print("\n== the steal badge ==")
-        # A second on screen, popping out of 80% three times on the way through.
+        print("\n== badges ==")
         await pg.evaluate("__hoop.reset(); __hoop.setMode(2); __hoop.pick(0,2); __hoop.pick(1,3)")
         await pg.wait_for_timeout(250)
-        badge = await pg.evaluate("""() => {
-          const im = document.getElementById('stealArt');
-          return {href: im.getAttribute('href') || '', x: +im.getAttribute('x'),
-                  y: +im.getAttribute('y'),
-                  op: +document.getElementById('stealFlash').getAttribute('opacity')};
-        }""")
-        check("the badge artwork is loaded", badge["href"].endswith("steal.webp"), badge["href"])
-        check("it is in the top left corner", badge["x"] < 80 and badge["y"] < 120, badge)
-        check("and it is not showing until somebody is robbed", badge["op"] == 0, badge["op"])
+
+        async def score(n):
+            """Drop the ball through the hoop by fiat, credited to player n.
+
+            Everything happens inside one evaluate -- the drop, the step that
+            registers it, and the draw -- so the transform that comes back is the
+            badge's very first frame, at exactly t=1. Sampling it from the outside
+            costs a round trip, and the game's own loop keeps running during it.
+            """
+            return await pg.evaluate("""(n) => { const s = __hoop.state;
+              s.ball.x = 480; s.ball.y = 120; s.ball.vx = 0; s.ball.vy = 400;
+              s.ball.rest = false; s.scoredThisShot = false; s.shooter = n; s.owner = null;
+              for (let i = 0; i < 60 && !s.scoredThisShot; i++) __hoop.step(1 / 120);
+              s.ball.rest = true; s.ball.vy = 0;
+              __hoop.render();
+              return document.getElementById('badge').getAttribute('transform'); }""", n)
+
+        def parts(t):
+            return (float(t.split("rotate(")[1].split(")")[0]),
+                    float(t.split("scale(")[1].split(")")[0]))
+
+        async def walk(frames, step):
+            """Run the badge animation by hand and read back what it is drawn at."""
+            await pg.evaluate("__hoop.state.ball.rest = true; __hoop.state.ball.vy = 0")
+            out = []
+            for _ in range(frames):
+                await pg.evaluate("(h) => { __hoop.step(h); __hoop.render(); }", step)
+                t = await pg.evaluate(
+                    "document.getElementById('badge').getAttribute('transform')")
+                out.append((float(t.split("rotate(")[1].split(")")[0]),
+                            float(t.split("scale(")[1].split(")")[0])))
+            return out
+
+        art = await pg.evaluate("""() => [...document.getElementById('badge').children]
+          .map(im => [im.id, (im.getAttribute('href') || '').split('/').pop(),
+                      +im.getAttribute('x'), +im.getAttribute('y'),
+                      +im.getAttribute('width')])""")
+        names = {a[0]: a[1] for a in art}
+        check("all five badge graphics are loaded",
+              len(art) == 5 and all(a[1] for a in art), art)
+        # The colours are the players' own: blue is player 1's kit and his half of
+        # the scoreboard, red is player 2's. Getting these the wrong way round
+        # would look like a bug in the scoring, not in the artwork.
+        check("blue belongs to player 1 and red to player 2",
+              names["bgScore0"] == "score-blue.webp"
+              and names["bgScore1"] == "score-red.webp"
+              and names["bgWow0"] == "incredible-blue.webp"
+              and names["bgWow1"] == "incredible-red.webp", names)
+        corner = [a for a in art if a[0] in ("bgSteal", "bgScore0", "bgScore1")]
+        check("steal and score sit in the top-left corner",
+              all(a[2] < 80 and a[3] < 120 for a in corner), corner)
+        # The banner arrives spinning, and at three turns and full size it sweeps
+        # 307 px from its own centre -- off the top and left of the stage from the
+        # corner, comfortably inside it from the middle.
+        wow = [a for a in art if a[0].startswith("bgWow")]
+        check("the INCREDIBLE! banner is centred instead",
+              all(abs(a[2] + a[4] / 2 - 480) < 1 for a in wow), wow)
+        check("nothing is showing to begin with",
+              await pg.evaluate("+document.getElementById('badge').getAttribute('opacity')") == 0)
+
         await pg.evaluate("""() => {
           const [a, b] = __hoop.players;
           a.px = 460; b.px = 500; __hoop.state.stealImmune = 0; __hoop.state.owner = 0;
           a.state = 'DRIBBLE'; b.state = 'IDLE'; b.stealCd = 0;
           __hoop.press(1, 'down'); __hoop.step(1 / 60);
         }""")
-        check("a steal starts the flash",
-              await pg.evaluate("__hoop.stealFlash") > 0.9,
-              await pg.evaluate("__hoop.stealFlash"))
-        # Walk the second in twenty-fourths and collect the scale it is drawn at.
-        scales = []
-        for _ in range(24):
-            await pg.evaluate("__hoop.step(1/24); __hoop.render()")
-            t = await pg.evaluate(
-                "document.getElementById('stealFlash').getAttribute('transform')")
-            scales.append(float(t.split("scale(")[1].split(")")[0]))
+        badge = await pg.evaluate("__hoop.badge")
+        check("a steal throws up STEAL!",
+              badge["art"] == "steal.webp" and not badge["spin"] and badge["t"] > 0.9, badge)
+        frames = await walk(24, 1 / 24)
+        scales = [f[1] for f in frames]
         peaks = sum(1 for i in range(1, len(scales) - 1)
                     if scales[i] > scales[i - 1] and scales[i] >= scales[i + 1])
         check("it pops three times", peaks == 3, scales)
         check("between 80% and 100%",
               0.79 <= min(scales) <= 0.85 and 0.98 <= max(scales) <= 1.0,
               (min(scales), max(scales)))
+        check("it never turns", all(f[0] == 0 for f in frames), frames[:3])
         check("and it is gone after a second",
-              await pg.evaluate("__hoop.stealFlash") == 0,
-              await pg.evaluate("__hoop.stealFlash"))
+              (await pg.evaluate("__hoop.badge"))["t"] == 0)
         await pg.wait_for_timeout(120)
         check("nothing is left on screen",
-              await pg.evaluate("+document.getElementById('stealFlash').getAttribute('opacity')") == 0)
+              await pg.evaluate("+document.getElementById('badge').getAttribute('opacity')") == 0)
+
+        first = parts(await score(0))
+        b0 = await pg.evaluate("__hoop.badge")
+        check("player 1's basket shows the blue SCORE!",
+              b0["art"] == "score-blue.webp" and not b0["spin"], b0)
+        check("and it starts at 80%, square on",
+              first == (0.0, 0.8), first)
+        await score(1)
+        b1 = await pg.evaluate("__hoop.badge")
+        check("player 2's shows the red one",
+              b1["art"] == "score-red.webp" and not b1["spin"], b1)
+
+        await pg.evaluate("__hoop.players[0].made = 9")
+        firstWow = parts(await score(0))
+        w = await pg.evaluate("__hoop.badge")
+        check("every tenth basket is INCREDIBLE! instead",
+              w["art"] == "incredible-blue.webp" and w["spin"], w)
+        # Its very first frame is the whole specification: a tenth of full size,
+        # three full turns out.
+        check("it comes in at 10% and three full turns out",
+              firstWow == (-1080.0, 0.1), firstWow)
+        check("...and it is the tenth that gets it, not the ninth",
+              await pg.evaluate("__hoop.players[0].made") == 10)
+        await score(0)
+        check("the eleventh is an ordinary basket again",
+              (await pg.evaluate("__hoop.badge"))["art"] == "score-blue.webp",
+              await pg.evaluate("__hoop.badge"))
+        # Each player counts his own, so one man's tenth is not the other's.
+        await pg.evaluate("__hoop.players[1].made = 9")
+        await score(1)
+        w2 = await pg.evaluate("__hoop.badge")
+        check("each player counts his own tenth",
+              w2["art"] == "incredible-red.webp" and w2["spin"], w2)
+
+        await pg.evaluate("__hoop.players[0].made = 19")
+        await score(0)
+        frames = await walk(24, 1 / 24)
+        turns = [f[0] for f in frames]
+        scales = [f[1] for f in frames]
+        check("it never over-rotates", max(turns) <= 0, max(turns))
+        check("and lands square at full size",
+              turns[-1] == 0 and scales[-1] == 1.0, (turns[-1], scales[-1]))
+        # The growth and the turn come off one eased progress, which is what makes
+        # three turns land exactly on zero at exactly full size. Checking the
+        # relation rather than the values proves it at every frame, whenever the
+        # sample happens to fall -- and the game's own loop is still running
+        # between these round trips, so *when* is not something to rely on.
+        off = max(abs(deg + 1080 * (1 - (k - 0.1) / 0.9)) for deg, k in frames)
+        check("scale and turn stay locked together", off < 0.15, off)
+        # Half a second in, half a second held: from the twelfth frame of
+        # twenty-four onwards nothing moves.
+        held = frames[12:]
+        check("held at rest for the second half",
+              all(f[0] == 0 and f[1] == 1.0 for f in held), held[:3])
+        check("then it is gone", (await pg.evaluate("__hoop.badge"))["t"] == 0)
 
         print("\n== the court comes with the character ==")
         # Each baller has a home court: the gym for the two kids, the arena for
