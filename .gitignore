@@ -44,3 +44,12 @@ __pycache__/
 # audio/sfx-data.js and the .flac tracks ARE committed: they are what the game
 # loads. The .wav sources stay too, as the fallback and as what the build
 # scripts produce.
+
+# Rendered generation prompts. art/sequences.yml and art/characters.yml are the
+# source of truth and tools/gen-prompts.py rebuilds every prompt from them, so
+# the rendered copies are as disposable as any other build output.
+build/
+
+# The signed-in ChatGPT browser profile used by tools/gen-strips.py. This holds
+# live session cookies for Rick's account -- it must never be committed.
+.chatgpt-profile/

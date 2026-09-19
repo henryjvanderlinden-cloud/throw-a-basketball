@@ -1,0 +1,823 @@
+# The four characters.
+#
+# `subject` is pasted verbatim into every prompt for that character. Do not
+# reword it between sequences — identity drift between strips is the failure
+# this prevents, and it is invisible until two sequences sit side by side.
+#
+# `traits` fills the {placeholders} in sequences.yml. A placeholder with no
+# entry here renders as nothing, which is how a character without a tail gets
+# the same pose lines minus the tail sentences.
+#
+# `sequences` holds that character's own personality moves, using exactly the
+# schema in sequences.yml. Everything in sequences.yml is generated for every
+# character; these are generated in addition.
+#
+# `scale` is CHAR_SCALE — height as a multiple of STANDING_H. A judgement about
+# how the characters should relate on one baseline, not a measurement, so it
+# stays hand-set. The calibration frame handles per-sequence scale.
+
+
+# Back-view references checked against the art: pose 002 for the NBA player
+# (his 003 is mid-shot with the arms overhead, which is a pose, not an identity
+# anchor) and pose 003 for the high schooler and the zombie, both plain back
+# stances. The monkey keeps the 003 his own prompts used.
+
+
+monkey:
+  label: Monkey
+  folder: Monkey
+  scale: 0.88
+  status: generated            # 17 strips exist; regenerate for calibration frames
+  refs:
+    front: artwork/basketball-players/Monkey poses/Monkey 001.png
+    back: artwork/basketball-players/Monkey poses/Monkey 003.png
+  subject: |
+    the anthropomorphic monkey basketball player in the attached reference
+    image. Match that character exactly: brown fur, shaggy darker head fur, a
+    long curling tail, a blue sleeveless basketball jersey with a yellow number
+    7, blue shorts with white and yellow trim, blue-and-white high-top sneakers.
+    Identical colours, identical proportions, identical build and identical
+    height as the reference, in every frame.
+  traits:
+    dribble_side: VIEWER'S RIGHT
+    trail_left: The tail streams out behind him to the viewer's left.
+    trail_right: The tail streams out behind him to the viewer's right.
+    trail_turn: Tail swinging across with the turn.
+    trail_relaxed: Tail hanging in a relaxed curl.
+    trail_straighten: Tail beginning to straighten.
+    trail_balance: Tail straight out behind for balance.
+    trail_drop: Tail dropping.
+    trail_high: Tail curled high above him.
+    trail_lower: Tail lowering.
+    trail_curl: Tail curled up behind him.
+    trail_limp: His tail lies limp on the floor behind him.
+    balance_low: Tail raised for balance.
+    coil_mid: Tail curling up.
+    coil_deep: Tail curled tight.
+    spent_low: Eyes half shut, tongue lolling out.
+    stolen_face: >-
+      His eyes bulge, his teeth bare right back to the gums and his fur
+      bristles.
+  sequences:
+    break_banana:
+      title: "Idle break A: eating a banana"
+      kind: one_shot
+      frames: 4
+      ref: front
+      ground: |
+        All frames share one ground line: the soles of the feet touch the same
+        horizontal line in every frame. The feet stay planted throughout.
+      view: |
+        front view, facing the viewer, squared to camera, in a low athletic
+        stance with the knees bent.
+      preamble: |
+        The hand on the VIEWER'S RIGHT is dribbling and cycles through four
+        fixed positions; the hand on the VIEWER'S LEFT eats a banana.
+      poses:
+        - >-
+            Dribbling hand pushed all the way down at hip height, palm to
+            the floor. Other hand holding a peeled yellow banana up near
+            his mouth, about to eat.
+        - >-
+            Dribbling hand halfway up, between hip and chest. Other hand
+            bringing the banana to his mouth, taking a big bite.
+        - >-
+            Dribbling hand at its highest, just below chest height. Cheeks
+            bulging, chewing happily with his eyes closed, other hand
+            lowering the banana.
+        - >-
+            Dribbling hand dropping back toward the hip. Other hand
+            flicking the empty banana peel away off to the side.
+      closing: |
+        This is a one-shot played between repeats of a dribbling loop. The
+        dribbling hand's four positions must exactly match a normal dribbling
+        cycle so the motion is continuous.
+      extra: |
+        A banana is the only prop.
+
+    break_wave:
+      title: "Idle break B: waving to the crowd"
+      kind: one_shot
+      frames: 4
+      ref: front
+      ground: |
+        All frames share one ground line: the soles of the feet touch the same
+        horizontal line in every frame. The feet stay planted throughout.
+      view: |
+        front view, facing the viewer, squared to camera, in a low athletic
+        stance with the knees bent.
+      preamble: |
+        The hand on the VIEWER'S RIGHT is dribbling and cycles through four
+        fixed positions; the arm on the VIEWER'S LEFT waves to the crowd.
+      poses:
+        - >-
+            Dribbling hand pushed all the way down at hip height, palm to
+            the floor. Other arm raised high above his head, palm open,
+            starting to wave.
+        - >-
+            Dribbling hand halfway up, between hip and chest. Raised arm
+            swung out to one side at the end of the wave, big toothy grin,
+            looking out at the crowd.
+        - >-
+            Dribbling hand at its highest, just below chest height. Raised
+            arm swung across to the other side, still grinning.
+        - >-
+            Dribbling hand dropping back toward the hip. Raised arm coming
+            back down toward his side.
+      closing: |
+        This is a one-shot played between repeats of a dribbling loop. The
+        dribbling hand's four positions must exactly match a normal dribbling
+        cycle so the motion is continuous.
+
+    celebrate_flip:
+      title: "Made basket celebration C: back handspring"
+      kind: one_shot
+      frames: 6
+      ref: front
+      travelling: true
+      airborne: true
+      camera: |
+        CAMERA: locked off. Identical distance and eye level in every frame. The
+        character is the same SIZE in every frame — do not zoom, crop, recompose
+        or rescale between frames, even while he is in the air. Do not match his
+        height above the floor between frames: he is genuinely higher up in the
+        airborne frames and must stay that way.
+      ground: |
+        GROUND LINE: every frame shares one horizontal floor line. Whatever is
+        touching the floor in a given frame rests exactly on that line — his
+        feet in frames {f1}, {f5} and {f6}, his hands in frame {f3}. In frames
+        {f2} and {f4} he is airborne and nothing touches it.
+      view: |
+        side-on, three-quarter view, the character flipping BACKWARDS toward the
+        left of frame, chest turned slightly toward the viewer.
+      preamble: |
+        He has just sunk a shot and is showing off with a back handspring, then
+        celebrating. He is delighted throughout — eyes bright, mouth open,
+        grinning. Frames {first} to {last} are one continuous move.
+      poses:
+        - >-
+            Load: deep crouch, knees bent, both arms swung back behind
+            him, leaning back, looking up and back over his shoulder. Tail
+            curled low.
+        - >-
+            Launch: airborne, arched backwards in mid-air, both arms
+            thrown up and back over his head reaching for the floor behind
+            him, legs still extending. Tail streaming.
+        - >-
+            Hands down: fully inverted, upside down, both palms planted
+            flat on the floor line, arms straight, legs whipping up and
+            over above him, tail flung out.
+        - >-
+            Whip over: airborne again, past vertical, legs snapping down
+            toward the floor, hands just leaving the ground, body
+            uncurling.
+        - >-
+            Landing: both feet planted on the floor line, knees deeply
+            bent absorbing the impact, arms flung out wide to either side
+            for balance, crouched low.
+        - >-
+            The celebration: standing up out of the landing, one fist
+            punched up above his head in triumph, other arm out, head
+            back, mouth wide open in a shout, tail curled high.
+      closing: |
+        This is a one-shot, not a loop. Frame {first} must continue naturally
+        from a normal standing stance, and frame {last} is the end of the
+        move.
+      extra: |
+        No motion blur, no speed lines, no dust.
+
+    panic:
+      title: Shot-clock panic
+      kind: loop
+      frames: 4
+      ref: front
+      ground: |
+        All frames share one ground line: the soles of the feet touch the same
+        horizontal line in every frame. The feet stay planted throughout.
+      view: |
+        front view, facing the viewer, squared to camera, in a low athletic
+        stance with the knees bent.
+      preamble: |
+        He has just noticed the shot clock running out and he is losing his mind
+        about it. His head is turned up and to the VIEWER'S RIGHT in frames
+        {first} to {last}, staring off-screen at a clock above him, face
+        contorted in panic: eyes wide and bulging, brows up, teeth bared in a
+        grimace, beads of sweat flying off his brow.
+
+        The hand on the VIEWER'S LEFT is dribbling and cycles through four fixed
+        positions. The arm on the VIEWER'S RIGHT is flung up and out, index
+        finger extended, jabbing repeatedly up toward the clock.
+      poses:
+        - >-
+            Dribbling hand pushed all the way down at knee height, palm to
+            the floor. Pointing arm half-raised, finger just coming up,
+            mouth open in a yelp.
+        - >-
+            Dribbling hand risen to hip height, palm still down. Pointing
+            arm snapped out straight up toward the viewer's upper right,
+            finger jabbing hard, expression at its widest.
+        - >-
+            Dribbling hand at its highest, just below chest height, wrist
+            cocked. Pointing arm pulled back slightly, elbow bent, still
+            aimed at the clock, eyes screwed up.
+        - >-
+            Dribbling hand dropping back toward the hip. Pointing arm
+            snapped straight out again in a second jab, head craned further
+            toward the clock.
+      extra: |
+        The feet do not move at any point, and the dribbling hand's four
+        positions must exactly match a normal dribbling cycle so the motion is
+        continuous. Sweat beads are the only extra element, and they stay close
+        to his head.
+
+
+nba:
+  label: NBA Player
+  folder: NBA player
+  scale: 1.10
+  status: proposed
+  refs:
+    front: artwork/basketball-players/nba-player.png
+    back: artwork/basketball-players/NBA player poses/NBA player 002.png
+  subject: |
+    the tall, heavily muscled professional basketball player in the attached
+    reference image. Match that character exactly: dark brown skin, a shaved
+    head, heavy shoulders and arms, a stern set jaw, a blue sleeveless
+    basketball jersey with a yellow number 34, blue shorts with white and yellow
+    trim, white high-top sneakers with blue and yellow flashes over white socks.
+    Identical colours, identical proportions, identical build and identical
+    height as the reference, in every frame.
+  traits:
+    dribble_side: VIEWER'S RIGHT
+    balance_low: The free arm swings wide for balance.
+    coil_mid: Shoulders bunching.
+    coil_deep: Every muscle in his back and shoulders loaded.
+    spent_low: Eyes half shut, mouth hanging open.
+    stolen_face: >-
+      He is affronted rather than shocked — a professional who has just
+      been disrespected in front of a crowd.
+  sequences:
+    break_flex:
+      title: "Idle break A: kissing the bicep"
+      kind: one_shot
+      frames: 4
+      ref: front
+      ground: |
+        All frames share one ground line: the soles of the feet touch the same
+        horizontal line in every frame. The feet stay planted throughout.
+      view: |
+        front view, facing the viewer, squared to camera, in a low athletic
+        stance with the knees bent.
+      preamble: |
+        The hand on the VIEWER'S RIGHT is dribbling and cycles through four
+        fixed positions; the arm on the VIEWER'S LEFT admires itself. He is
+        entirely serious about this.
+      poses:
+        - >-
+            Dribbling hand pushed all the way down at hip height, palm to
+            the floor. Other arm bent up into a bicep curl, fist by his
+            shoulder, glancing sideways at the muscle.
+        - >-
+            Dribbling hand halfway up, between hip and chest. Other arm
+            flexed hard at the peak of the curl, bicep bulging, chin
+            tucked toward it, eyebrows raised.
+        - >-
+            Dribbling hand at its highest, just below chest height. He
+            kisses the bicep, lips pursed against it, eyes closed.
+        - >-
+            Dribbling hand dropping back toward the hip. Other arm
+            unfolding back down to his side, a small satisfied smirk.
+      closing: |
+        This is a one-shot played between repeats of a dribbling loop. The
+        dribbling hand's four positions must exactly match a normal dribbling
+        cycle so the motion is continuous.
+
+    break_yawn:
+      title: "Idle break B: an unimpressed yawn"
+      kind: one_shot
+      frames: 4
+      ref: front
+      ground: |
+        All frames share one ground line: the soles of the feet touch the same
+        horizontal line in every frame. The feet stay planted throughout.
+      view: |
+        front view, facing the viewer, squared to camera, in a low athletic
+        stance with the knees bent.
+      preamble: |
+        The hand on the VIEWER'S RIGHT is dribbling and cycles through four
+        fixed positions; the arm on the VIEWER'S LEFT covers a huge, theatrical,
+        bored yawn. This game is beneath him.
+      poses:
+        - >-
+            Dribbling hand pushed all the way down at hip height, palm to
+            the floor. Other hand starting to rise toward his face, mouth
+            beginning to open, eyelids drooping.
+        - >-
+            Dribbling hand halfway up, between hip and chest. Mouth
+            stretched wide in a huge yawn, eyes squeezed shut, other hand
+            held flat in front of it.
+        - >-
+            Dribbling hand at its highest, just below chest height. Yawn
+            tailing off, head tipped back, other hand rubbing one eye.
+        - >-
+            Dribbling hand dropping back toward the hip. Other arm
+            returning to his side, eyes reopening with a flat, unimpressed
+            stare straight at the viewer.
+      closing: |
+        This is a one-shot played between repeats of a dribbling loop. The
+        dribbling hand's four positions must exactly match a normal dribbling
+        cycle so the motion is continuous.
+
+    celebrate_crowd:
+      title: "Made basket celebration C: working the crowd"
+      kind: one_shot
+      frames: 5
+      ref: front
+      ground: |
+        All frames share one ground line: the soles of both feet touch the same
+        horizontal line in every frame, and the feet stay planted throughout.
+      view: |
+        front view, facing the viewer.
+      preamble: |
+        He has just sunk a shot and has turned to the crowd to get them on their
+        feet — both arms up with the palms turned upward, scooping the noise
+        higher, looking from one side of the room to the other. Delighted, and
+        completely in charge of the building. Frames {first} to {last} are one
+        continuous move.
+      poses:
+        - >-
+            Standing up tall out of his stance, both arms lifting out and
+            up to shoulder height with the palms turned UP and open, head
+            turned to the VIEWER'S LEFT toward the crowd, broad grin.
+        - >-
+            The first scoop: both hands driven UP above his head, palms
+            still turned up, elbows nearly straight, chin lifted, mouth
+            open in a shout.
+        - >-
+            Both hands dropped back down to chest height, palms still
+            turned up and open, elbows tucked in, head swinging round to
+            the VIEWER'S RIGHT to take in the other side of the room.
+        - >-
+            The second scoop: both hands driven UP again and higher, arms
+            straight, head back, roaring up at the crowd.
+        - >-
+            Arms coming back down and out to his sides with the palms
+            still open, chin up, an enormous satisfied grin, easing back
+            into a low athletic stance.
+      extra: |
+        The two raised positions must be clearly and obviously higher than the
+        two low ones — the up-and-down travel of the arms is the whole gesture,
+        and if the four differ only a little the move reads as standing still.
+
+    panic:
+      title: Shot-clock panic
+      kind: loop
+      frames: 4
+      ref: front
+      # Rick asked for the right hand resting on his hip. It cannot rest there:
+      # the game locks the ball to the dribbling hand's phase, so a hand on the
+      # hip strands the ball in mid-air. It therefore keeps a small, low, lazy
+      # dribble instead — which arguably reads as MORE composed, since he is the
+      # only man still casually bouncing the ball while the clock dies.
+      ground: |
+        All frames share one ground line: the soles of the feet touch the same
+        horizontal line in every frame. The feet stay planted throughout.
+      view: |
+        front view, facing the viewer, squared to camera, in a low athletic
+        stance with the knees bent.
+      preamble: |
+        The shot clock is running out and he is the only man in the building who
+        is not bothered by it. Everything about him is unhurried: no sweat, no
+        wide eyes, no open mouth.
+
+        The hand on the VIEWER'S LEFT keeps dribbling through four fixed
+        positions, low and lazy and barely moving. The arm on the VIEWER'S RIGHT
+        does the talking: the THUMB is cocked back over his shoulder toward the
+        clock above and behind him, off-screen to the viewer's upper right.
+      poses:
+        - >-
+            Dribbling hand low at knee height, palm to the floor. Head
+            turned up and to the VIEWER'S RIGHT, looking flatly at the
+            clock, one eyebrow raised. Other arm still down at his side.
+        - >-
+            Dribbling hand risen to hip height, palm down. Other hand
+            coming up to his chest, elbow tucked in tight, thumb starting
+            to cock backwards.
+        - >-
+            Dribbling hand at its highest, just below chest height. Thumb
+            jerked back over his shoulder toward the clock, head still
+            turned to it, mouth a flat line, utterly unimpressed.
+        - >-
+            Dribbling hand dropping back toward the hip. Thumb held
+            exactly where it was for a second beat on the gesture, eyebrow
+            still raised.
+      extra: |
+        The feet do not move at any point, and the dribbling hand's four
+        positions must exactly match a normal dribbling cycle so the motion is
+        continuous.
+        He is calm throughout — no sweat beads, no bulging eyes, no grimace.
+
+
+
+highschooler:
+  label: High Schooler
+  folder: Higschooler          # the folder name is misspelled on disk; keep it
+  scale: 0.97
+  status: proposed
+  refs:
+    front: artwork/basketball-players/highschooler.png
+    back: artwork/basketball-players/Higschooler poses/Highschooler 003.png
+  subject: |
+    the lanky teenage basketball player in the attached reference image. Match
+    that character exactly: light tan skin, messy mid-brown hair swept forward
+    over the forehead, a slim unmuscled build, a blue sleeveless basketball
+    jersey with a pale number 12, blue shorts with yellow and white trim, white
+    high-top sneakers with blue and yellow flashes over white socks. Identical
+    colours, identical proportions, identical build and identical height as the
+    reference, in every frame.
+  traits:
+    dribble_side: VIEWER'S RIGHT
+    balance_low: The free arm swings out for balance.
+    coil_mid: Shoulders hunching.
+    coil_deep: Thin frame folded tight.
+    spent_low: Eyes half shut, hair hanging down over his face.
+    stolen_face: >-
+      Open-mouthed teenage outrage, eyebrows right up, hair flying.
+  sequences:
+    break_phone:
+      title: "Idle break A: checking his phone"
+      kind: one_shot
+      frames: 4
+      ref: front
+      ground: |
+        All frames share one ground line: the soles of the feet touch the same
+        horizontal line in every frame. The feet stay planted throughout.
+      view: |
+        front view, facing the viewer, squared to camera, in a low athletic
+        stance with the knees bent.
+      preamble: |
+        The hand on the VIEWER'S RIGHT is dribbling and cycles through four
+        fixed positions; the hand on the VIEWER'S LEFT sneaks a look at his
+        phone mid-game.
+      poses:
+        - >-
+            Dribbling hand pushed all the way down at hip height, palm to
+            the floor. Other hand pulling a small dark phone out of his
+            waistband, glancing down at it.
+        - >-
+            Dribbling hand halfway up, between hip and chest. Phone held
+            up close to his face, screen glowing on his chin, eyes wide,
+            thumb tapping.
+        - >-
+            Dribbling hand at its highest, just below chest height.
+            Grinning at the screen, head tilted, thumb still going.
+        - >-
+            Dribbling hand dropping back toward the hip. Phone shoved
+            guiltily back into his waistband, eyes flicking up and away as
+            if nothing happened.
+      closing: |
+        This is a one-shot played between repeats of a dribbling loop. The
+        dribbling hand's four positions must exactly match a normal dribbling
+        cycle so the motion is continuous.
+      extra: |
+        A small dark phone is the only prop.
+
+    break_hair:
+      title: "Idle break B: fixing the hair"
+      kind: one_shot
+      frames: 4
+      ref: front
+      ground: |
+        All frames share one ground line: the soles of the feet touch the same
+        horizontal line in every frame. The feet stay planted throughout.
+      view: |
+        front view, facing the viewer, squared to camera, in a low athletic
+        stance with the knees bent.
+      preamble: |
+        The hand on the VIEWER'S RIGHT is dribbling and cycles through four
+        fixed positions; the hand on the VIEWER'S LEFT deals with his fringe,
+        which he considers more urgent than the game.
+      poses:
+        - >-
+            Dribbling hand pushed all the way down at hip height, palm to
+            the floor. Hair fallen forward right over his eyes, other hand
+            starting to come up, mouth pulled to one side in annoyance.
+        - >-
+            Dribbling hand halfway up, between hip and chest. Other hand
+            raking back through the fringe, head tipped back, eyes shut.
+        - >-
+            Dribbling hand at its highest, just below chest height. Hair
+            swept up and back into a dramatic quiff, other hand smoothing
+            it down, chin lifted, looking extremely pleased with the
+            result.
+        - >-
+            Dribbling hand dropping back toward the hip. Other arm back at
+            his side — and the fringe has already flopped straight back
+            down over his eyes.
+      closing: |
+        This is a one-shot played between repeats of a dribbling loop. The
+        dribbling hand's four positions must exactly match a normal dribbling
+        cycle so the motion is continuous.
+
+    celebrate_dab:
+      title: "Made basket celebration C: can't hear you, then a dab"
+      kind: one_shot
+      frames: 5
+      ref: front
+      ground: |
+        All frames share one ground line: the soles of the feet touch the same
+        horizontal line in every frame. He stays on the same spot on the floor
+        throughout.
+      view: |
+        front view, facing the viewer.
+      preamble: |
+        He has just sunk a shot and is playing to a crowd that may or may not be
+        paying him any attention: first cupping a hand to his ear fishing for
+        applause, then dropping a dab. Frames {first} to {last} are one
+        continuous move.
+      poses:
+        - >-
+            Standing up out of his stance, one arm flung straight out to
+            the VIEWER'S LEFT with the finger pointing at the crowd, the
+            other hand cupped open behind his ear, leaning that way, mouth
+            open — let's hear it.
+        - >-
+            Leaning the other way: the pointing arm swung across to the
+            VIEWER'S RIGHT, the cupped hand still held at his ear, head
+            cocked, grinning, still fishing for noise.
+        - >-
+            The wind-up: both arms swinging in and across his chest
+            together, knees bending, head starting to drop toward one
+            elbow.
+        - >-
+            THE DAB: his head dropped and buried in the crook of his bent
+            elbow, that arm folded flat across his chest, and the OTHER
+            arm extended straight out and up along exactly the same
+            diagonal line so that both arms are parallel. Held still.
+        - >-
+            Coming out of it: head lifting back up, both arms unfolding
+            down to his sides, a very pleased grin, settling back into a
+            low athletic stance.
+      extra: |
+        In the dab both arms point the SAME way along one straight diagonal and
+        the face is hidden in the crook of the folded elbow — that alignment is
+        the whole pose, and without it the frame reads as a stumble.
+
+    panic:
+      title: Shot-clock panic
+      kind: loop
+      frames: 4
+      ref: front
+      # Rick asked for both hands on his head. Only one can go there — the other
+      # has to keep the dribble cycle or the ball is stranded — and the shape
+      # survives with one arm.
+      ground: |
+        All frames share one ground line: the soles of the feet touch the same
+        horizontal line in every frame. The feet stay planted throughout.
+      view: |
+        front view, facing the viewer, squared to camera, in a low athletic
+        stance with the knees bent.
+      preamble: |
+        The shot clock is running out and he is coming apart about it. Eyes huge
+        and round, brows right up, mouth open, sweat flying off his hair.
+
+        The hand on the VIEWER'S LEFT keeps dribbling through four fixed
+        positions. The arm on the VIEWER'S RIGHT grabs at his own head. His head
+        is turned up and to the VIEWER'S RIGHT throughout, staring off-screen at
+        a clock above him.
+      poses:
+        - >-
+            Dribbling hand pushed all the way down at knee height, palm to
+            the floor. Head snapped up and round toward the clock, eyes
+            going wide. Other hand starting up toward his hair.
+        - >-
+            Dribbling hand risen to hip height. Other hand clamped flat on
+            top of his head with the fingers dug into his hair, shoulders
+            hunched up around his ears, mouth open in a wail.
+        - >-
+            Dribbling hand at its highest, just below chest height. That
+            arm shot straight UP above his head with the fingers splayed,
+            his whole body stretching up tall out of the crouch, eyes
+            bulging, sweat flying.
+        - >-
+            Dribbling hand dropping back toward the hip. The raised arm
+            dropping back onto his head, knees bending again as he sinks
+            back into the crouch, still wailing.
+      extra: |
+        The feet do not move at any point, and the dribbling hand's four
+        positions must exactly match a normal dribbling cycle so the motion is
+        continuous.
+        The body clearly rises and falls across the four frames. Sweat beads
+        are the only extra element, and they stay close to his head.
+
+
+zombie:
+  label: Zombie
+  folder: Zombie
+  scale: 1.00
+  status: proposed
+  refs:
+    front: artwork/basketball-players/zombie.png
+    back: artwork/basketball-players/Zombie poses/Zombie 003.png
+  subject: |
+    the undead zombie basketball player in the attached reference image. Match
+    that character exactly: sickly grey-green skin, ragged mid-brown hair,
+    sunken eyes with small pale pupils, a lipless grin showing the teeth, dark
+    rotted patches on the arms and legs, a torn and ragged blue sleeveless
+    basketball jersey with a yellow number 13, torn blue shorts with white and
+    yellow trim, white high-top sneakers with blue and yellow flashes over white
+    socks. Identical colours, identical proportions, identical build and identical
+    height as the reference, in every frame.
+  traits:
+    dribble_side: VIEWER'S RIGHT
+    balance_low: The free arm hangs and swings loosely.
+    # Posture, deliberately NOT in the subject block: the subject is pasted into
+    # every prompt, and "hands hooked into claws" there overrode the arm
+    # positions each sequence asks for.
+    no_shamble: >-
+      Do NOT draw the classic zombie pose with both arms held out stiffly in
+      front of him. Only the dribbling arm moves, and it reaches DOWN toward
+      the floor.
+    coil_mid: Shoulders rolling forward.
+    coil_deep: Spine folded over at an unnatural angle.
+    spent_low: Jaw hanging slack, tongue lolling out.
+    stolen_face: >-
+      His jaw drops open far wider than it should and hangs there, and a
+      slow groan rises out of him.
+  sequences:
+    break_face:
+      title: "Idle break A: pulling his own face down"
+      kind: one_shot
+      frames: 4
+      ref: front
+      ground: |
+        All frames share one ground line: the soles of the feet touch the same
+        horizontal line in every frame. The feet stay planted throughout.
+      view: |
+        front view, facing the viewer, squared to camera, in a low athletic
+        stance with the knees bent.
+      preamble: |
+        The hand on the VIEWER'S RIGHT is dribbling and cycles through four
+        fixed positions; the hand on the VIEWER'S LEFT drags his own face
+        downward and lets it snap back.
+
+        Throughout all four frames his LEGS ARE CROSSED IN AN X — the knees
+        knocked together and crossing over one another while the feet stay
+        planted apart on the ground line. It is a slack, boneless stance and he
+        does not appear to have noticed it.
+      poses:
+        - >-
+            Dribbling hand pushed all the way down at hip height, palm to
+            the floor. Other hand clamped flat over his own face with the
+            fingers spread, beginning to drag the flesh downward.
+        - >-
+            Dribbling hand halfway up, between hip and chest. The face
+            hauled WAY down — the skin stretched far past anything a real
+            face could do, the eyes and mouth dragged into long droopy
+            ovals, the chin pulled down near his chest.
+        - >-
+            Dribbling hand at its highest, just below chest height. The
+            hand has let go and the face is caught mid-snap, rubbery and
+            rippling, the features springing back up past where they
+            belong.
+        - >-
+            Dribbling hand dropping back toward the hip. The face has
+            settled again, back to normal but sitting very slightly askew,
+            the expression completely blank.
+      closing: |
+        This is a one-shot played between repeats of a dribbling loop. The
+        dribbling hand's four positions must exactly match a normal dribbling
+        cycle so the motion is continuous.
+      extra: |
+        His legs stay crossed in the same X in all four frames. Nothing leaves
+        his body — the face stretches, it does not come off.
+
+    break_head:
+      title: "Idle break B: his head tips too far back"
+      kind: one_shot
+      frames: 4
+      ref: front
+      ground: |
+        All frames share one ground line: the soles of the feet touch the same
+        horizontal line in every frame. The feet stay planted throughout.
+      view: |
+        front view, facing the viewer, squared to camera, in a low athletic
+        stance with the knees bent.
+      preamble: |
+        The hand on the VIEWER'S RIGHT is dribbling and cycles through four
+        fixed positions; his neck gives way and his head tips backwards far past
+        anything a neck should allow, then snaps upright again. The arm on the
+        VIEWER'S LEFT simply hangs at his side throughout.
+      poses:
+        - >-
+            Dribbling hand pushed all the way down at hip height, palm to
+            the floor. His head beginning to tip backwards, chin rising,
+            throat opening up.
+        - >-
+            Dribbling hand halfway up, between hip and chest. The head
+            tipped FAR back past vertical, the neck bent at an impossible
+            backward angle and stretched long, the face pointing straight
+            up at the ceiling, jaw hanging open.
+        - >-
+            Dribbling hand at its highest, just below chest height. The
+            head caught mid-snap, whipping back forward, the neck rubbery
+            and rippling with the recoil and overshot a little too far
+            forward.
+        - >-
+            Dribbling hand dropping back toward the hip. The head upright
+            again but sitting a few degrees off true, expression blank.
+      closing: |
+        This is a one-shot played between repeats of a dribbling loop. The
+        dribbling hand's four positions must exactly match a normal dribbling
+        cycle so the motion is continuous.
+      extra: |
+        Only the head and neck move. His shoulders, hips and feet stay exactly
+        where they are in all four frames.
+
+    celebrate_collapse:
+      title: "Made basket celebration C: falls apart and reassembles"
+      kind: one_shot
+      frames: 6
+      ref: front
+      ground: |
+        All frames share one ground line: whatever is touching the floor in a
+        given frame rests exactly on that line. He stays on the same spot on the
+        floor throughout.
+      view: |
+        front view, facing the viewer.
+      preamble: |
+        He has just sunk a shot and celebrates so hard that he shakes himself to
+        pieces, then puts himself back together. Delighted throughout. Frames
+        {first} to {last} are one continuous move.
+      poses:
+        - >-
+            Both arms thrown straight up overhead in triumph, jaw dropped
+            wide in a groaning cheer, up on his toes.
+        - >-
+            Shaking himself apart at the top of the cheer — both arms
+            detaching at the shoulders and flying upward, head lifting
+            clear of the neck, the torso still upright.
+        - >-
+            A loose heap on the floor: legs folded, torso toppled across
+            them, both arms and the head scattered around him on the
+            ground line, the head face-up and still grinning.
+        - >-
+            Reassembling: the torso rising back onto the legs, one arm
+            swinging back toward its shoulder, the head floating up toward
+            the neck.
+        - >-
+            Nearly whole again: both arms reattached but crooked, the head
+            settling onto the neck at a slight angle, wobbling upright.
+        - >-
+            Standing whole, both fists raised at chest height, head
+            straight, a wide lipless grin — then easing down into a low
+            athletic stance.
+      extra: |
+        His own detached parts are the only extra elements and all of them stay
+        within his own frame.
+
+    panic:
+      title: Shot-clock panic
+      kind: loop
+      frames: 4
+      ref: front
+      ground: |
+        All frames share one ground line: the soles of the feet touch the same
+        horizontal line in every frame. The feet stay planted throughout.
+      view: |
+        front view, facing the viewer, squared to camera, in a low athletic
+        stance with the knees bent.
+      preamble: |
+        The shot clock is running out. He notices slowly, and reacts wrongly,
+        the way a dead thing would — no urgency in the body at all, just the
+        eyes and one stiff arm.
+
+        The hand on the VIEWER'S LEFT keeps dribbling through four fixed
+        positions. The arm on the VIEWER'S RIGHT comes up toward the clock
+        above him, off-screen to the viewer's upper right, straight and stiff
+        with the elbow locked, the way a zombie reaches for something.
+      poses:
+        - >-
+            Dribbling hand pushed all the way down at knee height, palm to
+            the floor. His head cranking slowly round and up toward the
+            VIEWER'S UPPER RIGHT, jaw slack, eyes still normal.
+        - >-
+            Dribbling hand risen to hip height. His EYES POP OUT of their
+            sockets on stalks, shooting out toward the clock in a
+            cartoonish bulge, jaw dropping wide open.
+        - >-
+            Dribbling hand at its highest, just below chest height. The
+            stiff arm raised straight out and up toward the clock with the
+            elbow locked and the fingers hooked into a claw, eyes still
+            out on their stalks, a long groan coming out of him.
+        - >-
+            Dribbling hand dropping back toward the hip. The eyes sucking
+            back into their sockets, the arm still raised and locked, jaw
+            still hanging.
+      extra: |
+        The feet do not move at any point, and the dribbling hand's four
+        positions must exactly match a normal dribbling cycle so the motion is
+        continuous.
+        The popped-out eyes are the only extra element and they stay close to
+        his head. There is no sweat — he does not sweat.
+

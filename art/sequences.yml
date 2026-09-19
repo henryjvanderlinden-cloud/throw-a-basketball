@@ -1,0 +1,645 @@
+# The sequences every character gets.
+#
+# This file is the shared skeleton. Nothing in it names a character: anything
+# that would — a tail, a torn jersey, which hand dribbles — enters through a
+# {placeholder} resolved from that character's `traits` map in characters.yml.
+# An undefined or empty trait renders as nothing and the surrounding whitespace
+# is tidied, so a character with no tail simply gets a shorter sentence.
+#
+# Character-specific sequences (idle breaks, the showpiece celebration) are not
+# here. They live in each character's own `sequences:` block in characters.yml
+# and use exactly this schema.
+#
+# Field reference:
+#   kind        loop | one_shot        picks the closing clause
+#   frames      integer                cells NOT counting the calibration frame
+#   ref         front | back           which reference image to attach
+#   travelling  bool                   anchored on the cell, not the feet
+#   airborne    bool                   suppresses the ground-line check
+#   view        VIEW: clause body
+#   preamble    optional mood paragraph, sits between VIEW and FRAMES
+#   critical    optional CRITICAL: block, for failures seen in practice
+#   ground      optional override of the shared ground-line clause
+#   poses       one entry per frame, in order
+#   closing     optional override of the kind's default closing clause
+#   extra       optional trailing sentence(s) before the ball clause
+#   ball        optional override of the ball clause
+#
+# `panic` used to live here with a {panic_face} trait, but the four characters
+# panic in genuinely different ways -- the NBA player is unbothered, the zombie
+# is slow and wrong -- so it is now one of each character's OWN sequences.
+
+defaults:
+
+  # Repeated verbatim in every prompt. The wording is not decorative: each
+  # clause heads off a failure seen in the monkey's generations.
+  header: |
+    Pixel-art sprite sheet, single image, fully transparent background.
+
+  calibration: |
+    1. CALIBRATION POSE: standing straight upright, feet shoulder-width apart,
+       arms hanging relaxed at his sides, facing the viewer, in the plain
+       neutral standing pose from the reference image. This exact pose appears
+       as the first frame of every sheet in this set and must be drawn
+       identically every time.
+
+  camera: |
+    CAMERA: locked off. Identical distance and eye level in every frame. The
+    character must be exactly the same height in every frame, and the same
+    height as in the reference image — do not zoom, crop, recompose or rescale
+    between frames.
+
+  ground: |
+    All frames share one ground line: the soles of the feet touch the same
+    horizontal line in every frame.
+
+  # "16-bit arcade" was too vague and the output drifted smooth -- soft
+  # gradients, many tones, anti-aliased edges: a modern illustration with a
+  # pixel filter over it. These clauses are the ones that actually change what
+  # comes back: a hard tone count, dither instead of blending, and no
+  # anti-aliasing anywhere.
+  style: |
+    STYLE: VGA-era 256-colour DOS-game pixel art, drawn pixel by pixel — NOT a
+    modern illustration with a pixel filter over it. The limits below are the
+    look; keep all of them:
+
+    - At most THREE tones per material: a base, one darker shadow, one lighter
+      highlight. Hard edges between the tones.
+    - NO gradients, NO soft or airbrushed shading, NO glow, NO bloom, and NO
+      anti-aliasing anywhere — not on the outline, not between tones, not
+      around the silhouette.
+    - Where a tone change needs softening, use visible ORDERED DITHER — a
+      checkerboard of the two tones. Dither, never blend.
+    - Chunky square pixels on one consistent grid, plainly visible at full
+      size.
+    - A bold dark outline around the silhouette and around the major forms
+      inside it.
+
+    The background must be fully transparent (alpha 0) with no haze, glow or
+    soft fringe around the silhouette. Output a wide landscape image.
+
+  ball: |
+    The character is NOT holding a basketball in any frame — the ball is drawn
+    separately by the game.
+
+  closing_loop: |
+    This row is a seamless loop: frame {last} must flow back into frame
+    {first} with no jump.
+
+  closing_one_shot: |
+    This is a one-shot, not a loop. Frame {first} must continue naturally from
+    a low athletic standing stance, and frame {last} must settle back into that
+    same stance.
+
+
+sequences:
+
+  # --- constantly on screen ------------------------------------------------
+
+  dribble_idle:
+    title: Stationary dribble
+    kind: loop
+    frames: 4
+    ref: front
+    # The first take failed twice over: the raised hand swapped sides between
+    # frames, and never rose far enough for the four frames to read as
+    # different poses. Both are fixed by the CRITICAL block below, which is
+    # re-roll R1 and is the version that worked.
+    view: |
+      front view, facing the viewer, squared to camera, low athletic stance with
+      the knees bent and the feet planted shoulder-width apart.
+    critical: |
+      CRITICAL: exactly ONE hand dribbles — the hand on the {dribble_side} — and
+      it is the same hand in frames {first} to {last}. It must never switch
+      sides. The other arm hangs loose and counterbalances; it never rises above
+      his hip.
+
+      This is a WHOLE-BODY action, not an arm action, and that is what makes it
+      read as weight. His SHOULDER LINE TILTS: the shoulder on the dribbling
+      side drops as the hand goes down and lifts as the hand comes up, while the
+      far shoulder does the opposite. The hip and the knee on the dribbling side
+      sink with it. His head tilts and droops toward the dribbling side at the
+      bottom of the push and comes back up as he rises. He is NEVER symmetrical
+      — a frame in which both shoulders are level and both arms are doing the
+      same thing is wrong.
+
+      LEADING AND FOLLOWING, which is the whole point:
+      - On the way DOWN the BODY leads and the hand follows. The shoulder drops
+        and the hips sink first, the elbow extends after them, and the wrist
+        arrives last and loose.
+      - On the way UP the HAND leads and the body follows. The wrist bends back
+        first as the ball drives it up, then the elbow folds, then the shoulder
+        lifts, and the torso straightens last.
+
+      In frame {first} the dribbling hand must be the LOWEST part of him apart
+      from his feet: the fingers reach down beside his knee, BELOW the hem of
+      his shorts, arm almost straight. A sheet in which the hand never drops
+      below his waist is wrong, however good it looks otherwise. {no_shamble}
+    poses:
+      - >-
+          LOWEST, the push landed. His most compressed frame: knees bent,
+          the knee on the dribbling side bent MORE than the other, that hip
+          dropped, that shoulder dropped so the shoulder line is visibly
+          tilted. Head tilted and drooped down toward the dribbling side
+          and a little forward. The dribbling arm is almost straight, hand
+          down at KNEE height, palm flat to the floor, fingers spread,
+          wrist loose in the follow-through. The free arm hangs a little
+          away from the body for balance.
+      - >-
+          RISING, and the HAND leads. The wrist bends back first and the
+          hand has come up to HIP height, elbow starting to fold. The body
+          is still catching up — the dribbling shoulder is only beginning
+          to lift, the knees only beginning to straighten, and the head is
+          still tilted toward the dribbling side. The torso visibly lags
+          behind the hand.
+      - >-
+          HIGHEST, his tallest and most open frame. The hand is at CHEST
+          height, elbow sharply folded, wrist cocked ready to push down.
+          The shoulder line has come back almost level, the hips are
+          level, the knees are at their straightest — still bent, still an
+          athletic stance. The head has come back toward centre with only
+          a trace of tilt left.
+      - >-
+          DRIVING DOWN, and now the BODY leads. The dribbling shoulder
+          drops and that hip sinks, the knees re-bend, and the head starts
+          to tip back down toward the dribbling side — while the dribbling
+          hand is still only at HIP height, trailing behind. This frame is
+          the one that sells the weight: the body has committed to the
+          push and the hand has not caught up yet.
+    extra: |
+      The feet stay in exactly the same place on the floor throughout.
+      Everything above them — shoulders, hips, spine, head — moves with the
+      dribble. The four frames must differ clearly BOTH in the height of the
+      dribbling hand AND in the tilt of the shoulder line. If the shoulders are
+      level in every frame, the sheet is wrong.
+
+  run_dribble_r:
+    title: Run-dribble, moving right
+    kind: loop
+    frames: 4
+    ref: front
+    travelling: true
+    ground: |
+      All frames share one ground line: the sole of the planted foot touches the
+      same horizontal line in every frame.
+    view: |
+      three-quarter view, running toward the right of frame, chest turned
+      slightly toward the viewer so the jersey number stays readable.
+      {trail_left}
+    critical: |
+      CRITICAL: he is DRIBBLING A BASKETBALL WHILE HE RUNS — this is not a plain
+      sprint. The hand on the VIEWER'S RIGHT is the dribbling hand in frames
+      {first} to {last}. It is always held out in front of his body with the
+      palm facing DOWN toward the floor, fingers spread, pushing an invisible ball
+      down. It is never a fist, never swung back, and never tucked in at his
+      side. The OTHER arm does the running, swinging freely.
+    poses:
+      - >-
+          Dribbling hand pushed low, near knee height, palm flat to the
+          floor. Legs: leading leg forward and planted, trailing leg
+          stretched out behind. Free arm swung back.
+      - >-
+          Dribbling hand risen to hip height, palm still down. Legs
+          mid-stride, the trailing leg swinging through beneath the body.
+          Torso leaning forward.
+      - >-
+          Dribbling hand pushed low again near knee height, palm flat
+          down. Legs: the other leg forward and planted. Free arm swung
+          forward.
+      - >-
+          Dribbling hand risen to hip height, palm down. Legs mid-stride
+          the other way, the leading leg swinging through.
+    ball: |
+      The character is NOT holding a basketball in any frame — the ball is drawn
+      separately by the game. His hand pushes down as if a ball were there.
+
+  run_dribble_l:
+    title: Run-dribble, moving left
+    kind: loop
+    frames: 4
+    ref: front
+    travelling: true
+    ground: |
+      All frames share one ground line: the sole of the planted foot touches the
+      same horizontal line in every frame.
+    view: |
+      three-quarter view, running toward the left of frame, chest turned
+      slightly toward the viewer so the jersey number stays readable and reads
+      forwards. {trail_right}
+    critical: |
+      CRITICAL: he is DRIBBLING A BASKETBALL WHILE HE RUNS — this is not a plain
+      sprint. The hand on the VIEWER'S LEFT is the dribbling hand in frames
+      {first} to {last}. It is always held out in front of his body with the
+      palm facing DOWN toward the floor, fingers spread, pushing an invisible ball
+      down. It is never a fist, never swung back, and never tucked in at his
+      side. The OTHER arm does the running, swinging freely.
+    poses:
+      - >-
+          Dribbling hand pushed low, near knee height, palm flat to the
+          floor. Legs: leading leg forward and planted, trailing leg
+          stretched out behind. Free arm swung back.
+      - >-
+          Dribbling hand risen to hip height, palm still down. Legs
+          mid-stride, the trailing leg swinging through beneath the body.
+          Torso leaning forward.
+      - >-
+          Dribbling hand pushed low again near knee height, palm flat
+          down. Legs: the other leg forward and planted. Free arm swung
+          forward.
+      - >-
+          Dribbling hand risen to hip height, palm down. Legs mid-stride
+          the other way, the leading leg swinging through.
+    ball: |
+      The character is NOT holding a basketball in any frame — the ball is drawn
+      separately by the game. His hand pushes down as if a ball were there.
+
+  idle:
+    title: Defensive stance, no ball
+    kind: loop
+    frames: 2
+    ref: front
+    # NEW. Today a player without the ball stands in dribble_idle frame 0, which
+    # reads as a defensive stance but is not one — the hand is reaching for a
+    # ball that is not there. This must look unmistakably different from
+    # dribble_idle: wide stance, both hands UP and out, nothing reaching down.
+    view: |
+      front view, facing the viewer, squared to camera, in a wide low defensive
+      stance — knees bent, feet planted well wider than shoulder-width, weight
+      on the balls of the feet. He does NOT have the ball and is not dribbling.
+    critical: |
+      CRITICAL: BOTH hands are held UP and AWAY from the body, palms open and
+      facing forward, ready to block. Neither hand reaches down toward the floor
+      at any point — nothing about this pose should suggest dribbling.
+    poses:
+      - >-
+          Low and wide, both hands out at about waist height, palms
+          forward, fingers spread, head up and eyes tracking an opponent,
+          weight settled evenly.
+      - >-
+          The same stance dropped a fraction lower, both hands lifted to
+          about chest height, weight shifted slightly onto the other foot,
+          shoulders squared — a small alert ready-shuffle.
+    extra: |
+      The feet stay in the same place on the floor in both frames: this is a
+      shuffle in place, not a step. The two frames must differ clearly in hand
+      height and body level — in a two-frame loop that difference is the whole
+      animation.
+    ball: |
+      The character is NOT holding a basketball in either frame and is NOT
+      dribbling — the ball is drawn separately by the game and he does not have
+      it.
+
+  pickup:
+    title: Pick the ball up off the floor
+    kind: one_shot
+    frames: 3
+    ref: front
+    view: |
+      front view, facing the viewer, squared to camera.
+    poses:
+      - >-
+          Starting from a low athletic stance, bending forward at the
+          waist, both arms reaching down and forward toward the floor in
+          front of the feet, knees beginning to bend.
+      - >-
+          Bent right down, knees deeply bent, both hands at floor level
+          just in front of the feet, cupped as if scooping something up.
+          Head down, looking at the floor. {balance_low}
+      - >-
+          Rising back up, weight coming back over the feet, head lifting.
+          The hand on the {dribble_side} is coming up to about hip height,
+          palm down; the other arm returns to the side.
+
+  steal:
+    title: Steal attempt
+    kind: one_shot
+    frames: 3
+    ref: front
+    # NEW. Plays on every steal press, successful or not, so it has to read as
+    # an attempt rather than as taking possession. Deliberately a forward lunge
+    # toward the viewer rather than a sideways one: the game steals in both
+    # directions, and mirroring one sequence when the others are drawn per-side
+    # is worse than not mirroring at all.
+    view: |
+      front view, facing the viewer, squared to camera, lunging forward toward
+      the viewer.
+    preamble: |
+      He is stabbing a hand in to knock the ball away from an opponent in front
+      of him. Fast, committed and slightly off-balance — this is a snatch, not a
+      careful reach.
+    poses:
+      - >-
+          The dip: dropping sharply into a deep crouch, weight thrown
+          forward, both arms starting to sweep down and forward toward the
+          floor in front of him, eyes fixed low, teeth gritted.
+      - >-
+          The swipe: fully extended in a low forward lunge, leading leg
+          stretched out, the leading hand raked down and across in front
+          of him at about knee height, palm open and fingers spread, the
+          other arm flung back and wide for balance. {balance_low}
+      - >-
+          Recover: pulling back upright out of the lunge, weight coming
+          back over the feet, both arms returning in toward the body,
+          settling into a low athletic stance.
+    extra: |
+      The soles of both feet stay on the ground line throughout, including in
+      the lunge.
+
+  stolen:
+    title: Ball stolen
+    kind: one_shot
+    frames: 3
+    ref: front
+    # The counterpart to `steal`, and the ONLY one-shot that must not end in the
+    # dribbling stance -- the ball is gone, so it hands over to `idle` instead.
+    # That is the clause most likely to come back wrong, so it is spelled out in
+    # the closing rather than left to the shared default.
+    #
+    # Today the victim plays `turn` as a spin, which reads as a pirouette rather
+    # than as losing the ball.
+    #
+    # It cancels on any input, like the idle breaks: losing the ball is already
+    # the punishment, and locking the victim out of the chase would be a second
+    # one. Three frames at 6 fps is half a second, inside the 0.9 s possession
+    # immunity, so it never delays a counter-steal either.
+    ground: |
+      All frames share one ground line: the soles of the feet touch the same
+      horizontal line in every frame. The feet stay planted throughout.
+    view: |
+      front view, facing the viewer, squared to camera, starting from the low
+      athletic dribbling stance.
+    preamble: |
+      An opponent has just knocked the ball out of his hands. Frames {first} to
+      {last} are one continuous reaction: half a beat of surprise, a flash of
+      temper, then straight back into a defensive stance. {stolen_face}
+    poses:
+      - >-
+          The instant it goes: still crouched low in the dribbling stance,
+          the dribbling hand still out with the palm down over nothing at
+          all, head snapped down toward where the ball was, eyes wide open
+          and both brows up.
+      - >-
+          The flash of temper: snapping upright, both hands balled into
+          fists at chest height with the elbows flared out, shoulders
+          hunched up around the neck, head thrust forward, face contorted
+          in fury.
+      - >-
+          Back to work: dropping into a WIDE low defensive stance, feet
+          planted well wider than the shoulders, both hands coming up and
+          out with the palms open and facing forward, head turned to track
+          the opponent, still scowling.
+    closing: |
+      This is a one-shot, not a loop. Frame {first} must continue naturally from
+      the low athletic dribbling stance. Frame {last} must settle into the WIDE
+      defensive stance with both hands up and palms open — he no longer has the
+      ball, so it must NOT return to the dribbling pose.
+    extra: |
+      The three frames must differ clearly in body level and in what the hands
+      are doing: crouched with one hand down, upright with two fists, then wide
+      with two open palms. He is not dribbling at any point after frame {first}.
+    ball: |
+      The character is NOT holding a basketball in any frame — the ball is drawn
+      separately by the game, and in this sequence it has just been taken off
+      him.
+
+  # --- the shot ------------------------------------------------------------
+
+  turn:
+    title: Turn to shoot
+    kind: one_shot
+    frames: 2
+    ref: front
+    view: |
+      the character turning on the spot, away from the viewer.
+    poses:
+      - >-
+          Halfway through the turn: a three-quarter view from behind-ish,
+          shoulders rotated away from the viewer, feet pivoting, head
+          starting to lift and look up and away over the shoulder.
+          {trail_turn}
+      - >-
+          Almost fully turned: back nearly square to the viewer, both
+          hands coming up in front of the chest, knees bending into a
+          shooting stance, head tilted up.
+    closing: |
+      This is a one-shot, not a loop. Frame {first} must continue naturally from
+      a front view facing the viewer; frame {last} must settle into a back view
+      squared away from the viewer.
+
+  aim:
+    title: Aim hold
+    kind: loop
+    frames: 2
+    ref: back
+    view: |
+      back view, seen from directly behind, squared away from the viewer and
+      looking up toward a basket high in front of him.
+    poses:
+      - >-
+          Knees slightly bent, feet shoulder-width apart, both hands
+          raised in front of the chest as if cradling something, head
+          tilted up. {trail_relaxed}
+      - >-
+          The same pose settled very slightly lower: knees a touch more
+          bent, hands a fraction lower, weight eased. A small breathing
+          settle, nothing more — the two frames should be close.
+
+  charge:
+    title: Charge / wind-up
+    kind: loop
+    frames: 3
+    ref: back
+    ground: |
+      All frames share one ground line: the soles of the feet touch the same
+      horizontal line in every frame. The character's head height changes
+      between frames only because he is crouching, not because the drawing has
+      been rescaled.
+    view: |
+      back view, seen from directly behind, squared away from the viewer and
+      looking up toward a basket high in front of him.
+    preamble: |
+      Frames {first} to {last} are one single motion, coiling deeper each frame.
+    poses:
+      - >-
+          Upright: knees slightly bent, hands up at chest height, back
+          straight. The beginning of the wind-up.
+      - >-
+          Crouching: knees clearly bent, hips dropped, hands drawn in
+          closer to the chest, shoulders starting to hunch. {coil_mid}
+      - >-
+          Fully coiled: knees deeply bent, hips low, back compressed and
+          rounded, hands tucked tight against the chest, every muscle
+          loaded and about to spring. {coil_deep}
+    closing: |
+      Frames {first} to {last} are one continuous deepening crouch and will be
+      played forwards and then backwards, so the motion must read smoothly in
+      both directions.
+
+  shot:
+    title: The shot
+    kind: one_shot
+    frames: 4
+    ref: back
+    ground: |
+      Frames {f1}, {f2} and {f4} share one ground line with the soles of the
+      feet touching it; in frame {f3} he is up on his toes on that same line.
+    view: |
+      back view, seen from directly behind, squared away from the viewer and
+      looking up toward a basket high in front of him.
+    preamble: |
+      Frames {first} to {last} are one continuous shooting motion.
+    poses:
+      - >-
+          Fully coiled: knees deeply bent, hips low, back rounded, hands
+          tucked tight against the chest.
+      - >-
+          Driving upward: legs extending, hips rising, both hands lifting
+          past the head, elbows still bent. {trail_straighten}
+      - >-
+          Full extension: standing at full stretch up on the toes, both
+          arms straight overhead, wrists snapped forward, fingers spread.
+          This is the moment of release. {trail_balance}
+      - >-
+          Follow-through: still tall, arms still overhead but relaxing,
+          wrists flopped loosely downward, weight settling back onto the
+          heels. {trail_drop}
+    closing: |
+      This is a one-shot, not a loop. Frame {first} must continue naturally from
+      a deep crouch, and frame {last} is the end of the motion.
+
+  # --- chasing a loose ball ------------------------------------------------
+
+  run_r:
+    title: Run without the ball, moving right
+    kind: loop
+    frames: 2
+    ref: front
+    travelling: true
+    ground: |
+      Frames {f1} and {f2} share one ground line: the sole of the planted foot
+      touches the same horizontal line.
+    view: |
+      three-quarter view, the character sprinting toward the right of frame,
+      chest turned slightly toward the viewer so the jersey number stays
+      readable. {trail_left}
+    poses:
+      - >-
+          Contact: leading leg forward and planted, trailing leg stretched
+          out behind, both arms pumping — the arm on the viewer's left
+          driven forward across the chest, the other swung back. Leaning
+          into the sprint.
+      - >-
+          Passing: the legs cross beneath the body mid-stride, arms
+          swapped — the other arm now driven forward. Leaning further
+          forward.
+    extra: |
+      He is running flat out and is not dribbling — neither hand reaches toward
+      the floor.
+
+  run_l:
+    title: Run without the ball, moving left
+    kind: loop
+    frames: 2
+    ref: front
+    travelling: true
+    ground: |
+      Frames {f1} and {f2} share one ground line: the sole of the planted foot
+      touches the same horizontal line.
+    view: |
+      three-quarter view, the character sprinting toward the left of frame,
+      chest turned slightly toward the viewer so the jersey number stays
+      readable and reads forwards. {trail_right}
+    poses:
+      - >-
+          Contact: leading leg forward and planted, trailing leg stretched
+          out behind, both arms pumping — the arm on the viewer's right
+          driven forward across the chest, the other swung back. Leaning
+          into the sprint.
+      - >-
+          Passing: the legs cross beneath the body mid-stride, arms
+          swapped — the other arm now driven forward. Leaning further
+          forward.
+    extra: |
+      He is running flat out and is not dribbling — neither hand reaches toward
+      the floor.
+
+  # --- personality ---------------------------------------------------------
+
+  celebrate:
+    title: Made basket celebration A — arms overhead
+    kind: one_shot
+    frames: 2
+    ref: front
+    ground: |
+      Frames {f1} and {f2} share one ground line: in frame {f1} he is up on
+      his toes on that line, in frame {f2} his soles are flat on it.
+    view: |
+      front view, facing the viewer.
+    poses:
+      - >-
+          Triumph: both arms thrown straight up overhead, up on the toes,
+          head back, mouth wide open mid-shout, eyes screwed shut with
+          delight. {trail_high}
+      - >-
+          Settling: arms coming back down, one fist pumped at chest
+          height, a wide grin, weight dropping back into a low athletic
+          stance. {trail_lower}
+
+  celebrate_pump:
+    title: Made basket celebration B — low fist pump
+    kind: one_shot
+    frames: 3
+    ref: front
+    ground: |
+      All frames share one ground line: the soles of both feet touch the same
+      horizontal line in every frame, and the feet stay planted throughout.
+    view: |
+      front view, facing the viewer.
+    preamble: |
+      He has just sunk a shot and is quietly pleased with himself — cocky rather
+      than ecstatic. This must read as a DIFFERENT reaction from the arms-
+      overhead celebration, not a smaller version of it. Nothing goes above his
+      chest.
+    poses:
+      - >-
+          Standing up out of his stance, both fists clenched at chest
+          height, chin lifted, one eyebrow raised, a smug closed-mouth
+          smirk. {trail_curl}
+      - >-
+          The pump: one fist driven sharply down and back to hip height,
+          elbow tucked in tight to his side, shoulders hunched forward,
+          knees bent, teeth bared in a sharp grin. The other fist stays at
+          his chest.
+      - >-
+          Settling: the fist relaxing back up toward the waist, shoulders
+          dropping, weight easing back into a low athletic stance, still
+          grinning.
+
+  gameover:
+    title: Game over, panting
+    kind: loop
+    frames: 2
+    ref: front
+    ground: |
+      Frames {f1} and {f2} share one ground line: the soles of both feet touch
+      the same horizontal line.
+    view: |
+      front view, facing the viewer. In BOTH frames he is doubled
+      over, exhausted, bent forward at the waist with BOTH PALMS PLANTED FLAT ON
+      HIS OWN BENT KNEES, elbows locked out, propping himself up. {trail_limp}
+      The feet, legs and the hands-on-knees are in EXACTLY the same position in
+      both frames — do not let the arms hang loose.
+    critical: |
+      Frames {f1} and {f2} differ in ONE thing: how high his shoulders and head
+      are. That difference must be large and unmistakable, because it is
+      the whole animation.
+    poses:
+      - >-
+          EXHALED, at his lowest: shoulders dropped right down, back
+          deeply rounded and hunched, chest collapsed, head hanging
+          straight down toward the floor. {spent_low}
+      - >-
+          INHALING, at his highest: shoulders heaved right up around his
+          ears, back arched, chest puffed out wide, head lifted so the
+          face points forward, mouth wide open gasping for air.
+
