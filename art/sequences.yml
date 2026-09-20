@@ -101,77 +101,121 @@ sequences:
     kind: loop
     frames: 4
     ref: front
-    # The first take failed twice over: the raised hand swapped sides between
-    # frames, and never rose far enough for the four frames to read as
-    # different poses. Both are fixed by the CRITICAL block below, which is
-    # re-roll R1 and is the version that worked.
+    # Take 9 measured the hand at 25.8 / 43.5 / 33.9 / 36.3 percent of standing
+    # height: a good ladder hung on the wrong frames, which reads as jitter. The
+    # two mid frames shared a landmark (MID-THIGH), so nothing ranked them.
+    #
+    # Everything that has landed in this sequence is a RELATION -- the shoulder
+    # line tilts, the head sits over the dribbling shoulder, the hand is further
+    # out than the shoulder, the hand overlaps the knee. Everything that failed
+    # was a PROPERTY expected to persist between frames. So constancy is now
+    # written as an operation (one drawing, moved) and the heights as one
+    # ordered list with four distinct landmarks and an ordinal claim.
     view: |
       front view, facing the viewer, squared to camera, low athletic stance with
       the knees bent and the feet planted shoulder-width apart.
     critical: |
-      CRITICAL: exactly ONE hand dribbles — the hand on the {dribble_side} — and
-      it is the same hand in frames {first} to {last}. It must never switch
-      sides. The other arm hangs loose and counterbalances; it never rises above
-      his hip.
+      CRITICAL: exactly ONE hand dribbles — the hand nearer the RIGHT EDGE of
+      the picture, on the {dribble_side} — in all four frames.
+
+      THE DRIBBLING HAND is flat and open: palm facing DOWN at the floor,
+      fingers spread and straight, the shape of a hand resting on the top of a
+      ball. DRAW THE SAME HAND FOUR TIMES — one drawing of that hand, the same
+      shape, the same spread of the fingers and the same angle to the floor,
+      simply moved up and down the picture from frame to frame. It travels in
+      one straight line OUTSIDE HIS HIP, further out from his centre line than
+      his shoulder is, with clear background showing between his forearm and
+      his jersey.
+
+      THE HAND'S FOUR HEIGHTS, IN ORDER: in the LOWEST frame it is beside his
+      KNEE, overlapping the knee in the silhouette, with the hem of his shorts
+      clearly above his wrist; in the RISING frame it is level with the HEM of
+      his shorts; in the HIGHEST frame it is up at the WAISTBAND of his shorts,
+      higher than it is in any other frame; in the DRIVING DOWN frame it is back
+      down to just BELOW the hem. The HIGHEST frame is unmistakably the highest
+      of the four and the LOWEST frame unmistakably the lowest. Only in the
+      LOWEST frame does the hand tilt a little further down, at the end of the
+      push.
+
+      THE FREE HAND IS NOT DRIBBLING AND DOES NOT COPY IT. That arm simply
+      hangs: upper arm against his ribs, elbow almost straight, and the hand
+      hanging from the wrist with the PALM TURNED IN toward his thigh, fingers
+      straight, relaxed and a little apart, pointing down at the floor. It is
+      ONE DRAWING REPEATED IN ALL FOUR FRAMES — the same shape and the same
+      spread of the fingers every time — held just clear of his leg so the whole
+      hand shows against the background. {no_shamble}
 
       This is a WHOLE-BODY action, not an arm action, and that is what makes it
-      read as weight. His SHOULDER LINE TILTS: the shoulder on the dribbling
-      side drops as the hand goes down and lifts as the hand comes up, while the
-      far shoulder does the opposite. The hip and the knee on the dribbling side
-      sink with it. His head tilts and droops toward the dribbling side at the
-      bottom of the push and comes back up as he rises. He is NEVER symmetrical
-      — a frame in which both shoulders are level and both arms are doing the
-      same thing is wrong.
+      read as weight. HIS WEIGHT SHIFTS ONTO THE LEG UNDER THE DRIBBLING HAND —
+      the leg nearer the RIGHT EDGE of the picture. As the hand goes down he
+      leans that way and settles onto that leg: THAT KNEE, the one nearer the
+      RIGHT EDGE, is the one that bends, and it bends deepest at the bottom of
+      the push, coming forward over its own shoe. That hip drops and that
+      shoulder drops with it, so the SHOULDER LINE TILTS. The far leg stays
+      straighter and carries less of him. As the hand comes up, that knee
+      straightens again and his weight comes back toward the middle.
 
-      LEADING AND FOLLOWING, which is the whole point:
-      - On the way DOWN the BODY leads and the hand follows. The shoulder drops
-        and the hips sink first, the elbow extends after them, and the wrist
-        arrives last and loose.
-      - On the way UP the HAND leads and the body follows. The wrist bends back
-        first as the ball drives it up, then the elbow folds, then the shoulder
-        lifts, and the torso straightens last.
+      HIS FEET ARE ONE DRAWING REPEATED IN ALL FOUR FRAMES: both shoes in the
+      same place on the floor, the same distance apart, at the same angle, as if
+      traced from one frame into the next three. THE GAP BETWEEN HIS SHOES IS
+      THE SAME WIDTH IN EVERY FRAME. He gets LOWER AND HIGHER BY BENDING AND
+      STRAIGHTENING HIS KNEES, never by spreading his feet or drawing them back
+      in: the knee on the dribbling side bends more deeply and comes forward
+      over his toes as he sinks, and straightens as he rises. His knees do all
+      the work his feet are not allowed to do.
 
-      In frame {first} the dribbling hand must be the LOWEST part of him apart
-      from his feet: the fingers reach down beside his knee, BELOW the hem of
-      his shorts, arm almost straight. A sheet in which the hand never drops
-      below his waist is wrong, however good it looks otherwise. {no_shamble}
+      HIS HEAD BARELY TRAVELS SIDEWAYS — it stays above his chest, and his face
+      stays turned to the viewer. What changes is its TILT, and only slightly:
+      in the LOWEST frame his head tips a little toward the dribbling side, the
+      ear on that side dropping toward that shoulder and the chin dipping; in
+      the two middle frames the tilt is about half of that; in the HIGHEST frame
+      his head is level and square to the camera, looking straight at the
+      viewer. A slight tilt throughout, never a full lean.
     poses:
       - >-
-          LOWEST, the push landed. His most compressed frame: knees bent,
-          the knee on the dribbling side bent MORE than the other, that hip
-          dropped, that shoulder dropped so the shoulder line is visibly
-          tilted. Head tilted and drooped down toward the dribbling side
-          and a little forward. The dribbling arm is almost straight, hand
-          down at KNEE height, palm flat to the floor, fingers spread,
-          wrist loose in the follow-through. The free arm hangs a little
-          away from the body for balance.
+          LOWEST, the push landed. His most compressed frame: both knees
+          bent, and the knee nearer the RIGHT EDGE of the picture bent
+          DEEPEST of the four frames, forward over its own shoe, with his
+          weight plainly on that leg — that hip dropped and that shoulder
+          dropped so the shoulder line is visibly tilted — and his shoes
+          still exactly where they are in every other frame. His head is
+          tilted a little toward the dribbling side, chin dipped.
+          The dribbling arm is straight and the hand is at its lowest,
+          overlapping his KNEE, wrist loose at the end of the
+          follow-through. The free hand hangs at his side, swung slightly
+          BEHIND him as he sinks.
       - >-
           RISING, and the HAND leads. The wrist bends back first and the
-          hand has come up to HIP height, elbow starting to fold. The body
-          is still catching up — the dribbling shoulder is only beginning
-          to lift, the knees only beginning to straighten, and the head is
-          still tilted toward the dribbling side. The torso visibly lags
-          behind the hand.
+          hand has come up off the knee, elbow starting to fold. The body
+          is still catching up: the dribbling shoulder is only beginning to
+          lift, the knees are only beginning to straighten, and the head
+          still carries about half its tilt. The torso visibly lags
+          behind the hand. The free hand hangs at his side, swinging
+          forward.
       - >-
-          HIGHEST, his tallest and most open frame. The hand is at CHEST
-          height, elbow sharply folded, wrist cocked ready to push down.
-          The shoulder line has come back almost level, the hips are
-          level, the knees are at their straightest — still bent, still an
-          athletic stance. The head has come back toward centre with only
-          a trace of tilt left.
+          HIGHEST, his tallest and most open frame. His hand has reached
+          the top of its travel, still out beyond his hip, elbow folded,
+          ready to push down again. The shoulder line and the hips are
+          level and the knees are at their straightest — still bent, still
+          an athletic stance, and his shoes no further apart than in any
+          other frame. His head is level and square to the camera, looking
+          straight at the viewer. The free hand hangs at his side
+          at the forward end of its swing.
       - >-
-          DRIVING DOWN, and now the BODY leads. The dribbling shoulder
-          drops and that hip sinks, the knees re-bend, and the head starts
-          to tip back down toward the dribbling side — while the dribbling
-          hand is still only at HIP height, trailing behind. This frame is
-          the one that sells the weight: the body has committed to the
-          push and the hand has not caught up yet.
+          DRIVING DOWN, and now the BODY leads. The KNEE nearer the RIGHT
+          EDGE of the picture bends again and takes him down, his weight
+          settling back onto that leg — that shoulder drops, that hip
+          sinks, his shoes stay exactly where they are — and the head
+          tilts halfway back toward the dribbling side, while the dribbling
+          hand is still high, trailing behind. This frame is the one that
+          sells the weight: the body has committed to the push and the hand
+          has not caught up yet. The free hand hangs at his side, swinging
+          back again.
     extra: |
-      The feet stay in exactly the same place on the floor throughout.
-      Everything above them — shoulders, hips, spine, head — moves with the
-      dribble. The four frames must differ clearly BOTH in the height of the
-      dribbling hand AND in the tilt of the shoulder line. If the shoulders are
-      level in every frame, the sheet is wrong.
+      Everything above his feet — knees, hips, shoulders, spine, head — moves
+      with the dribble. The four frames must differ clearly BOTH in the height
+      of the dribbling hand AND in the tilt of the shoulder line.
+
 
   run_dribble_r:
     title: Run-dribble, moving right

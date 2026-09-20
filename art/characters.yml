@@ -635,9 +635,9 @@ zombie:
     # every prompt, and "hands hooked into claws" there overrode the arm
     # positions each sequence asks for.
     no_shamble: >-
-      Do NOT draw the classic zombie pose with both arms held out stiffly in
-      front of him. Only the dribbling arm moves, and it reaches DOWN toward
-      the floor.
+      Both of his arms hang from the shoulders the way a living person's do,
+      close to his sides; the dribbling arm is the only one that reaches away
+      from his body, and it reaches DOWN.
     coil_mid: Shoulders rolling forward.
     coil_deep: Spine folded over at an unnatural angle.
     spent_low: Jaw hanging slack, tongue lolling out.
