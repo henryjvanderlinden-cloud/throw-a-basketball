@@ -213,11 +213,12 @@ roll-and-pick experiment, never mixed with another change.
 
 ---
 
-## 6 · ⛔ Open, ranked — THE NEXT ACTION IS #2
+## 6 · ⛔ Open, ranked — THE NEXT ACTION IS #1b (see §9)
 
 | # | what | why it is where it is |
 |---|---|---|
 | **1** | ⛔ **Push** | This session's commit. Rick pushes. |
+| **1b** | ⛔⭐⭐ **`dribble_idle` end to end in the game, phase resolved** | §9(A). Nothing from this session has been seen in the game, and `dribbleFrame()` will currently show the hand low when the ball is high. |
 | **2** | ⭐⭐ **Generalise `make-pose-guide.py` to any sequence** | Its frame table is hard-coded for `dribble_idle`. Move each sequence's frame table (drop, tilt, lean, hand, head, hair, palm) into `art/sequences.yml` under its `guide:` so a new guide is a manifest edit, not a code edit. Everything else in the pipeline already takes a guide per sequence. |
 | **3** | ⭐⭐ **`run_dribble_r` / `run_dribble_l`** with a guide | The sequences most like the one that now works. These are travelling: the guide needs a stride cycle and the 87 ms running cadence. Then the §3 loop. |
 | **4** | **The zombie's remaining seventeen sequences** | Same loop. Guides for the one-shots (celebrations, idle breaks) need more than a skeleton — props, detached parts — so expect the prose to carry more there. |
@@ -261,7 +262,8 @@ roll-and-pick experiment, never mixed with another change.
 ## 8 · Output spec
 
 > ### ⭐⭐ THE ONE THING TO DO FIRST
-> **Push, then generalise the guide (§6 #2) and take `run_dribble_r` through the §3 loop.**
+> **Push, then take `dribble_idle` end to end into the game and resolve the phase — see §9,
+> added at the end of the session. Only then generalise the guide (§6 #2).**
 
 ```
 cd C:\Git\throw-a-basketball
@@ -279,6 +281,48 @@ py tools\gen-strips.py --char zombie --seq run_dribble_r --rolls 3 --dry-run
 > the hair as strands — and each of those was a case of moving a property from words into the picture.
 > ⛔ **What went wrong was mine and procedural**: a downloader bug read as a finding, and a file-copy
 > tool that lies about overwriting. Both are now written down in §0(C) and §7.
+
+
+---
+
+## 9 · ⭐⭐ CLOSING THOUGHTS — added at the end of the session, and they change what to do first
+
+> ### ⛔⭐⭐ (A) NOTHING MADE THIS SESSION HAS BEEN SEEN IN THE GAME.
+Every judgement above was made on the strip, the ruled sheet and a `loop.gif` — the art on its own, at
+the right cadence, but **without the ball, at preview scale, and not through the game's own frame
+selection.** The game is where the art has to work, and there is a known reason it will currently
+look wrong there:
+
+**`dribbleFrame()` is phase-inverted** (handover 02 §0(D), postponed twice). At the ball's apex it
+draws frame 0 — which in this sheet is LOWEST, the hand at the knee. So in the game, as it stands,
+**the hand will be at its lowest exactly when the ball is at its highest**, and the take that measured
+best on every sheet may read as the hand and ball moving in opposition. The effect is the same for the
+old approved take; the difference is that this time we have tuned the art carefully to a phase the
+game does not yet use.
+
+⭐⭐ **Therefore: before generating a single further sequence, take `dribble_idle` end to end** —
+slice it, build it into the sprites, add the `phase: 2` rotation (or the one-line fix), and **play it**.
+Twenty sequences built on a pipeline that has never been run to the end would multiply any mismatch
+we have not seen. This moves handover 02's "stage 3" ahead of §6 #2 and #3.
+
+> ### ⚠⭐ (B) "ONE GUIDE SERVES EVERY CHARACTER" IS A DESIGN CLAIM, NOT A RESULT.
+Every guided roll this session was the zombie. The guide is in fractions of standing height, so it
+*should* transfer — but the monkey has a tail and a different build, the NBA player is 1.10× and far
+heavier, the high schooler slighter. ⭐ **The first guided roll for another character is an experiment,
+not a production run**: overlay the guide on that character's existing art first (§3 step 4), and
+expect the proportions — head size, shoulder width, hip height — to need a per-character override.
+
+> ### ⚠ (C) THE GUIDE'S NUMBERS WERE MEASURED FROM THE ZOMBIE'S OWN EARLIER TAKE.
+The crouch depths (0.150 / 0.093 / 0.016 / 0.101) came off the old approved `dribble_idle`, so the
+guide partly teaches the generator to repeat what it already drew. That was the right starting point,
+but for sequences with no reference take the numbers will be invented, and the overlay has nothing to
+check them against. **For those, derive the frame table from `index.html` where the game constrains
+the pose, and otherwise treat the first batch as the measurement.**
+
+### The revised first action
+
+> **Push. Then take `dribble_idle` end to end into the game and resolve the phase (§9(A)) — play it
+> and judge it there. Only then generalise the guide (§6 #2) and move on to `run_dribble_r`.**
 
 ---
 
