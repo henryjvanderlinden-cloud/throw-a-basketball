@@ -112,9 +112,12 @@ def render(seq: dict, char: dict, defaults: dict) -> str:
     # for the same reason the SUBJECT block is: the division of authority
     # between the reference and the guide must not drift between sequences.
     if guide_file(seq):
+        # A guide drawn differently from the default (in colour, say) says
+        # what it looks like in its own `note`; otherwise the shared one.
+        g = seq.get("guide")
+        note = (g.get("note") if isinstance(g, dict) else None) or defaults["guide_note"]
         parts.append("\n\n".join(
-            wrap(p) for p in paragraphs(
-                resolve(str(defaults["guide_note"]), traits))))
+            wrap(p) for p in paragraphs(resolve(str(note), traits))))
 
     camera = field("camera") + " " + field("ground")
     parts.append(wrap(resolve(camera, traits)))

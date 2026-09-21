@@ -96,6 +96,10 @@ SUPERSEDED = {
                     "tilts, and the body leads the push while the hand leads "
                     "the recoil. The monkey's version described the arm only, "
                     "and the zombie came back symmetrical three times running.",
+    "run_dribble_r": "reworded to agree with its pose guide: the hand's low "
+                     "point is the hem and its high point the waistband (the "
+                     "game's apex), and the free arm swings against its own "
+                     "leg, where the monkey's version swung it with it.",
 }
 
 

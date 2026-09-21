@@ -132,11 +132,45 @@ STRETCH_WARN = 0.05
 #           JOINT_NAMES. Use them for what the fields above cannot say -- a
 #           stride, a swinging arm -- and keep the rest parametric, because
 #           parametric is what keeps limb lengths and footprints constant.
+#   sh_tilt, hip_tilt   the shoulder line and the hip line separately, same
+#           sign as `tilt` (positive drops the dribbling side). Unset, each
+#           follows `tilt`. Running needs them apart: the shoulders see-saw
+#           against the hips.
+#   arch    the spine as a curve instead of a straight line: the back bows out
+#           AWAY from the dribbling side by this share of the torso.
+#   yaw     degrees the HEAD is turned toward the dribbling side. The face's
+#           vertical line becomes the head-construction arc, bowing that way
+#           by sin(yaw), the eye line slides with it, and the visible ear moves
+#           in from the far edge.
+#   feet    {d: deg, f: deg}, each shoe's pitch -- positive puts the toe DOWN
+#           (toe-off, a foot swinging through), negative lifts it (heel
+#           strike). A turned body's shoes also point toward the dribbling
+#           side, which in a run is forward.
 FRAME_FIELDS = dict(
     name="", drop=0.0, tilt=0.0, lean=0.0, turn=0.0, stance=STANCE_POSE,
     hand=None, hand_shape=None, free=None, free_shape="hang", palm=0.0,
     head=0.0, hair="rest", joints=None,
+    sh_tilt=None, hip_tilt=None, arch=0.0, yaw=0.0, feet=None,
 )
+
+# Guide-level switches, beside `file` and `side`:
+#   colors  true: each limb in its own colour, which is what makes a crossing
+#           of the near and far legs readable. Off, the guide is pure black --
+#           dribble_idle's approved take was rolled with that one.
+#   ears    true: draw the ears schematically on the head circle.
+LIMB_COLOURS = {
+    "arm_d": (214, 39, 40),       # dribbling (near) arm   red
+    "arm_f": (31, 119, 180),      # free (far) arm         blue
+    "leg_d": (255, 127, 14),      # dribbling-side leg     orange
+    "leg_f": (44, 160, 44),       # free-side leg          green
+}
+LIMB_OF = {
+    "hip_d": "leg_d", "knee_d": "leg_d", "ank_d": "leg_d",
+    "hip_f": "leg_f", "knee_f": "leg_f", "ank_f": "leg_f",
+    "sh_d": "arm_d", "elb_d": "arm_d", "hand_d": "arm_d",
+    "sh_f": "arm_f", "elb_f": "arm_f", "hand_f": "arm_f",
+}
+SHOE_PROFILE = 0.19                 # a shoe's length seen side-on
 CALIBRATION = dict(name="calibration", stance=STANCE_CALIB)
 
 JOINT_NAMES = ("hip_d", "hip_f", "sh_d", "sh_f", "knee_d", "knee_f",
@@ -193,6 +227,9 @@ def frames(spec: dict) -> list[dict]:
             base["name"] = f"cell{i}"
         if base["hand_shape"] is None:
             base["hand_shape"] = "hang" if base["hand"] is None else "flat"
+        for k in (base["feet"] or {}):
+            if k not in ("d", "f"):
+                sys.exit(f"cell {i}: feet takes d and f, not {k!r}")
         for k in (base["joints"] or {}):
             if k not in JOINT_NAMES:
                 sys.exit(f"cell {i}: no joint called {k!r}")
@@ -244,8 +281,10 @@ def skeleton(f: dict, side: int) -> dict:
     narrow = math.cos(math.radians(f["turn"]))
     hip_x, sh_x = HIP_X * narrow, SH_X * narrow
 
-    hip_d = over.get("hip_d", (dribble * hip_x, PELVIS_Y - drop - tilt))
-    hip_f = over.get("hip_f", (-dribble * hip_x, PELVIS_Y - drop + tilt))
+    hip_t = tilt if f["hip_tilt"] is None else f["hip_tilt"]
+    sh_t = tilt if f["sh_tilt"] is None else f["sh_tilt"]
+    hip_d = over.get("hip_d", (dribble * hip_x, PELVIS_Y - drop - hip_t))
+    hip_f = over.get("hip_f", (-dribble * hip_x, PELVIS_Y - drop + hip_t))
     pelvis = ((hip_d[0] + hip_f[0]) / 2, (hip_d[1] + hip_f[1]) / 2)
 
     # The spine leans from the pelvis: the chest slides out over the dribbling
@@ -254,8 +293,8 @@ def skeleton(f: dict, side: int) -> dict:
     lean = dribble * f["lean"]
     torso = SH_Y - PELVIS_Y
     chest = (pelvis[0] + lean, SH_Y - drop)
-    sh_d = (chest[0] + dribble * sh_x, chest[1] - tilt)
-    sh_f = (chest[0] - dribble * sh_x, chest[1] + tilt)
+    sh_d = (chest[0] + dribble * sh_x, chest[1] - sh_t)
+    sh_f = (chest[0] - dribble * sh_x, chest[1] + sh_t)
     head_c = (chest[0] + lean * HEAD_UP / torso, chest[1] + HEAD_UP)
 
     ank_d = over.get("ank_d", (dribble * f["stance"], ANKLE_Y))
@@ -441,24 +480,120 @@ def draw_hair(d, hx, hy, r, crown_deg: float, mode: str, ink) -> None:
             sys.exit(f"unknown hair mode {mode!r} (up | flat | rest)")
 
 
+def draw_shoe(d, f: dict, ankle_w, key: str, side: int, cx: float, ink) -> None:
+    """A shoe under its ankle. Front-on and level (the old footprint, drawn
+    exactly as before) unless the body is turned or the foot is pitched: then
+    it is longer, points toward the dribbling side, and rotates by its pitch."""
+    pitch = (f["feet"] or {}).get(key[-1], 0.0)
+    ax, _ = to_px(cx, (ankle_w[0], 0.0))
+    lift = max(0.0, ankle_w[1] - ANKLE_Y) * STANDING
+    w, h = SHOE_W * STANDING, SHOE_H * STANDING
+    if not f["turn"] and not pitch:
+        d.rounded_rectangle([ax - w / 2, GROUND_Y - h - lift, ax + w / 2,
+                             GROUND_Y - lift],
+                            radius=h * 0.45, outline=ink, width=LINE)
+        d.line([to_px(cx, ankle_w), (ax, GROUND_Y - h * 0.5 - lift)],
+               fill=ink, width=LINE)
+        return
+    S = STANDING
+    L = S * (SHOE_W + (SHOE_PROFILE - SHOE_W) * math.sin(math.radians(abs(f["turn"]))))
+    p = math.radians(pitch)
+    ux, uy = side * math.cos(p), math.sin(p)          # heel -> toe, pixels
+    nx, ny = uy, -ux                                  # the shoe's own "up"
+    if ny > 0:
+        nx, ny = -nx, -ny
+    kx, ky = to_px(cx, ankle_w)
+    bx, by = kx - nx * ANKLE_Y * S, ky - ny * ANKLE_Y * S   # sole, below the ankle
+    heel = (bx - ux * 0.32 * L, by - uy * 0.32 * L)
+    toe = (bx + ux * 0.68 * L, by + uy * 0.68 * L)
+    pts = [heel, toe,
+           (toe[0] + nx * h * 0.45, toe[1] + ny * h * 0.45),
+           (toe[0] - ux * 0.35 * L + nx * h, toe[1] - uy * 0.35 * L + ny * h),
+           (heel[0] + nx * h, heel[1] + ny * h)]
+    d.polygon(pts, outline=ink, width=LINE)
+    mid = (bx + nx * h * 0.5, by + ny * h * 0.5)
+    d.line([(kx, ky), mid], fill=ink, width=LINE)
+
+
+def draw_spine(d, P, j, f, side, cx, ink) -> None:
+    """Pelvis to chest: straight, or bowed out behind by `arch`."""
+    if not f["arch"]:
+        d.line([P("pelvis"), P("chest")], fill=ink, width=LINE)
+        return
+    (x0, y0), (x1, y1) = j["pelvis"], j["chest"]
+    torso = math.dist(j["pelvis"], j["chest"])
+    # a quadratic curve peaks at half its control point's offset
+    c = ((x0 + x1) / 2 - side * 2 * f["arch"] * torso, (y0 + y1) / 2)
+    pts = []
+    for i in range(13):
+        t = i / 12
+        pts.append(to_px(cx, ((1 - t) ** 2 * x0 + 2 * (1 - t) * t * c[0] + t * t * x1,
+                              (1 - t) ** 2 * y0 + 2 * (1 - t) * t * c[1] + t * t * y1)))
+    d.line(pts, fill=ink, width=LINE, joint="curve")
+
+
+def draw_face(d, hx, hy, r, f: dict, side: int, ears: bool, ink) -> None:
+    """The crown-to-chin line and the eye line, tilted with the head; with a
+    yaw the vertical line becomes the construction arc of a turned head."""
+    th = math.radians(f["head"] * side)
+    ax, ay = math.sin(th), -math.cos(th)                  # crown direction
+    ex, ey = math.cos(th), math.sin(th)                   # the eye line
+    if not f["yaw"]:
+        d.line([(hx - ax * r, hy - ay * r), (hx + ax * r, hy + ay * r)],
+               fill=ink, width=LINE)
+        d.line([(hx - ex * r * 0.66, hy - ey * r * 0.66 + r * 0.30),
+                (hx + ex * r * 0.66, hy + ey * r * 0.66 + r * 0.30)],
+               fill=ink, width=LINE)
+        yaw_s = 0.0
+    else:
+        yaw_s = math.sin(math.radians(f["yaw"]))
+        pts = []
+        for i in range(17):
+            s_ = 1 - 2 * i / 16                              # crown +1 .. chin -1
+            off = side * yaw_s * r * math.sqrt(max(0.0, 1 - s_ * s_))
+            pts.append((hx + ax * s_ * r + ex * off, hy + ay * s_ * r + ey * off))
+        d.line(pts, fill=ink, width=LINE, joint="curve")
+        # the eye line: through the arc at eye height, clipped to the circle
+        s_eye = -0.30
+        chord = r * math.sqrt(1 - s_eye * s_eye)
+        centre = side * yaw_s * chord
+        lo, hi = max(-chord, centre - 0.66 * r), min(chord, centre + 0.66 * r)
+        oy = r * 0.30
+        d.line([(hx + ex * lo, hy + ey * lo + oy), (hx + ex * hi, hy + ey * hi + oy)],
+               fill=ink, width=LINE)
+    if ears:
+        # ears sit 90 degrees either side of the face; one turns out of sight
+        yaw = math.radians(f["yaw"])
+        for phi in (yaw - math.pi / 2, yaw + math.pi / 2):
+            if math.cos(phi) < -0.05:
+                continue
+            x = side * r * math.sin(phi)
+            ew, eh = r * 0.30, r * 0.46
+            if abs(x) > r * 0.8:                             # on the edge: outside
+                x = math.copysign(r + ew * 0.35, x)
+            ox, oy = hx + ex * x, hy + ey * x + r * 0.30
+            d.ellipse([ox - ew / 2, oy - eh / 2, ox + ew / 2, oy + eh / 2],
+                      outline=ink, width=LINE)
+
+
 def draw_cell(d: ImageDraw.ImageDraw, cx: float, f: dict, side: int,
-              ink=INK) -> None:
+              ink=INK, colors: bool = False, ears: bool = False) -> None:
     j = skeleton(f, side)
     P = lambda k: to_px(cx, j[k])
+    paint = colors and ink == INK
+    col = lambda limb: LIMB_COLOURS[limb] if paint and limb else ink
 
     # the two footprints, one drawing in every cell -- the shoe rests on the
     # ground under its ankle; a raised ankle (a stride) lifts it with the foot
     for k in ("ank_d", "ank_f"):
-        ax, _ = to_px(cx, (j[k][0], 0.0))
-        lift = max(0.0, j[k][1] - ANKLE_Y) * STANDING
-        w, h = SHOE_W * STANDING, SHOE_H * STANDING
-        d.rounded_rectangle([ax - w / 2, GROUND_Y - h - lift, ax + w / 2,
-                             GROUND_Y - lift],
-                            radius=h * 0.45, outline=ink, width=LINE)
-        d.line([P(k), (ax, GROUND_Y - h * 0.5 - lift)], fill=ink, width=LINE)
+        draw_shoe(d, f, j[k], k, side, cx, col(LIMB_OF[k]))
 
     for a, b in BONES:
-        d.line([P(a), P(b)], fill=ink, width=LINE)
+        if (a, b) == ("pelvis", "chest"):
+            draw_spine(d, P, j, f, side, cx, ink)
+            continue
+        limb = LIMB_OF.get(b) if LIMB_OF.get(a) == LIMB_OF.get(b) else None
+        d.line([P(a), P(b)], fill=col(limb), width=LINE)
 
     # the head: a circle, and inside it the crown-to-chin axis and the eye line
     # rotated together. The tilt is the whole point -- the head does not travel,
@@ -468,38 +603,37 @@ def draw_cell(d: ImageDraw.ImageDraw, cx: float, f: dict, side: int,
     d.ellipse([hx - r, hy - r, hx + r, hy + r], outline=ink, width=LINE)
     draw_hair(d, hx, hy, r, f["head"] * side, f["hair"], ink)
 
-    draw_hand(d, f["hand_shape"], P("hand_d"), P("elb_d"), side, f["palm"], ink)
-    draw_hand(d, f["free_shape"], P("hand_f"), P("elb_f"), -side, f["palm"], ink)
+    draw_hand(d, f["hand_shape"], P("hand_d"), P("elb_d"), side, f["palm"],
+              col("arm_d"))
+    draw_hand(d, f["free_shape"], P("hand_f"), P("elb_f"), -side, f["palm"],
+              col("arm_f"))
 
+    draw_face(d, hx, hy, r, f, side, ears, ink)
     th = math.radians(f["head"] * side)
-    ax, ay = math.sin(th), -math.cos(th)                  # crown direction
-    d.line([(hx - ax * r, hy - ay * r), (hx + ax * r, hy + ay * r)],
-           fill=ink, width=LINE)
-    ex, ey = math.cos(th), math.sin(th)                   # the eye line
-    d.line([(hx - ex * r * 0.66, hy - ey * r * 0.66 + r * 0.30),
-            (hx + ex * r * 0.66, hy + ey * r * 0.66 + r * 0.30)],
-           fill=ink, width=LINE)
+    ax, ay = math.sin(th), -math.cos(th)
     d.line([P("chest"), (hx - ax * r, hy - ay * r)], fill=ink, width=LINE)
 
     for k in ("hip_d", "hip_f", "sh_d", "sh_f", "knee_d", "knee_f",
               "elb_d", "elb_f", "hand_d", "hand_f", "ank_d", "ank_f"):
         x, y = P(k)
         d.ellipse([x - JOINT_R, y - JOINT_R, x + JOINT_R, y + JOINT_R],
-                  fill=ink)
+                  fill=col(LIMB_OF[k]))
 
 
-def build(cells: list[dict], side: int) -> Image.Image:
+def build(cells: list[dict], side: int, colors: bool = False,
+          ears: bool = False) -> Image.Image:
     im = Image.new("RGB", (CELL_W * len(cells), CELL_H), PAPER)
     d = ImageDraw.Draw(im)
     d.line([(0, GROUND_Y), (im.width, GROUND_Y)], fill=INK, width=LINE)
     for i, f in enumerate(cells):
-        draw_cell(d, i * CELL_W + CELL_W / 2, f, side)
+        draw_cell(d, i * CELL_W + CELL_W / 2, f, side, colors=colors, ears=ears)
     return im
 
 
 # --------------------------------------------------------------- the overlay
 
-def overlay(preview: Path, cells: list[dict], side: int, out: Path) -> None:
+def overlay(preview: Path, cells: list[dict], side: int, out: Path,
+            ears: bool = False) -> None:
     """Draw the skeleton over measure-strip.py's registered frames.
 
     Those frames are scaled by the calibration frame and pinned by the foot
@@ -526,7 +660,7 @@ def overlay(preview: Path, cells: list[dict], side: int, out: Path) -> None:
         tile.alpha_composite(art)
         d = ImageDraw.Draw(tile)
         d.line([(0, GROUND_Y), (CELL_W, GROUND_Y)], fill=(220, 60, 60), width=1)
-        draw_cell(d, CELL_W / 2, f, side, ink=(220, 40, 40))
+        draw_cell(d, CELL_W / 2, f, side, ink=(220, 40, 40), ears=ears)
         sheet.paste(tile.convert("RGB"), (i * CELL_W, 0))
     sheet.save(out)
     print(f"overlay -> {out}")
@@ -563,7 +697,8 @@ def main() -> None:
     if a.left:
         out = out.with_name(out.stem + "-left" + out.suffix)
     out.parent.mkdir(parents=True, exist_ok=True)
-    build(cells, side).save(out)
+    colors, ears = bool(spec.get("colors")), bool(spec.get("ears"))
+    build(cells, side, colors, ears).save(out)
     print(f"{out.relative_to(ROOT).as_posix()}  {CELL_W * len(cells)}x{CELL_H}, "
           f"standing height {STANDING}px  (from {entry['_where']})")
     for f in cells:
@@ -576,7 +711,7 @@ def main() -> None:
         print(f"  ! {w}")
 
     if a.overlay:
-        overlay(a.overlay, cells, side, a.overlay / "overlay.png")
+        overlay(a.overlay, cells, side, a.overlay / "overlay.png", ears)
 
 
 if __name__ == "__main__":

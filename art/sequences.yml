@@ -304,6 +304,131 @@ sequences:
 
   run_dribble_r:
     title: Run-dribble, moving right
+    # DRAFT pose guide, not yet rolled. x is toward the dribbling side, which
+    # here is also FORWARD (he runs toward the right edge, ball ahead of him).
+    # Contact, passing, contact, passing: each leg plants in front, passes
+    # under the body with the other knee driving through, and trails behind.
+    # The free (far) arm swings against its own leg, as a fist. The hand
+    # reaches the game's apex, 0.52, on the passing frames; its low point is
+    # 0.36 -- lower than that is out of reach without a deep crouch (see the
+    # stretch check in make-pose-guide.py). Each foot is placed from its OWN
+    # hip (+-0.058 at turn 50): front foot 0.14 ahead of it, trailing foot
+    # 0.17 behind, driving knee 0.16 ahead -- so the far leg's frames sit
+    # further back in the picture than the near leg's. Stride and hand are reference-
+    # free: the zombie has no run art, and the monkey's never lowers his hand.
+    guide:
+      file: art/guides/run_dribble_r.png
+      side: right
+      colors: true              # limbs colour-coded: the near and far legs cross
+      ears: true
+      # The shared guide_note tells the two images apart as "the COLOUR image"
+      # and "a black stick figure", which a coloured guide makes ambiguous, and
+      # colour brings a failure the black guide did not have: the limb colours
+      # bleeding into the art. So this guide describes itself.
+      note: |
+        POSE GUIDE: TWO images are attached, and they do different jobs.
+
+        The CHARACTER REFERENCE -- the finished pixel-art drawing of the
+        character -- is the only authority on WHO HE IS. His colours, his
+        proportions, his build, his height, his face, his kit and the drawing
+        style all come from that image and from the SUBJECT above, and nothing
+        below changes any of them.
+
+        The other image is a POSE GUIDE: a stick-figure diagram on a plain white
+        background, five figures in a row on one ground line, in the same
+        left-to-right order as the FRAMES listed below. The Nth figure in the
+        pose guide is the pose for the Nth frame. Take the GEOMETRY from it and
+        only the geometry: where each foot is, which foot is on the ground line
+        and which is lifted, how each knee is bent, the angle of each shoe, how
+        far his body leans forward and how his back curves, how the shoulder
+        line tilts, how high the dribbling hand is and how far ahead of him it
+        reaches, where the swinging fist is, and which way his head is turned.
+        Where the words below and the pose guide describe the same thing, they
+        agree; the pose guide is the exact version of it.
+
+        THE COLOURS ON THE POSE GUIDE ONLY TELL THE LIMBS APART, so that where
+        his legs cross you can see which is which: ORANGE is the leg on the
+        dribbling side, nearer the viewer; GREEN is his other leg, further away;
+        RED is the dribbling arm; BLUE is the free arm. None of these colours
+        belongs in the drawing: his skin, his kit and his shoes keep exactly the
+        colours of the character reference.
+
+        THE HANDS ON THE POSE GUIDE: the FLAT hand with its fingers spread is
+        the dribbling hand, palm to the floor, at exactly that height. The small
+        closed square at the end of the blue arm is the free hand, a loose fist,
+        swinging as he runs.
+
+        THE HEAD ON THE POSE GUIDE: the curved line down the face shows which
+        way he is looking -- toward the side it bulges to, the way he is
+        running. The small oval is the ear that shows. The short lines on top
+        are his hair sticking out at rest.
+
+        Draw the character from the reference running through those positions.
+        The pose guide is an instruction, not artwork: its thin lines, its
+        colours, its joint dots, its white background and its blank circular
+        head are NOT part of the drawing and must not appear anywhere in it.
+      frames:
+        - {pose: calibration}
+        # Contact: the near (dribbling-side) foot lands in front, the far foot
+        # toes off behind. The hand is at its low point, so the dribbling
+        # shoulder dips with it -- the shoulders see-saw against the hips.
+        - name: contact-near
+          drop: 0.08
+          lean: 0.10
+          arch: 0.03
+          turn: 50
+          yaw: 55
+          sh_tilt: 0.025
+          hip_tilt: 0.0
+          hand: 0.36
+          palm: 12
+          free: [0.02, 0.52]
+          free_shape: fist
+          joints: {ank_d: [0.20, 0.09], ank_f: [-0.23, 0.20], knee_f: [-0.11, 0.26]}
+          feet: {d: -5, f: 45}
+        # Passing: the near foot is under him, the far knee drives through.
+        # The hand meets the ball at the game's apex; the swinging leg's hip
+        # dips.
+        - name: passing-near
+          drop: 0.10
+          lean: 0.10
+          arch: 0.03
+          turn: 50
+          yaw: 55
+          sh_tilt: -0.015
+          hip_tilt: -0.015
+          hand: 0.52
+          free: [-0.12, 0.42]
+          free_shape: fist
+          joints: {ank_d: [0.02, 0.09], ank_f: [-0.06, 0.22], knee_f: [0.10, 0.30]}
+          feet: {d: 0, f: 30}
+        - name: contact-far
+          drop: 0.08
+          lean: 0.10
+          arch: 0.03
+          turn: 50
+          yaw: 55
+          sh_tilt: 0.025
+          hip_tilt: 0.0
+          hand: 0.36
+          palm: 12
+          free: [-0.20, 0.48]
+          free_shape: fist
+          joints: {ank_f: [0.08, 0.09], ank_d: [-0.11, 0.20], knee_d: [0.01, 0.26]}
+          feet: {f: -5, d: 45}
+        - name: passing-far
+          drop: 0.10
+          lean: 0.10
+          arch: 0.03
+          turn: 50
+          yaw: 55
+          sh_tilt: -0.015
+          hip_tilt: 0.015
+          hand: 0.52
+          free: [-0.12, 0.42]
+          free_shape: fist
+          joints: {ank_f: [-0.10, 0.09], ank_d: [0.06, 0.22], knee_d: [0.22, 0.30]}
+          feet: {f: 0, d: 30}
     kind: loop
     frames: 4
     ref: front
@@ -322,22 +447,28 @@ sequences:
       palm facing DOWN toward the floor, fingers spread, pushing an invisible ball
       down. It is never a fist, never swung back, and never tucked in at his
       side. The OTHER arm does the running, swinging freely.
+    # Worded to agree with the guide: the hand's low point is the HEM, its
+    # high point the WAISTBAND (the game's apex), and the free arm swings
+    # against its own leg -- forward when the far leg trails.
     poses:
       - >-
-          Dribbling hand pushed low, near knee height, palm flat to the
-          floor. Legs: leading leg forward and planted, trailing leg
-          stretched out behind. Free arm swung back.
+          Dribbling hand pushed down to the hem of his shorts, palm flat to
+          the floor. Legs: the leg on the dribbling side forward and planted,
+          the other leg stretched out behind him, its toe pushing off. Free
+          arm swung forward across his chest.
       - >-
-          Dribbling hand risen to hip height, palm still down. Legs
-          mid-stride, the trailing leg swinging through beneath the body.
-          Torso leaning forward.
+          Dribbling hand risen to the waistband of his shorts, palm still
+          down. Legs mid-stride: the planted foot under his body, the other
+          knee driving forward past it. Torso leaning forward.
       - >-
-          Dribbling hand pushed low again near knee height, palm flat
-          down. Legs: the other leg forward and planted. Free arm swung
-          forward.
+          Dribbling hand pushed down to the hem of his shorts again, palm flat
+          down. Legs: the other leg forward and planted, the leg on the
+          dribbling side stretched out behind him, its toe pushing off. Free
+          arm swung back behind him.
       - >-
-          Dribbling hand risen to hip height, palm down. Legs mid-stride
-          the other way, the leading leg swinging through.
+          Dribbling hand risen to the waistband of his shorts, palm down. Legs
+          mid-stride the other way: the planted foot under his body, the knee
+          on the dribbling side driving forward past it.
     ball: |
       The character is NOT holding a basketball in any frame — the ball is drawn
       separately by the game. His hand pushes down as if a ball were there.
