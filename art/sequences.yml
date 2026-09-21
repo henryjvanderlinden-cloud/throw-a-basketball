@@ -137,7 +137,33 @@ sequences:
 
   dribble_idle:
     title: Stationary dribble
-    guide: art/guides/dribble_idle.png
+    # The pose guide, as numbers. tools/make-pose-guide.py draws the picture
+    # from this table (its FRAME_FIELDS lists every field); gen-strips.py
+    # attaches `file`. All lengths are fractions of standing height.
+    #
+    # The crouch depths (drop) were measured off the earlier approved take:
+    # DRIVING DOWN is already deeper than RISING -- the body leads the hand.
+    # The hand ladder is knee, hem, WAISTBAND, above the hem, and the waistband
+    # is 0.52: where index.html actually puts the ball at its apex. The spine
+    # leans toward the dribbling hand on the downstroke and is straight at the
+    # top (Rick, 2026-09-21). Hair is drawn because two prose wordings of it
+    # failed; only LOWEST tilts the palm, "at the end of the push".
+    guide:
+      file: art/guides/dribble_idle.png
+      side: right
+      frames:
+        - {pose: calibration}
+        - {name: lowest,  drop: 0.150, tilt: 0.035, lean: 0.045, hand: 0.26,
+           head: 9, hair: up, palm: 18}
+        - {name: rising,  drop: 0.093, tilt: 0.018, lean: 0.020, hand: 0.38,
+           head: 5}
+        - {name: highest, drop: 0.016, tilt: 0.000, lean: 0.000, hand: 0.52,
+           head: 0, hair: flat}
+        # The hand TRAILS: the body has already dropped, the hand is still
+        # above the hem. At 0.33 this frame was drawn almost like LOWEST and
+        # every guided roll gave a dead seam (6-12%) between the two.
+        - {name: driving, drop: 0.101, tilt: 0.018, lean: 0.035, hand: 0.42,
+           head: 5}
     kind: loop
     frames: 4
     ref: front

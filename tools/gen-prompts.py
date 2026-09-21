@@ -37,6 +37,16 @@ WIDTH = 79
 TRAIT = re.compile(r"\{([a-z_][a-z0-9_]*)\}")
 
 
+
+def guide_file(seq: dict) -> str | None:
+    """The pose guide's path. `guide:` is either the path itself or, since the
+    frame table moved into the manifest, a mapping with the path under `file`
+    and the table tools/make-pose-guide.py draws from."""
+    g = seq.get("guide")
+    if isinstance(g, dict):
+        return g.get("file") or None
+    return g or None
+
 def resolve(text: str, traits: dict) -> str:
     """Substitute {traits}, then repair the whitespace an empty one leaves."""
     out = TRAIT.sub(lambda m: str(traits.get(m.group(1), "")).strip(), text)
@@ -101,7 +111,7 @@ def render(seq: dict, char: dict, defaults: dict) -> str:
     # which is which. The wording is a default rather than a per-sequence line
     # for the same reason the SUBJECT block is: the division of authority
     # between the reference and the guide must not drift between sequences.
-    if seq.get("guide"):
+    if guide_file(seq):
         parts.append("\n\n".join(
             wrap(p) for p in paragraphs(
                 resolve(str(defaults["guide_note"]), traits))))
@@ -180,7 +190,7 @@ def main() -> None:
                 "frames": int(seq["frames"]),
                 "calibration": True,
                 "ref": char["refs"][seq.get("ref", "front")],
-                "guide": seq.get("guide"),
+                "guide": guide_file(seq),
                 "travelling": bool(seq.get("travelling")),
                 "airborne": bool(seq.get("airborne")),
                 "own": name in own,
@@ -189,7 +199,7 @@ def main() -> None:
             flag = "*" if name in own else " "
             print(f"  {flag} {name:<20} {seq['frames']}+1 cells  "
                   f"{len(text):>5} chars"
-                  + ("  + pose guide" if seq.get("guide") else ""))
+                  + ("  + pose guide" if guide_file(seq) else ""))
 
         # A renamed or removed sequence leaves its old .txt behind. Deleting it
         # is not always possible -- Windows Controlled Folder Access refuses

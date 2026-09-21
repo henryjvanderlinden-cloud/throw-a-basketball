@@ -13,12 +13,23 @@ calibration pose, which is the unit measure-strip.py already reports in. So one
 guide serves every character: the manifest's `scale` changes how tall he is
 drawn, not where his knee sits in his own body.
 
-The numbers are not taste. GAME_APEX and GAME_LATERAL come from index.html
-(§0(C)); the crouch depths, the stance and the hip offsets were measured off
-dribble_idle.approved.png with tools/measure-strip.py.
+WHAT A GUIDE DRAWS LIVES IN THE MANIFEST, not here. A sequence in
+art/sequences.yml (or a character's own sequence in art/characters.yml) carries
+
+    guide:
+      file: art/guides/<seq>.png
+      side: right                   # the edge the dribbling hand is on
+      frames:                       # calibration first, one entry per cell
+        - {pose: calibration}
+        - {drop: 0.150, tilt: 0.035, lean: 0.045, hand: 0.26, ...}
+
+and this tool turns that table into the picture. The field reference is
+FRAME_FIELDS below; the body's own proportions stay constants in this file
+until a second character needs its own (handover 03 §9(B)).
 
   py tools\\make-pose-guide.py --seq dribble_idle
   py tools\\make-pose-guide.py --seq dribble_idle --overlay build\\guide-check\\approved.preview
+  py tools\\make-pose-guide.py --seq break_face --char zombie
 
 The overlay is the cheap validation §4 asks for: if the skeleton does not sit on
 the character we already have, it will not help the generator either. It writes
@@ -28,12 +39,14 @@ from __future__ import annotations
 
 import argparse
 import math
+import sys
 from pathlib import Path
 
+import yaml
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT_DIR = ROOT / "art" / "guides"
+ART = ROOT / "art"
 
 # ---------------------------------------------------------------- the canvas
 CELL_W, CELL_H = 420, 520
@@ -46,8 +59,10 @@ INK = (0, 0, 0)
 PAPER = (255, 255, 255)
 
 # ------------------------------------------------------------- the skeleton
-# Fractions of standing height. Measured off dribble_idle.approved.png unless
-# marked otherwise.
+# The body's proportions, in fractions of standing height. Measured off the
+# zombie's dribble_idle.approved.png. These describe WHO is drawn, not the pose,
+# which is why they are not in the manifest -- see handover 03 §9(B) for when a
+# character will need his own.
 HIP_X = 0.090
 PELVIS_Y = 0.480                    # hip joint; the waistband sits at 0.52
 SH_X = 0.130
@@ -60,64 +75,129 @@ SHOE_W, SHOE_H = 0.137, 0.075
 STANCE_POSE = 0.213                 # ankle out from the centre line, dribbling
 STANCE_CALIB = 0.1835               # ... and standing, "shoulder-width apart"
 
-FREE_HAND = (-0.032, -0.365)        # free hand, as an offset from its shoulder
+FREE_HAND = (-0.032, -0.365)        # a hanging hand, as an offset from its shoulder
 
 # Hands, drawn like the footprints: ONE drawing, moved -- never redrawn. That is
 # the playbook's "constancy is an operation" made literal in the guide.
 PALM_LEN, PALM_W = 0.055, 0.046     # the palm, as a flat paddle off the wrist
 FINGER = 0.046                      # palm + finger ~ a tenth of his height
 FINGER_FAN = (-8, 4, 16, 28)        # dribbling fingers: flat, fanning slightly down
+FIST = 0.052                        # a closed fist: a rounded square this wide
 
 # Hair: five strands rooted on the upper half of the head circle.
 HAIR_ROOTS = (-64, -32, 0, 32, 64)  # degrees either side of the crown
 HAIR_REST, HAIR_UP, HAIR_FLAT = 0.030, 0.055, 0.040
 
-GAME_APEX = 0.52                    # index.html, via §0(C)
+GAME_APEX = 0.52                    # index.html, via handover 02 §0(C)
 GAME_LATERAL = 0.26
 
+# A projected limb can only get SHORTER than its true length (foreshortening);
+# a frame that makes one longer than in the calibration pose by more than this
+# share has stretched the body, and is reported.
+STRETCH_WARN = 0.05
 
-def frames(side: int) -> list[dict]:
-    """The five cells, left to right. `side` is +1 for a hand on the right edge.
 
-    drop      how far the whole upper body sinks, 1 - (head top / standing).
-              0.150 / 0.093 / 0.016 / 0.101 on the approved take -- note that
-              DRIVING DOWN is already deeper than RISING, which is the body
-              leading the hand.
-    tilt      how far the dribbling-side hip and shoulder drop below level.
-    hand      the dribbling palm's height. The ladder is knee, hem, WAISTBAND,
-              just below the hem -- and the waistband is GAME_APEX, where
-              index.html actually puts the ball.
-    head      head tilt in degrees, the ear dropping toward the dribbling
-              shoulder. The head itself rides on top of the spine.
-    lean      how far the chest sits out over the dribbling hip, measured from
-              the midpoint of the hips. Rick, 2026-09-21: the spine tilts toward
-              the dribbling hand on the downstroke and is straight at the top.
-              A tilted shoulder line over a vertical spine was also plain
-              inconsistent -- the spine is roughly perpendicular to it -- so
-              this is the shoulder tilt's own consequence, kept smaller than
-              the full perpendicular because he asked for "a little".
-    hair      where the five strands on the head point: "up" (standing off the
-              scalp -- the body has dropped out from under them), "flat" (lying
-              down toward the ears -- the body has just risen), or "rest". Two
-              prose wordings of this failed; the guide draws it instead.
-    palm      extra downward tilt of the dribbling palm in degrees. Only the
-              LOWEST frame has any -- "at the end of the push".
-    """
-    return [
-        dict(name="calibration", drop=0.0, tilt=0.0, hand=None, head=0.0,
-             lean=0.0, stance=STANCE_CALIB, hair="rest", palm=0.0),
-        dict(name="lowest", drop=0.150, tilt=0.035, hand=0.26, head=9.0,
-             lean=0.045, stance=STANCE_POSE, hair="up", palm=18.0),
-        dict(name="rising", drop=0.093, tilt=0.018, hand=0.38, head=5.0,
-             lean=0.020, stance=STANCE_POSE, hair="rest", palm=0.0),
-        dict(name="highest", drop=0.016, tilt=0.000, hand=GAME_APEX, head=0.0,
-             lean=0.000, stance=STANCE_POSE, hair="flat", palm=0.0),
-        # The hand TRAILS here: the body has already dropped, the hand is still
-        # above the hem. At 0.33 this frame was drawn almost like LOWEST and
-        # every guided roll gave a dead seam (6-12%) between the two.
-        dict(name="driving", drop=0.101, tilt=0.018, hand=0.42, head=5.0,
-             lean=0.035, stance=STANCE_POSE, hair="rest", palm=0.0),
-    ]
+# ------------------------------------------------------------- the manifest
+
+# Every field a frame may carry, with its default. `pose: calibration` swaps in
+# CALIBRATION's values instead, so the calibration cell is one short line.
+#
+#   drop    how far the whole upper body sinks, 1 - (head top / standing).
+#           Measured per frame off a reference take where one exists.
+#   tilt    how far the dribbling-side hip and shoulder drop below level.
+#   lean    how far the chest sits out over the dribbling hip, from the middle
+#           of the hips. The spine is roughly perpendicular to the shoulder
+#           line, so a tilt without a lean is inconsistent.
+#   turn    degrees the body is turned away from the camera, for a
+#           three-quarter view: hips and shoulders narrow by cos(turn), which
+#           is what a turned body looks like projected onto the picture plane.
+#   stance  how far each ankle sits out from the centre line.
+#   hand    the dribbling hand. A number is its height, with the palm's middle
+#           on the ball's own line (GAME_LATERAL); [x, y] places the wrist
+#           anywhere (x out from the centre line, toward the dribbling side);
+#           null lets it hang.
+#   hand_shape  flat | hang | fist. Defaults to flat when `hand` is given.
+#   free    the other hand: null hangs it; [x, y] places its wrist (x toward
+#           the dribbling side, like `hand`).
+#   free_shape  flat | hang | fist. Defaults to hang.
+#   palm    extra downward tilt of a flat palm, in degrees.
+#   head    head tilt in degrees, the ear dropping toward the dribbling
+#           shoulder. The head itself rides on top of the spine.
+#   hair    up (standing off the scalp -- the body dropped out from under
+#           them) | flat (lying toward the ears -- the body just rose) | rest.
+#   joints  per-joint overrides, {name: [x, y]}, x toward the dribbling side.
+#           Ankles, hips and wrists are placed BEFORE the knees and elbows are
+#           worked out, so overriding a foot moves its knee with it; knees,
+#           elbows and the rest are replaced afterwards. Names are those of
+#           JOINT_NAMES. Use them for what the fields above cannot say -- a
+#           stride, a swinging arm -- and keep the rest parametric, because
+#           parametric is what keeps limb lengths and footprints constant.
+FRAME_FIELDS = dict(
+    name="", drop=0.0, tilt=0.0, lean=0.0, turn=0.0, stance=STANCE_POSE,
+    hand=None, hand_shape=None, free=None, free_shape="hang", palm=0.0,
+    head=0.0, hair="rest", joints=None,
+)
+CALIBRATION = dict(name="calibration", stance=STANCE_CALIB)
+
+JOINT_NAMES = ("hip_d", "hip_f", "sh_d", "sh_f", "knee_d", "knee_f",
+               "elb_d", "elb_f", "hand_d", "hand_f", "ank_d", "ank_f",
+               "pelvis", "chest", "head")
+PLACED_FIRST = {"ank_d", "ank_f", "hip_d", "hip_f", "hand_d", "hand_f"}
+
+
+def load_sequence(seq: str, char: str | None) -> dict:
+    """The sequence's manifest entry: a character's own first, then shared."""
+    shared = yaml.safe_load((ART / "sequences.yml").read_text(encoding="utf-8"))
+    chars = yaml.safe_load((ART / "characters.yml").read_text(encoding="utf-8"))
+    chars = chars.get("characters", chars) if isinstance(chars, dict) else {}
+    places = []
+    if char:
+        own = (chars.get(char) or {}).get("sequences") or {}
+        places.append((f"characters.yml / {char}", own))
+    places.append(("sequences.yml", shared.get("sequences") or {}))
+    if not char:
+        for key, c in chars.items():
+            if isinstance(c, dict):
+                places.append((f"characters.yml / {key}", c.get("sequences") or {}))
+    for where, seqs in places:
+        if seq in seqs:
+            return seqs[seq] | {"_where": where}
+    sys.exit(f"no sequence called {seq!r} in the manifest")
+
+
+def guide_spec(entry: dict, seq: str) -> dict:
+    g = entry.get("guide")
+    if not isinstance(g, dict) or not g.get("frames"):
+        sys.exit(f"{seq}: its `guide:` has no frame table "
+                 f"(in {entry['_where']}) -- see FRAME_FIELDS in this tool")
+    n = int(entry.get("frames", 0)) + 1
+    if len(g["frames"]) != n:
+        sys.exit(f"{seq}: the guide has {len(g['frames'])} cells, but the "
+                 f"sequence is {n} (calibration + {n - 1})")
+    return g
+
+
+def frames(spec: dict) -> list[dict]:
+    """The manifest's frame table with every default filled in."""
+    out = []
+    for i, raw in enumerate(spec["frames"]):
+        raw = dict(raw or {})
+        base = dict(FRAME_FIELDS)
+        if raw.pop("pose", None) == "calibration":
+            base.update(CALIBRATION)
+        unknown = set(raw) - set(FRAME_FIELDS)
+        if unknown:
+            sys.exit(f"cell {i}: unknown field(s) {', '.join(sorted(unknown))}")
+        base.update(raw)
+        if not base["name"]:
+            base["name"] = f"cell{i}"
+        if base["hand_shape"] is None:
+            base["hand_shape"] = "hang" if base["hand"] is None else "flat"
+        for k in (base["joints"] or {}):
+            if k not in JOINT_NAMES:
+                sys.exit(f"cell {i}: no joint called {k!r}")
+        out.append(base)
+    return out
 
 
 # --------------------------------------------------------------- geometry
@@ -160,23 +240,26 @@ def skeleton(f: dict, side: int) -> dict:
     """Every joint of one cell, in world coordinates."""
     drop, tilt = f["drop"], f["tilt"]
     dribble = side                            # +1: the hand nearer the right edge
+    over = {k: (dribble * v[0], v[1]) for k, v in (f["joints"] or {}).items()}
+    narrow = math.cos(math.radians(f["turn"]))
+    hip_x, sh_x = HIP_X * narrow, SH_X * narrow
 
-    hip_d = (dribble * HIP_X, PELVIS_Y - drop - tilt)     # the loaded hip, dropped
-    hip_f = (-dribble * HIP_X, PELVIS_Y - drop + tilt)
+    hip_d = over.get("hip_d", (dribble * hip_x, PELVIS_Y - drop - tilt))
+    hip_f = over.get("hip_f", (-dribble * hip_x, PELVIS_Y - drop + tilt))
     pelvis = ((hip_d[0] + hip_f[0]) / 2, (hip_d[1] + hip_f[1]) / 2)
 
     # The spine leans from the pelvis: the chest slides out over the dribbling
     # hip, the shoulders hang off the chest, and the head continues the same
     # line, so everything above the belt tilts as one piece.
-    lean = dribble * f.get("lean", 0.0)
+    lean = dribble * f["lean"]
     torso = SH_Y - PELVIS_Y
     chest = (pelvis[0] + lean, SH_Y - drop)
-    sh_d = (chest[0] + dribble * SH_X, chest[1] - tilt)
-    sh_f = (chest[0] - dribble * SH_X, chest[1] + tilt)
+    sh_d = (chest[0] + dribble * sh_x, chest[1] - tilt)
+    sh_f = (chest[0] - dribble * sh_x, chest[1] + tilt)
     head_c = (chest[0] + lean * HEAD_UP / torso, chest[1] + HEAD_UP)
 
-    ank_d = (dribble * f["stance"], ANKLE_Y)
-    ank_f = (-dribble * f["stance"], ANKLE_Y)
+    ank_d = over.get("ank_d", (dribble * f["stance"], ANKLE_Y))
+    ank_f = over.get("ank_f", (-dribble * f["stance"], ANKLE_Y))
 
     # The deeper the crouch, the more the knee shows outside the thigh line.
     load = min(1.0, drop / 0.150)
@@ -191,26 +274,66 @@ def skeleton(f: dict, side: int) -> dict:
                       -dribble * bulge * BULGE_FREE),
     )
 
-    if f["hand"] is None:                     # calibration: both arms hang
-        for tag, sgn in (("d", dribble), ("f", -dribble)):
-            sh = joints[f"sh_{tag}"]
-            hand = (sh[0] - sgn * FREE_HAND[0], sh[1] + FREE_HAND[1])
-            joints[f"hand_{tag}"] = hand
-            joints[f"elb_{tag}"] = middle(sh, hand, ELBOW_ALONG,
-                                          sgn * ELBOW_OUT)
+    # The dribbling hand. The joint is the WRIST; a flat palm reaches outward
+    # from it, so for a height alone the wrist sits half a palm inboard and the
+    # palm's middle lands on the ball's own line, GAME_LATERAL.
+    hand = f["hand"]
+    if "hand_d" in over:
+        hand_d = over["hand_d"]
+    elif hand is None:
+        hand_d = (sh_d[0] - dribble * FREE_HAND[0], sh_d[1] + FREE_HAND[1])
+    elif isinstance(hand, (list, tuple)):
+        hand_d = (dribble * hand[0], hand[1])
     else:
-        # The joint is the WRIST; the drawn palm reaches outward from it, so the
-        # wrist sits half a palm inboard and the palm's middle lands on the
-        # ball's own line, GAME_LATERAL.
-        hand_d = (dribble * (GAME_LATERAL - PALM_LEN / 2), f["hand"])
-        joints["hand_d"] = hand_d
-        joints["elb_d"] = middle(sh_d, hand_d, ELBOW_ALONG,
-                                 dribble * ELBOW_OUT)
+        hand_d = (dribble * (GAME_LATERAL - PALM_LEN / 2), hand)
+    joints["hand_d"] = hand_d
+    joints["elb_d"] = middle(sh_d, hand_d, ELBOW_ALONG, dribble * ELBOW_OUT)
+
+    free = f["free"]
+    if "hand_f" in over:
+        hand_f = over["hand_f"]
+    elif free is None:
+        # hanging: the mirror image of the dribbling side's hang
         hand_f = (sh_f[0] + dribble * FREE_HAND[0], sh_f[1] + FREE_HAND[1])
-        joints["hand_f"] = hand_f
-        joints["elb_f"] = middle(sh_f, hand_f, ELBOW_ALONG,
-                                 -dribble * ELBOW_OUT)
+    else:
+        hand_f = (dribble * free[0], free[1])
+    joints["hand_f"] = hand_f
+    joints["elb_f"] = middle(sh_f, hand_f, ELBOW_ALONG, -dribble * ELBOW_OUT)
+
+    for k, v in over.items():                 # knees, elbows, anything else
+        if k not in PLACED_FIRST:
+            joints[k] = v
     return joints
+
+
+LIMBS = {
+    "thigh (dribbling side)": ("hip_d", "knee_d"), "shin (dribbling side)": ("knee_d", "ank_d"),
+    "thigh (free side)": ("hip_f", "knee_f"), "shin (free side)": ("knee_f", "ank_f"),
+    "upper arm (dribbling)": ("sh_d", "elb_d"), "forearm (dribbling)": ("elb_d", "hand_d"),
+    "upper arm (free)": ("sh_f", "elb_f"), "forearm (free)": ("elb_f", "hand_f"),
+}
+
+
+def stretch_report(cells: list[dict], side: int) -> list[str]:
+    """Limbs LONGER than in the calibration pose, in any cell.
+
+    Checked everywhere, not only where `joints` overrides something: a plain
+    `hand` height can be out of reach too. Reaching the knee needs the crouch
+    to come with it -- dribble_idle's LOWEST (hand 0.26, drop 0.150) has its
+    arm at 96% of standing length, and the same hand with a shallow crouch is
+    an arm a third too long."""
+    ref = skeleton(dict(FRAME_FIELDS, **CALIBRATION, hand_shape="hang"), side)
+    true = {n: math.dist(ref[a], ref[b]) for n, (a, b) in LIMBS.items()}
+    warn = []
+    for f in cells:
+        j = skeleton(f, side)
+        for n, (a, b) in LIMBS.items():
+            got = math.dist(j[a], j[b])
+            if got > true[n] * (1 + STRETCH_WARN):
+                warn.append(f"{f['name']}: {n} is {got / true[n] - 1:+.0%} "
+                            f"longer than standing -- a projected limb can only "
+                            f"shorten")
+    return warn
 
 
 # ---------------------------------------------------------------- drawing
@@ -233,7 +356,7 @@ def _paddle(d, x, y, ux, uy, length, width, ink):
     return ex, ey, nx, ny
 
 
-def draw_dribble_hand(d, wrist, dribble: int, palm_deg: float, ink) -> None:
+def draw_flat_hand(d, wrist, dribble: int, palm_deg: float, ink) -> None:
     """Flat and open, palm to the floor: a horizontal paddle reaching outward
     from the wrist, four fingers fanning out from its end. Pixel coords, y down."""
     S = STANDING
@@ -257,6 +380,31 @@ def draw_hanging_hand(d, wrist, ink) -> None:
     for t in (-0.75, -0.25, 0.25, 0.75):
         sx = ex + nx * t
         d.line([(sx, ey), (sx + t * 2, ey + FINGER * S)], fill=ink, width=LINE)
+
+
+def draw_fist(d, wrist, elbow, ink) -> None:
+    """A closed fist: a rounded square continuing the forearm past the wrist,
+    with one line across it for the knuckles."""
+    s = FIST * STANDING
+    ux, uy = wrist[0] - elbow[0], wrist[1] - elbow[1]
+    n = math.hypot(ux, uy) or 1.0
+    cx, cy = wrist[0] + ux / n * s / 2, wrist[1] + uy / n * s / 2
+    d.rounded_rectangle([cx - s / 2, cy - s / 2, cx + s / 2, cy + s / 2],
+                        radius=s * 0.3, outline=ink, width=LINE)
+    kx, ky = -uy / n * s * 0.35, ux / n * s * 0.35
+    fx, fy = cx + ux / n * s * 0.15, cy + uy / n * s * 0.15
+    d.line([(fx - kx, fy - ky), (fx + kx, fy + ky)], fill=ink, width=LINE)
+
+
+def draw_hand(d, shape: str, wrist, elbow, dribble: int, palm: float, ink) -> None:
+    if shape == "flat":
+        draw_flat_hand(d, wrist, dribble, palm, ink)
+    elif shape == "fist":
+        draw_fist(d, wrist, elbow, ink)
+    elif shape == "hang":
+        draw_hanging_hand(d, wrist, ink)
+    else:
+        sys.exit(f"unknown hand shape {shape!r} (flat | hang | fist)")
 
 
 def draw_hair(d, hx, hy, r, crown_deg: float, mode: str, ink) -> None:
@@ -284,11 +432,13 @@ def draw_hair(d, hx, hy, r, crown_deg: float, mode: str, ink) -> None:
                 c = math.radians(crown_deg + root + sgn * s * 6.0)
                 pts.append((hx + math.sin(c) * R, hy - math.cos(c) * R))
             d.line(pts, fill=ink, width=LINE)
-        else:
+        elif mode == "rest":
             # at rest: short spikes straight out from the scalp
             L = HAIR_REST * S
             d.line([(rx, ry), (rx + math.sin(a) * L, ry - math.cos(a) * L)],
                    fill=ink, width=LINE)
+        else:
+            sys.exit(f"unknown hair mode {mode!r} (up | flat | rest)")
 
 
 def draw_cell(d: ImageDraw.ImageDraw, cx: float, f: dict, side: int,
@@ -296,13 +446,16 @@ def draw_cell(d: ImageDraw.ImageDraw, cx: float, f: dict, side: int,
     j = skeleton(f, side)
     P = lambda k: to_px(cx, j[k])
 
-    # the two footprints, one drawing in every cell
+    # the two footprints, one drawing in every cell -- the shoe rests on the
+    # ground under its ankle; a raised ankle (a stride) lifts it with the foot
     for k in ("ank_d", "ank_f"):
-        ax, ay = to_px(cx, (j[k][0], 0.0))
+        ax, _ = to_px(cx, (j[k][0], 0.0))
+        lift = max(0.0, j[k][1] - ANKLE_Y) * STANDING
         w, h = SHOE_W * STANDING, SHOE_H * STANDING
-        d.rounded_rectangle([ax - w / 2, GROUND_Y - h, ax + w / 2, GROUND_Y],
+        d.rounded_rectangle([ax - w / 2, GROUND_Y - h - lift, ax + w / 2,
+                             GROUND_Y - lift],
                             radius=h * 0.45, outline=ink, width=LINE)
-        d.line([P(k), (ax, GROUND_Y - h * 0.5)], fill=ink, width=LINE)
+        d.line([P(k), (ax, GROUND_Y - h * 0.5 - lift)], fill=ink, width=LINE)
 
     for a, b in BONES:
         d.line([P(a), P(b)], fill=ink, width=LINE)
@@ -313,13 +466,10 @@ def draw_cell(d: ImageDraw.ImageDraw, cx: float, f: dict, side: int,
     hx, hy = P("head")
     r = HEAD_R * STANDING
     d.ellipse([hx - r, hy - r, hx + r, hy + r], outline=ink, width=LINE)
-    draw_hair(d, hx, hy, r, f["head"] * side, f.get("hair", "rest"), ink)
+    draw_hair(d, hx, hy, r, f["head"] * side, f["hair"], ink)
 
-    if f["hand"] is None:
-        draw_hanging_hand(d, P("hand_d"), ink)
-    else:
-        draw_dribble_hand(d, P("hand_d"), side, f.get("palm", 0.0), ink)
-    draw_hanging_hand(d, P("hand_f"), ink)
+    draw_hand(d, f["hand_shape"], P("hand_d"), P("elb_d"), side, f["palm"], ink)
+    draw_hand(d, f["free_shape"], P("hand_f"), P("elb_f"), -side, f["palm"], ink)
 
     th = math.radians(f["head"] * side)
     ax, ay = math.sin(th), -math.cos(th)                  # crown direction
@@ -338,8 +488,7 @@ def draw_cell(d: ImageDraw.ImageDraw, cx: float, f: dict, side: int,
                   fill=ink)
 
 
-def build(side: int) -> Image.Image:
-    cells = frames(side)
+def build(cells: list[dict], side: int) -> Image.Image:
     im = Image.new("RGB", (CELL_W * len(cells), CELL_H), PAPER)
     d = ImageDraw.Draw(im)
     d.line([(0, GROUND_Y), (im.width, GROUND_Y)], fill=INK, width=LINE)
@@ -350,7 +499,7 @@ def build(side: int) -> Image.Image:
 
 # --------------------------------------------------------------- the overlay
 
-def overlay(preview: Path, side: int, out: Path) -> None:
+def overlay(preview: Path, cells: list[dict], side: int, out: Path) -> None:
     """Draw the skeleton over measure-strip.py's registered frames.
 
     Those frames are scaled by the calibration frame and pinned by the foot
@@ -369,9 +518,8 @@ def overlay(preview: Path, side: int, out: Path) -> None:
     STANDING, GROUND_Y = standing, ground
     CELL_W, CELL_H = calib.width, calib.height
 
-    cells = frames(side)
     sheet = Image.new("RGB", (CELL_W * len(cells), CELL_H), PAPER)
-    names = ["calib", "f0", "f1", "f2", "f3"]
+    names = ["calib"] + [f"f{i}" for i in range(len(cells) - 1)]
     for i, (f, n) in enumerate(zip(cells, names)):
         art = Image.open(preview / f"{n}.png").convert("RGBA")
         tile = Image.new("RGBA", (CELL_W, CELL_H), PAPER + (255,))
@@ -384,29 +532,51 @@ def overlay(preview: Path, side: int, out: Path) -> None:
     print(f"overlay -> {out}")
 
 
+def describe_hand(v) -> str:
+    if v is None:
+        return "hanging"
+    if isinstance(v, (list, tuple)):
+        return f"({v[0]:+.2f},{v[1]:.2f})"
+    return f"{v * 100:.0f}%"
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--seq", default="dribble_idle")
+    ap.add_argument("--char", default=None,
+                    help="look in this character's own sequences first")
     ap.add_argument("--left", action="store_true",
-                    help="the dribbling hand is toward the viewer's LEFT")
+                    help="draw the mirror image, dribbling hand toward the "
+                         "viewer's LEFT (written as <file>-left.png)")
     ap.add_argument("--overlay", type=Path, default=None,
                     help="a measure-strip.py preview directory to check against")
     a = ap.parse_args()
-    side = -1 if a.left else +1
 
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
-    out = OUT_DIR / f"{a.seq}{'-left' if a.left else ''}.png"
-    build(side).save(out)
-    print(f"{out.relative_to(ROOT)}  {CELL_W * 5}x{CELL_H}, "
-          f"standing height {STANDING}px")
-    for f in frames(side):
-        h = f"{f['hand']*100:.0f}%" if f["hand"] else "hanging"
+    entry = load_sequence(a.seq, a.char)
+    spec = guide_spec(entry, a.seq)
+    cells = frames(spec)
+    side = {"right": +1, "left": -1}[str(spec.get("side", "right"))]
+    if a.left:
+        side = -side
+
+    out = ROOT / spec.get("file", f"art/guides/{a.seq}.png")
+    if a.left:
+        out = out.with_name(out.stem + "-left" + out.suffix)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    build(cells, side).save(out)
+    print(f"{out.relative_to(ROOT).as_posix()}  {CELL_W * len(cells)}x{CELL_H}, "
+          f"standing height {STANDING}px  (from {entry['_where']})")
+    for f in cells:
+        extra = f"  joints {','.join(f['joints'])}" if f["joints"] else ""
         print(f"  {f['name']:<12} drop {f['drop']*100:4.1f}%  "
               f"tilt {f['tilt']*100:4.1f}%  lean {f['lean']*100:4.1f}%  "
-              f"hand {h:>8}  head {f['head']:.0f}deg")
+              f"hand {describe_hand(f['hand']):>13}  head {f['head']:.0f}deg"
+              + (f"  turn {f['turn']:.0f}deg" if f["turn"] else "") + extra)
+    for w in stretch_report(cells, side):
+        print(f"  ! {w}")
 
     if a.overlay:
-        overlay(a.overlay, side, a.overlay / "overlay.png")
+        overlay(a.overlay, cells, side, a.overlay / "overlay.png")
 
 
 if __name__ == "__main__":
