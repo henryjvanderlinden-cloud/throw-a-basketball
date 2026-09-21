@@ -723,17 +723,31 @@ window.SPRITE_MANIFEST = {
     "dribble_idle": [
      {
       "src": "sprites/zombie/dribble_idle/01.png",
-      "w": 91.96,
-      "h": 132.0,
-      "footX": 45.93,
-      "footY": 132.0
+      "w": 74.22,
+      "h": 117.81,
+      "footX": 35.98,
+      "footY": 118.02
      },
      {
       "src": "sprites/zombie/dribble_idle/02.png",
-      "w": 94.95,
-      "h": 129.9,
-      "footX": 49.98,
-      "footY": 129.9
+      "w": 75.46,
+      "h": 124.6,
+      "footX": 36.7,
+      "footY": 124.8
+     },
+     {
+      "src": "sprites/zombie/dribble_idle/03.png",
+      "w": 76.49,
+      "h": 128.5,
+      "footX": 35.88,
+      "footY": 128.71
+     },
+     {
+      "src": "sprites/zombie/dribble_idle/04.png",
+      "w": 74.64,
+      "h": 121.31,
+      "footX": 36.29,
+      "footY": 121.31
      }
     ],
     "run_dribble_r": [
@@ -850,6 +864,13 @@ window.SPRITE_MANIFEST = {
     ]
    },
    "ballSide": {},
+   "fixed": [
+    "dribble_idle"
+   ],
+   "apexFrame": {
+    "dribble_idle": 2
+   },
+   "standH": 132.0,
    "handX": 13.91,
    "handY": -140.41
   }

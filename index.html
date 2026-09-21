@@ -1120,13 +1120,15 @@ function pickCelebration(p) {
 }
 
 // A character drawn per direction is never mirrored, so nothing it carries
-// flips with facing either.
-const flipsWithFacing = p => !p.char || p.char.mirror;
+// flips with facing either. A character part-way through migrating to strips is
+// mirrored except in its `fixed` sequences, which are drawn for one facing.
+const flipsWithFacing = (p, seq) =>
+  !p.char || (p.char.mirror && !(seq && p.char.fixed && p.char.fixed.includes(seq)));
 
 // Which way the dribbling hand points in a given sequence: +1 is the viewer's
 // right. Mirrored characters have only one set of art, so theirs follows facing.
 function ballSide(p, seq) {
-  if (flipsWithFacing(p)) return p.facing;
+  if (flipsWithFacing(p, seq)) return p.facing;
   return (p.char.ballSide && p.char.ballSide[seq]) || 1;
 }
 
@@ -1150,7 +1152,13 @@ function holdPos(p) {
 }
 
 // how tall the current character is, for shadow and pickup sizing
-const bodyH = p => p.char ? p.char.sequences.dribble_idle[0].h : 70;
+// Standing height. A strip with a calibration frame states it (`standH`); older
+// art falls back to the first dribble frame, which for it was the standing pose.
+const bodyH = p => p.char ? (p.char.standH || p.char.sequences.dribble_idle[0].h) : 70;
+
+// The dribble frame that shows a character at full height: the HIGHEST-hand
+// frame where the sheet names one, else the first.
+const portraitFrame = c => c.sequences.dribble_idle[(c.apexFrame && c.apexFrame.dribble_idle) || 0];
 
 // ---------------------------------------------------------------- state
 // Match states, and the per-player states inside a match. A player is IDLE
@@ -1381,7 +1389,7 @@ function buildSelectCards() {
   const ch = p.h - pad * 2 - head;
   const y = p.y + pad + head;
   // one scale across the row, so they keep their real sizes here too
-  const tallest = Math.max(...CHARS.map(c => c.sequences.dribble_idle[0].h));
+  const tallest = Math.max(...CHARS.map(c => portraitFrame(c).h));
   const k = (ch - 34) / tallest;
 
   order.forEach((ci, slot) => {
@@ -1400,7 +1408,7 @@ function buildSelectCards() {
     card.setAttribute('stroke-width', '3');
     grp.appendChild(card);
 
-    const f = c.sequences.dribble_idle[0];
+    const f = portraitFrame(c);
     const im = document.createElementNS(SVGNS, 'image');
     qImage(im, f.src, PRI.PICKER);
     im.setAttribute('width', (f.w * k).toFixed(1)); im.setAttribute('height', (f.h * k).toFixed(1));
@@ -2635,11 +2643,20 @@ function powerColor(p) {
 }
 
 // The dribble frames are indexed off the ball's own bounce phase, so the hand
-// always meets the ball. One bounce is dribT advancing by PI. The hand is at its
-// LOWEST (frame 1) when the ball is up at the hand, and at its HIGHEST (the
-// middle of the sequence) when the ball is down at the floor.
-function dribbleFrame(p, n) {
+// always meets the ball. One bounce is dribT advancing by PI; u is its phase,
+// 0 with the ball on the floor and 0.5 at its apex.
+//
+// A sheet that names its HIGHEST-hand frame (`apex`, from the manifest's
+// apexFrame) has that frame CENTRED on the apex -- shown while the ball rises
+// the last stretch into the hand and starts back down -- and the frames after it
+// follow the ball down, round the floor and back up.
+//
+// Without one, the older convention: frame 0 from the apex onward, and the
+// middle of the sequence while the ball is down at the floor. The placeholder
+// art puts its lower-handed pose first for exactly that.
+function dribbleFrame(p, n, apex) {
   const u = (((p.dribT % Math.PI) + Math.PI) % Math.PI) / Math.PI;
+  if (apex != null) return Math.floor(((((u - 0.5) * n + apex + 0.5) % n) + n) % n) % n;
   return Math.floor(((((u - 0.5) % 1) + 1) % 1) * n) % n;
 }
 
@@ -2693,7 +2710,8 @@ function animatePlayer(p) {
     // mirrored to keep the dribbling hand over the ball.
     p.mirrorPose = p.char.mirror;
     const name = dribbleSeq(p);
-    return showFrame(p, name, dribbleFrame(p, seqOf(p, name).length));
+    const apex = p.char.apexFrame && p.char.apexFrame[name];
+    return showFrame(p, name, dribbleFrame(p, seqOf(p, name).length, apex));
   }
 
   // IDLE -- no ball: following through, celebrating, chasing, or just standing.
@@ -2730,8 +2748,11 @@ function animatePlayer(p) {
     const n = seqOf(p, 'panic').length;
     return showFrame(p, 'panic', Math.floor(p.animT * ANIM_HZ.panic) % n);
   }
+  // Standing without the ball. Until a ball-less idle exists, the upright
+  // dribble frame: on a sheet that opens on a crouch, frame 0 would leave him
+  // bent over with his hand at his knee and nothing under it.
   p.mirrorPose = p.char.mirror;
-  return showFrame(p, 'dribble_idle', 0);
+  return showFrame(p, 'dribble_idle', (p.char.apexFrame && p.char.apexFrame.dribble_idle) || 0);
 }
 
 // ---------------------------------------------------------------- render
@@ -2750,7 +2771,7 @@ function render() {
     if (!menus) animatePlayer(p);        // sets p.mirrorPose for this frame
     // Characters drawn per direction are never flipped; only the single-facing
     // art turns around.
-    const flip = flipsWithFacing(p) ? p.facing * (p.mirrorPose ? -1 : 1) : 1;
+    const flip = flipsWithFacing(p, p.shown && p.shown[0]) ? p.facing * (p.mirrorPose ? -1 : 1) : 1;
     p.rig.flip.setAttribute('transform', flip < 0 ? 'scale(-1,1)' : 'scale(1,1)');
 
     const aiming = (p.state === PS.AIM || p.state === PS.CHARGE);

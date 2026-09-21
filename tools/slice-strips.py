@@ -63,6 +63,12 @@ STRIPS = {
         ("celebrate_pump",  "Monkey_sequence_016.png", 3),
         ("celebrate_flip",  "Monkey_sequence_017.png", 6),
     ],
+    # The zombie is mid-migration: sequences listed here replace their
+    # counterparts from the eight old poses, which still supply the rest (see
+    # build-sprites.py). Each is the approved take of the guided pipeline.
+    "Zombie": [
+        ("dribble_idle",    "dribble_idle.approved.png", 4, True),
+    ],
 }
 
 

@@ -11,6 +11,10 @@ OLD: artwork/basketball-players/<Name> poses/*.png
      -- the original eight single poses, which the game maps onto sequences and
      still mirrors for facing.
 
+MIXED: a character listed in MIXED takes the old poses as its base and lets
+     every sliced sequence replace its old counterpart. This is how a character
+     migrates one approved sequence at a time without losing the rest.
+
 Both become sprites/<key>/<sequence>/NN.png plus sprites/manifest.js, so the
 game only ever sees named sequences and has one code path.
 
@@ -20,6 +24,7 @@ Run from anywhere:  python tools/build-sprites.py
 from __future__ import annotations
 
 import json
+import re
 import shutil
 from pathlib import Path
 
@@ -57,6 +62,15 @@ LEGACY_POSES = {
     "zombie":       {"dribble": [1, 2], "aim": [3, 4], "charge": [6, 5], "shot": [7, 8]},
 }
 LEGACY_IDLE_POSE = 1        # the plain standing pose, used to set the scale
+
+# The eight old poses are named "<Name> 001.png" .. "<Name> 008.png". The poses
+# folders also hold generated strips and takes, which must not be read as poses.
+LEGACY_NAME = re.compile(r" \d{3}\.png$")
+
+# Characters built from BOTH kinds of input: old poses for everything, then each
+# sliced sequence in "<Name> frames/" replacing its old counterpart. Opt-in,
+# because the monkey still has his old poses on disk and must stay strips-only.
+MIXED = {"zombie"}
 
 # --- per-sequence corrections -------------------------------------------
 # Each strip is generated separately, so they drift in scale relative to each
@@ -116,6 +130,15 @@ BALL_SIDE = {
         "dribble_idle": -1, "break_banana": -1, "break_wave": -1,
         "pickup": -1, "panic": -1, "run_dribble_r": +1, "run_dribble_l": -1,
     },
+}
+
+# Which frame of a dribble loop has the hand at its HIGHEST, 1-based as in the
+# frame files (03.png = 3). The game centres that frame on the ball's apex, the
+# moment the ball meets the hand. A sequence not listed keeps the game's older
+# convention (frame 1 drawn from the apex onward), which the placeholder art was
+# drawn for.
+APEX_FRAME = {
+    "zombie": {"dribble_idle": 3},     # LOWEST, RISING, HIGHEST, DRIVING DOWN
 }
 
 # Sequences anchored on the cell rather than on the feet: either the feet
@@ -195,6 +218,7 @@ def build_from_sequences(key: str, stem: str, label: str) -> dict | None:
     seq_scale = SEQ_SCALE.get(key, {})
     sequences = {}
     auto = []
+    stand_h = None
     for d in seq_dirs:
         files = sorted(d.glob("*.png"))
         if not files:
@@ -213,6 +237,11 @@ def build_from_sequences(key: str, stem: str, label: str) -> dict | None:
             ch = bbox(mask_of(Image.open(calib).convert("RGBA")))
             s = target_h / (ch[3] - ch[1])
             auto.append(d.name)
+            # The calibration pose IS the standing height. The game otherwise
+            # takes it from the first dribble frame, which on a strip that opens
+            # on a crouch is too short and sizes the ball's bounce too low.
+            if d.name == "dribble_idle":
+                stand_h = round(target_h, 2)
         else:
             s = scale * seq_scale.get(d.name, 1.0)
 
@@ -224,6 +253,9 @@ def build_from_sequences(key: str, stem: str, label: str) -> dict | None:
         cell_cx = ims[0].width / 2
         travelling = d.name in TRAVELLING
 
+        # In a mixed build the old poses were written here first; clear them so
+        # a shorter strip cannot leave an old frame behind.
+        shutil.rmtree(OUT / key / d.name, ignore_errors=True)
         frames = []
         for i, (im, m, box) in enumerate(zip(ims, masks, boxes), start=1):
             # A travelling pose anchors on the cell, because its feet are
@@ -242,14 +274,20 @@ def build_from_sequences(key: str, stem: str, label: str) -> dict | None:
 
     if auto:
         print(f"{key:<14} auto-scaled from calibration frames: {', '.join(auto)}")
-    return {"key": key, "label": label, "mirror": False, "sequences": sequences,
+    char = {"key": key, "label": label, "mirror": False, "sequences": sequences,
             "ballSide": BALL_SIDE.get(key, {})}
+    apex = {n: k - 1 for n, k in APEX_FRAME.get(key, {}).items() if n in sequences}
+    if apex:
+        char["apexFrame"] = apex                  # 0-based in the manifest
+    if stand_h is not None:
+        char["standH"] = stand_h
+    return char
 
 
 # ---------------------------------------------------------------- old style
 def build_from_poses(key: str, stem: str, label: str) -> dict | None:
     src = SRC / f"{stem} poses"
-    files = sorted(p for p in src.glob("*.png") if "_sequence_" not in p.name)
+    files = sorted(p for p in src.glob("*.png") if LEGACY_NAME.search(p.name))
     if len(files) < 8:
         return None
     ims = [Image.open(f).convert("RGBA") for f in files]
@@ -289,6 +327,28 @@ def build_from_poses(key: str, stem: str, label: str) -> dict | None:
             "ballSide": {}}
 
 
+def build_mixed(key: str, stem: str, label: str) -> dict | None:
+    """Old poses as the base, sliced sequences on top.
+
+    The old art is drawn facing one way and flipped to turn round; a sliced
+    sequence is drawn for the facing it is used in and must never be flipped
+    (the jersey number would read backwards). So the character stays `mirror`,
+    and the sliced sequences are listed in `fixed`, which the game checks per
+    sequence.
+    """
+    base = build_from_poses(key, stem, label)
+    strips = build_from_sequences(key, stem, label)   # writes after, so it wins
+    if not base or not strips:
+        return base or strips
+    base["sequences"].update(strips["sequences"])
+    base["fixed"] = sorted(strips["sequences"])
+    base["ballSide"] = strips["ballSide"]
+    for k in ("apexFrame", "standH"):
+        if k in strips:
+            base[k] = strips[k]
+    return base
+
+
 def hand_point(char: dict) -> tuple[float, float]:
     """Where the ball leaves the hand: the top of the release frame.
 
@@ -315,7 +375,10 @@ def main() -> None:
 
     chars = []
     for key, stem, label in CHARACTERS:
-        char = build_from_sequences(key, stem, label) or build_from_poses(key, stem, label)
+        if key in MIXED:
+            char = build_mixed(key, stem, label)
+        else:
+            char = build_from_sequences(key, stem, label) or build_from_poses(key, stem, label)
         if not char:
             print(f"{key:<14} SKIPPED (no art found)")
             continue
@@ -330,7 +393,7 @@ def main() -> None:
 
     for c in chars:
         n = sum(len(f) for f in c["sequences"].values())
-        kind = "strips" if not c["mirror"] else "poses"
+        kind = ("mixed" if c.get("fixed") else "poses") if c["mirror"] else "strips"
         print(f"{c['key']:<14} {len(c['sequences']):>2} sequences, {n:>2} frames "
               f"({kind})  hand ({c['handX']:+.0f},{c['handY']:+.0f})")
     pngs = list(OUT.rglob("*.png"))

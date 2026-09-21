@@ -902,7 +902,7 @@ async def main():
             h: +g.children[1].getAttribute('height')
           }));
           const manifest = {};
-          __hoop.chars.forEach(c => manifest[c.label] = c.sequences.dribble_idle[0].h);
+          __hoop.chars.forEach(c => manifest[c.label] = c.sequences.dribble_idle[(c.apexFrame && c.apexFrame.dribble_idle) || 0].h);
           return cards.map(c => ({...c, real: manifest[c.label]}));
         }""")
         ratio = sizes[0]["h"] / sizes[0]["real"]
