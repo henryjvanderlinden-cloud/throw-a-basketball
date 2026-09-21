@@ -158,6 +158,7 @@ def plan(characters: list[str], sequences: list[str], rolls: int) -> list[dict]:
                     "char": key, "label": char["label"], "seq": seq, "roll": roll,
                     "frames": meta["frames"], "cells": meta["frames"] + 1,
                     "ref": ROOT / meta["ref"], "out": png, "sidecar": side,
+                    "guide": ROOT / meta["guide"] if meta.get("guide") else None,
                     "text": text, "hash": h,
                 })
     if skipped:
@@ -549,20 +550,44 @@ def run(jobs: list[dict], args) -> int:
         for n, job in enumerate(jobs, 1):
             tag = f"{job['char']}/{job['seq']} r{job['roll']}"
             log(f"[{n}/{len(jobs)}] {tag} — {job['cells']} cells, "
-                f"ref {job['ref'].name}")
+                f"ref {job['ref'].name}"
+                + (f", guide {job['guide'].name}" if job["guide"] else ""))
             if not job["ref"].exists():
                 log(f"    ! reference missing: {job['ref']} — skipping")
                 failed += 1
                 continue
+            # A guide named in the manifest but absent from disk is a mistake,
+            # not an option: the prompt that goes with it talks about a second
+            # image, so sending it alone asks for a pose nothing describes.
+            if job["guide"] and not job["guide"].exists():
+                log(f"    ! pose guide missing: {job['guide']} — skipping")
+                failed += 1
+                continue
             try:
                 bot.new_chat()
+                # The reference goes first and stays the authority on identity;
+                # the guide is attached second and the prompt names it by what
+                # it looks like, not by its position, in case the order slips.
                 bot.attach(job["ref"])
+                if job["guide"]:
+                    bot.attach(job["guide"])
                 before = {o["src"] for o in bot._images()}
                 bot.send(job["text"])
                 bot.page.wait_for_timeout(4000)
                 if not bot.sent_with_image():
                     raise NoImage("the sent message carried no image — the "
                                   "reference did not travel with the prompt")
+                # A SECOND snapshot, and it cost two rolls to learn why. Until
+                # a message is sent its attachments are buttons, not <img>, so
+                # the snapshot above cannot see them; wait_for_image then falls
+                # back on SHAPE, and shape is exactly what stops separating the
+                # input from the output once a pose guide is attached. A guide
+                # is wide, five cells on one ground line -- it passes the strip
+                # filter as well as a real strip does, and both rolls returned
+                # the guide itself, byte-identical, three seconds after sending.
+                # The user turn has now rendered, so everything on the page is
+                # an input and only the assistant's image can appear after here.
+                before |= {o["src"] for o in bot._images()}
                 url = bot.wait_for_image(before, timeout_s=args.timeout)
                 size = bot.download(url, job["out"])
                 job["sidecar"].write_text(json.dumps({
@@ -570,6 +595,8 @@ def run(jobs: list[dict], args) -> int:
                     "roll": job["roll"], "frames": job["frames"],
                     "cells": job["cells"], "prompt_hash": job["hash"],
                     "reference": str(job["ref"].relative_to(ROOT)),
+                    "guide": (str(job["guide"].relative_to(ROOT))
+                              if job["guide"] else None),
                     "generated_at": datetime.now(timezone.utc).isoformat(),
                     "source_url": url, "bytes": size,
                     "prompt": job["text"],
@@ -648,6 +675,7 @@ def main() -> None:
         for j in jobs:
             print(f"  {j['char']:<14} {j['seq']:<20} r{j['roll']}  "
                   f"{j['cells']} cells  ref={j['ref'].name}  "
+                  f"guide={j['guide'].name if j['guide'] else '--'}  "
                   f"prompt={j['hash']}  -> {j['out'].relative_to(ROOT)}")
         return
     sys.exit(run(jobs, args))

@@ -82,6 +82,45 @@ defaults:
     The character is NOT holding a basketball in any frame — the ball is drawn
     separately by the game.
 
+  # Sent only for a sequence that has a `guide:`. It names the two attached
+  # images by what they LOOK like rather than by the order they were attached,
+  # because the order is the one thing about the upload we do not control.
+  guide_note: |
+    POSE GUIDE: TWO images are attached, and they do different jobs.
+
+    The COLOUR image of the character is the only authority on WHO HE IS. His
+    colours, his proportions, his build, his height, his face, his kit and the
+    drawing style all come from that image and from the SUBJECT above, and
+    nothing below changes any of them.
+
+    The other image is a POSE GUIDE: a plain black stick figure on a white
+    background, five figures standing in a row on one ground line, in the same
+    left-to-right order as the FRAMES listed below. The Nth figure in the pose
+    guide is the pose for the Nth frame. Take the GEOMETRY from it and only the
+    geometry: where each foot stands on the ground line, how deeply each knee
+    is bent and which knee is bent more than the other, how far the shoulder
+    line is tilted away from level, how far his spine leans away from upright,
+    how high the dribbling hand is and how far
+    out from his centre line it reaches, and how far the head is tilted. Where
+    the words below and the pose guide describe the same thing, they agree; the
+    pose guide is the exact version of it.
+
+    THE HANDS ON THE POSE GUIDE are drawn too. The FLAT hand with its fingers
+    spread out sideways is the dribbling hand: palm to the floor, at exactly
+    that height and that angle. The NARROW hand with its fingers pointing down
+    at the floor is the free hand, palm turned in toward his leg. Each is ONE
+    drawing, moved from frame to frame, and so is his.
+
+    THE SHORT LINES ON THE POSE GUIDE'S HEAD show which way his hair points in
+    that frame: standing straight up off his scalp, lying down flat along the
+    sides of his head, or sticking out at rest. Draw HIS OWN ragged brown hair
+    pointing the way those lines point. The lines are a direction, not hair.
+
+    Draw the character from the colour reference standing in those positions.
+    The pose guide is an instruction, not artwork: its thin flat lines, its
+    joint dots, its white background, its blank circular head and its missing
+    face are NOT part of the drawing and must not appear anywhere in it.
+
   closing_loop: |
     This row is a seamless loop: frame {last} must flow back into frame
     {first} with no jump.
@@ -98,6 +137,7 @@ sequences:
 
   dribble_idle:
     title: Stationary dribble
+    guide: art/guides/dribble_idle.png
     kind: loop
     frames: 4
     ref: front
@@ -131,8 +171,9 @@ sequences:
       KNEE, overlapping the knee in the silhouette, with the hem of his shorts
       clearly above his wrist; in the RISING frame it is level with the HEM of
       his shorts; in the HIGHEST frame it is up at the WAISTBAND of his shorts,
-      higher than it is in any other frame; in the DRIVING DOWN frame it is back
-      down to just BELOW the hem. The HIGHEST frame is unmistakably the highest
+      higher than it is in any other frame; in the DRIVING DOWN frame it is
+      STILL UP ABOVE THE HEM, halfway between the hem and the waistband,
+      trailing behind his body, which has already dropped. The HIGHEST frame is unmistakably the highest
       of the four and the LOWEST frame unmistakably the lowest. Only in the
       LOWEST frame does the hand tilt a little further down, at the end of the
       push.
@@ -155,6 +196,15 @@ sequences:
       straighter and carries less of him. As the hand comes up, that knee
       straightens again and his weight comes back toward the middle.
 
+      HIS SPINE TILTS WITH THE PUSH, and only a little. Take a line from the middle
+      of his belt up through the middle of his chest: in the LOWEST frame that line
+      leans toward the RIGHT EDGE of the picture, his chest further toward the right
+      edge than his belt buckle is, out over the loaded hip; in the DRIVING DOWN
+      frame it leans almost as far; in the RISING frame it leans only slightly; in
+      the HIGHEST frame it is STRAIGHT UP AND DOWN, his chest directly above his belt
+      buckle. The LOWEST frame leans the most of the four and the HIGHEST frame not
+      at all. His shoulders and his head go with his chest, as one piece.
+
       HIS FEET ARE ONE DRAWING REPEATED IN ALL FOUR FRAMES: both shoes in the
       same place on the floor, the same distance apart, at the same angle, as if
       traced from one frame into the next three. THE GAP BETWEEN HIS SHOES IS
@@ -164,13 +214,22 @@ sequences:
       over his toes as he sinks, and straightens as he rises. His knees do all
       the work his feet are not allowed to do.
 
-      HIS HEAD BARELY TRAVELS SIDEWAYS — it stays above his chest, and his face
-      stays turned to the viewer. What changes is its TILT, and only slightly:
+      HIS HEAD SITS ON TOP OF HIS SPINE — it stays directly above his chest and
+      moves only as far as his chest moves, and his face stays turned to the
+      viewer. What changes is its TILT, and only slightly:
       in the LOWEST frame his head tips a little toward the dribbling side, the
       ear on that side dropping toward that shoulder and the chin dipping; in
       the two middle frames the tilt is about half of that; in the HIGHEST frame
       his head is level and square to the camera, looking straight at the
       viewer. A slight tilt throughout, never a full lean.
+
+      HIS HAIR MOVES WITH THE BOUNCE. In the LOWEST frame his hair STANDS UP
+      off the top of his head, the ragged tufts pointing straight up at the
+      ceiling, the way hair does when a body drops out from under it. In the
+      HIGHEST frame his hair LIES FLAT on the top of his head, the tufts pointing
+      down toward his ears, pressed down by the rise. In the RISING and DRIVING
+      DOWN frames his hair is exactly as it is in frame 1. It is the same colour
+      and the same ragged tufts in every frame.
     poses:
       - >-
           LOWEST, the push landed. His most compressed frame: both knees

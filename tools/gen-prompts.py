@@ -97,6 +97,15 @@ def render(seq: dict, char: dict, defaults: dict) -> str:
         f"spaced. No borders, no frame numbers, no labels, no background, no "
         f"drop shadows."))
 
+    # A sequence with a `guide:` is sent TWO images, so the prompt has to say
+    # which is which. The wording is a default rather than a per-sequence line
+    # for the same reason the SUBJECT block is: the division of authority
+    # between the reference and the guide must not drift between sequences.
+    if seq.get("guide"):
+        parts.append("\n\n".join(
+            wrap(p) for p in paragraphs(
+                resolve(str(defaults["guide_note"]), traits))))
+
     camera = field("camera") + " " + field("ground")
     parts.append(wrap(resolve(camera, traits)))
 
@@ -171,6 +180,7 @@ def main() -> None:
                 "frames": int(seq["frames"]),
                 "calibration": True,
                 "ref": char["refs"][seq.get("ref", "front")],
+                "guide": seq.get("guide"),
                 "travelling": bool(seq.get("travelling")),
                 "airborne": bool(seq.get("airborne")),
                 "own": name in own,
@@ -178,7 +188,8 @@ def main() -> None:
             }
             flag = "*" if name in own else " "
             print(f"  {flag} {name:<20} {seq['frames']}+1 cells  "
-                  f"{len(text):>5} chars")
+                  f"{len(text):>5} chars"
+                  + ("  + pose guide" if seq.get("guide") else ""))
 
         # A renamed or removed sequence leaves its old .txt behind. Deleting it
         # is not always possible -- Windows Controlled Folder Access refuses
