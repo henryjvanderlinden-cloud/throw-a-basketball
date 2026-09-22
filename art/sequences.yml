@@ -308,7 +308,7 @@ sequences:
     # here is also FORWARD (he runs toward the right edge, ball ahead of him).
     # Contact, passing, contact, passing: each leg plants in front, passes
     # under the body with the other knee driving through, and trails behind.
-    # The free arm swings against its own leg, open-handed. The hand
+    # The free arm swings against its own leg, as a fist. The hand
     # reaches the game's apex, 0.52, on the passing frames; its low point is
     # 0.36 -- lower than that is out of reach without a deep crouch (see the
     # stretch check in make-pose-guide.py). Each foot is placed from its OWN
@@ -358,10 +358,9 @@ sequences:
 
         THE HANDS ON THE POSE GUIDE: the FLAT hand with its fingers spread is
         the dribbling hand, palm to the floor, at exactly that height. The
-        NARROW hand with its fingers pointing down is the free hand, open and
-        relaxed, swinging as he runs. BOTH HANDS STAY OPEN IN EVERY FRAME:
-        neither hand is ever a fist, and the dribbling arm never pumps like a
-        sprinter's -- it stays out ahead of him, pushing the ball down.
+        small closed square at the end of the blue arm is the free hand, a loose
+        fist, swinging as he runs. The dribbling hand never pumps like a
+        sprinter's: it stays out ahead of him, pushing the ball down.
 
         THE HEAD ON THE POSE GUIDE: the curved line down the face shows which
         way he is looking -- toward the side it bulges to, the way he is
@@ -388,6 +387,7 @@ sequences:
           hand: 0.36
           palm: 12
           free: [0.02, 0.52]
+          free_shape: fist
           joints: {ank_d: [0.20, 0.09], ank_f: [-0.23, 0.20], knee_f: [-0.11, 0.26]}
           feet: {d: -5, f: 45}
         # Passing: the dribbling-side foot is under him, the other knee drives
@@ -404,6 +404,7 @@ sequences:
           hip_tilt: -0.015
           hand: 0.52
           free: [-0.12, 0.42]
+          free_shape: fist
           joints: {ank_d: [0.02, 0.09], ank_f: [-0.06, 0.22], knee_f: [0.10, 0.30]}
           feet: {d: 0, f: 30}
         - name: contact-free-side
@@ -417,6 +418,7 @@ sequences:
           hand: 0.36
           palm: 12
           free: [-0.20, 0.48]
+          free_shape: fist
           joints: {ank_f: [0.08, 0.09], ank_d: [-0.11, 0.20], knee_d: [0.01, 0.26]}
           feet: {f: -5, d: 45}
         - name: passing-free-side
@@ -429,6 +431,7 @@ sequences:
           hip_tilt: 0.015
           hand: 0.52
           free: [-0.12, 0.42]
+          free_shape: fist
           joints: {ank_f: [-0.10, 0.09], ank_d: [0.06, 0.22], knee_d: [0.22, 0.30]}
           feet: {f: 0, d: 30}
     kind: loop

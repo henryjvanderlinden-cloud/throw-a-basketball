@@ -138,7 +138,16 @@ BALL_SIDE = {
 # convention (frame 1 drawn from the apex onward), which the placeholder art was
 # drawn for.
 APEX_FRAME = {
-    "zombie": {"dribble_idle": 3},     # LOWEST, RISING, HIGHEST, DRIVING DOWN
+    "zombie": {"dribble_idle": 3,      # LOWEST, RISING, HIGHEST, DRIVING DOWN
+               "run_dribble_r": 2},    # contact, PASSING, contact, passing
+}
+
+# How many bounces of the ball one loop of a sequence covers. Default 1. The
+# running dribble is a full stride -- two steps, each with its own bounce, and
+# the hand pushes once per step -- so its four frames span two bounces. A
+# runner bounces the ball as each foot lands.
+LOOP_BOUNCES = {
+    "zombie": {"run_dribble_r": 2},
 }
 
 # Sequences anchored on the cell rather than on the feet: either the feet
@@ -147,6 +156,26 @@ APEX_FRAME = {
 # feet are planted and anchor directly, which stops the character sliding
 # sideways mid-loop.
 TRAVELLING = {"run_r", "run_l", "run_dribble_r", "run_dribble_l", "celebrate_flip"}
+
+# ... and of those, the ones anchored on the BODY rather than on the middle of
+# the source cell. A run is drawn in place: the feet swing, the torso does not,
+# so the torso is what the frames must be registered on. Anchoring on the cell
+# assumes the generator centred the figure in it, and it does not: the zombie's
+# run_dribble_r torso wandered 24 units (a fifth of his height) across the four
+# frames, which in the game is the character lurching sideways as he runs, with
+# the ball left hanging away from his hand. The handspring keeps the cell: it
+# leaves the floor and turns over, so it has no steady torso to anchor on.
+BODY_ANCHORED = {"run_r", "run_l", "run_dribble_r", "run_dribble_l"}
+
+
+def torso_centre(m: np.ndarray, box) -> float:
+    """The middle of the upper body: the band between 15% and 55% of the
+    figure's height, which holds the chest and hips and excludes the swinging
+    arms' full reach and the legs."""
+    y0, y1 = box[1], box[3]
+    band = m[y0 + int(0.15 * (y1 - y0)):y0 + int(0.55 * (y1 - y0)), :]
+    xs = np.where(band.any(axis=0))[0]
+    return float((xs.min() + xs.max()) / 2) if len(xs) else (box[0] + box[2]) / 2
 
 
 def mask_of(im: Image.Image) -> np.ndarray:
@@ -258,10 +287,12 @@ def build_from_sequences(key: str, stem: str, label: str) -> dict | None:
         shutil.rmtree(OUT / key / d.name, ignore_errors=True)
         frames = []
         for i, (im, m, box) in enumerate(zip(ims, masks, boxes), start=1):
-            # A travelling pose anchors on the cell, because its feet are
-            # mid-stride and move on purpose. A planted pose anchors on its own
-            # feet, so the character cannot drift sideways through the loop.
-            ax = cell_cx if travelling else foot_centre(m, box)
+            # A travelling pose cannot anchor on its feet, because they are
+            # mid-stride and move on purpose: a run anchors on the torso, and
+            # what is left (the handspring) on the cell. A planted pose anchors
+            # on its own feet, so the character cannot drift through the loop.
+            ax = (torso_centre(m, box) if d.name in BODY_ANCHORED
+                  else cell_cx) if travelling else foot_centre(m, box)
             dest = OUT / key / d.name / f"{i:02d}.png"
             w, h = write_frame(im, box, s, dest)
             frames.append({
@@ -279,6 +310,9 @@ def build_from_sequences(key: str, stem: str, label: str) -> dict | None:
     apex = {n: k - 1 for n, k in APEX_FRAME.get(key, {}).items() if n in sequences}
     if apex:
         char["apexFrame"] = apex                  # 0-based in the manifest
+    bounces = {n: b for n, b in LOOP_BOUNCES.get(key, {}).items() if n in sequences}
+    if bounces:
+        char["loopBounces"] = bounces
     if stand_h is not None:
         char["standH"] = stand_h
     return char
@@ -343,7 +377,7 @@ def build_mixed(key: str, stem: str, label: str) -> dict | None:
     base["sequences"].update(strips["sequences"])
     base["fixed"] = sorted(strips["sequences"])
     base["ballSide"] = strips["ballSide"]
-    for k in ("apexFrame", "standH"):
+    for k in ("apexFrame", "loopBounces", "standH"):
         if k in strips:
             base[k] = strips[k]
     return base

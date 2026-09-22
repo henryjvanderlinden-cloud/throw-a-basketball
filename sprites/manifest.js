@@ -293,28 +293,28 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/monkey/run_dribble_l/01.png",
       "w": 103.56,
       "h": 117.58,
-      "footX": 49.82,
+      "footX": 57.67,
       "footY": 117.58
      },
      {
       "src": "sprites/monkey/run_dribble_l/02.png",
       "w": 95.89,
       "h": 116.83,
-      "footX": 53.37,
+      "footX": 47.85,
       "footY": 117.39
      },
      {
       "src": "sprites/monkey/run_dribble_l/03.png",
       "w": 99.44,
       "h": 117.58,
-      "footX": 53.74,
+      "footX": 55.24,
       "footY": 117.58
      },
      {
       "src": "sprites/monkey/run_dribble_l/04.png",
       "w": 91.41,
       "h": 117.58,
-      "footX": 46.26,
+      "footX": 45.61,
       "footY": 117.58
      }
     ],
@@ -323,28 +323,28 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/monkey/run_dribble_r/01.png",
       "w": 98.21,
       "h": 120.86,
-      "footX": 46.03,
+      "footX": 47.02,
       "footY": 121.41
      },
      {
       "src": "sprites/monkey/run_dribble_r/02.png",
       "w": 90.6,
       "h": 120.86,
-      "footX": 52.0,
+      "footX": 45.21,
       "footY": 121.41
      },
      {
       "src": "sprites/monkey/run_dribble_r/03.png",
       "w": 89.15,
       "h": 120.86,
-      "footX": 48.2,
+      "footX": 42.13,
       "footY": 121.41
      },
      {
       "src": "sprites/monkey/run_dribble_r/04.png",
       "w": 91.87,
       "h": 120.68,
-      "footX": 41.31,
+      "footX": 45.84,
       "footY": 120.68
      }
     ],
@@ -353,14 +353,14 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/monkey/run_l/01.png",
       "w": 118.35,
       "h": 111.95,
-      "footX": 56.67,
+      "footX": 59.11,
       "footY": 111.95
      },
      {
       "src": "sprites/monkey/run_l/02.png",
       "w": 115.15,
       "h": 111.95,
-      "footX": 56.95,
+      "footX": 57.51,
       "footY": 111.95
      }
     ],
@@ -369,14 +369,14 @@ window.SPRITE_MANIFEST = {
       "src": "sprites/monkey/run_r/01.png",
       "w": 116.49,
       "h": 111.43,
-      "footX": 53.93,
+      "footX": 55.87,
       "footY": 111.43
      },
      {
       "src": "sprites/monkey/run_r/02.png",
       "w": 109.65,
       "h": 111.43,
-      "footX": 54.97,
+      "footX": 54.75,
       "footY": 111.43
      }
     ],
@@ -753,17 +753,31 @@ window.SPRITE_MANIFEST = {
     "run_dribble_r": [
      {
       "src": "sprites/zombie/run_dribble_r/01.png",
-      "w": 91.96,
-      "h": 132.0,
-      "footX": 45.93,
-      "footY": 132.0
+      "w": 90.57,
+      "h": 127.63,
+      "footX": 57.67,
+      "footY": 128.46
      },
      {
       "src": "sprites/zombie/run_dribble_r/02.png",
-      "w": 94.95,
-      "h": 129.9,
-      "footX": 49.98,
-      "footY": 129.9
+      "w": 61.84,
+      "h": 129.09,
+      "footX": 30.81,
+      "footY": 129.09
+     },
+     {
+      "src": "sprites/zombie/run_dribble_r/03.png",
+      "w": 88.9,
+      "h": 126.59,
+      "footX": 45.8,
+      "footY": 127.42
+     },
+     {
+      "src": "sprites/zombie/run_dribble_r/04.png",
+      "w": 56.42,
+      "h": 128.46,
+      "footX": 29.46,
+      "footY": 128.46
      }
     ],
     "run_dribble_l": [
@@ -865,10 +879,15 @@ window.SPRITE_MANIFEST = {
    },
    "ballSide": {},
    "fixed": [
-    "dribble_idle"
+    "dribble_idle",
+    "run_dribble_r"
    ],
    "apexFrame": {
-    "dribble_idle": 2
+    "dribble_idle": 2,
+    "run_dribble_r": 1
+   },
+   "loopBounces": {
+    "run_dribble_r": 2
    },
    "standH": 132.0,
    "handX": 13.91,

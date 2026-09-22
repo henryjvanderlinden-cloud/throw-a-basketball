@@ -2654,9 +2654,18 @@ function powerColor(p) {
 // Without one, the older convention: frame 0 from the apex onward, and the
 // middle of the sequence while the ball is down at the floor. The placeholder
 // art puts its lower-handed pose first for exactly that.
-function dribbleFrame(p, n, apex) {
-  const u = (((p.dribT % Math.PI) + Math.PI) % Math.PI) / Math.PI;
-  if (apex != null) return Math.floor(((((u - 0.5) * n + apex + 0.5) % n) + n) % n) % n;
+function dribbleFrame(p, n, apex, bounces) {
+  const b = bounces || 1;
+  // u is the phase through the whole loop: one bounce by default, and `bounces`
+  // of them for a sequence whose frames span more than one -- the running
+  // dribble is a stride of two steps, and he bounces the ball as each foot
+  // lands. Its four frames therefore cover two bounces, not two pushes of one.
+  const span = Math.PI * b;
+  const u = (((p.dribT % span) + span) % span) / span;
+  // Centre the apex frame on the FIRST apex of the loop, at u = 1/(2b); the
+  // frames after it follow the ball down, round the floor and back up, and a
+  // second bounce repeats that half of the sheet.
+  if (apex != null) return Math.floor(((u * n + apex + 0.5 - n / (2 * b)) % n + n) % n) % n;
   return Math.floor(((((u - 0.5) % 1) + 1) % 1) * n) % n;
 }
 
@@ -2711,7 +2720,8 @@ function animatePlayer(p) {
     p.mirrorPose = p.char.mirror;
     const name = dribbleSeq(p);
     const apex = p.char.apexFrame && p.char.apexFrame[name];
-    return showFrame(p, name, dribbleFrame(p, seqOf(p, name).length, apex));
+    const bounces = p.char.loopBounces && p.char.loopBounces[name];
+    return showFrame(p, name, dribbleFrame(p, seqOf(p, name).length, apex, bounces));
   }
 
   // IDLE -- no ball: following through, celebrating, chasing, or just standing.

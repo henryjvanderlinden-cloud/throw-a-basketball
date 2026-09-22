@@ -68,6 +68,7 @@ STRIPS = {
     # build-sprites.py). Each is the approved take of the guided pipeline.
     "Zombie": [
         ("dribble_idle",    "dribble_idle.approved.png", 4, True),
+        ("run_dribble_r",   "run_dribble_r.approved.png", 4, True),
     ],
 }
 
