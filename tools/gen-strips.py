@@ -404,14 +404,26 @@ class ChatGPT:
         return any(m in body for m in RATE_LIMIT_MARKERS)
 
     def _images(self) -> list:
-        """Every image with its natural size, so shape can be used as a filter."""
+        """Every image with its natural size and WHOSE TURN it is in.
+
+        The role is what actually separates an input from an output: our
+        uploads render inside the user's turn, the generated strip inside the
+        assistant's. Shape does not separate them -- a pose guide is wide, like
+        a strip -- and neither does "appeared after we sent", because an upload
+        can render late and then look new.
+        """
         try:
             return self.page.eval_on_selector_all(
                 "img",
-                """els => els.map(e => ({
-                     src: e.currentSrc || e.src,
-                     w: e.naturalWidth, h: e.naturalHeight
-                   })).filter(o => o.src)""")
+                """els => els.map(e => {
+                     const turn = e.closest("[data-testid^='conversation-turn-']");
+                     const holder = turn && turn.querySelector("[data-message-author-role]");
+                     return {
+                       src: e.currentSrc || e.src,
+                       w: e.naturalWidth, h: e.naturalHeight,
+                       role: holder ? holder.getAttribute("data-message-author-role") : ""
+                     };
+                   }).filter(o => o.src)""")
         except Exception:                      # noqa: BLE001
             return []
 
@@ -438,7 +450,8 @@ class ChatGPT:
             #   2. the strip is WIDE; a reference is portrait, and UI icons are
             #      small or square
             hits = [o for o in self._images()
-                    if o["src"] not in before
+                    if o.get("role") == "assistant"
+                    and o["src"] not in before
                     and ("oaiusercontent" in o["src"] or "/backend-api/" in o["src"])
                     and not o["src"].startswith("blob:")
                     and o["w"] >= MIN_STRIP_W
@@ -488,8 +501,16 @@ class ChatGPT:
         return (int.from_bytes(data[16:20], "big"),
                 int.from_bytes(data[20:24], "big"))
 
-    def download(self, url: str, dest: Path) -> int:
-        """Fetch through the page so the session's cookies apply."""
+    def download(self, url: str, dest: Path, inputs=()) -> int:
+        """Fetch through the page so the session's cookies apply.
+
+        `inputs` are the files we attached. ChatGPT serves a resized copy of an
+        upload from its own file service, so a copy of one cannot be recognised
+        by its bytes -- but resizing preserves the ASPECT, and a pose guide's
+        aspect (five tall cells) is nothing like a strip's. A download whose
+        aspect matches an attachment's to within half a percent is that
+        attachment coming back, not a generation.
+        """
         data = self.page.evaluate(
             """async (u) => {
                  const r = await fetch(u, {credentials: 'include'});
@@ -499,6 +520,19 @@ class ChatGPT:
                }""", url)
         raw = bytes(data)
         size = self.png_size(raw)
+        for src in inputs:
+            try:
+                in_size = self.png_size(src.read_bytes()[:64])
+            except OSError:
+                continue
+            if not (size and in_size and in_size[1]):
+                continue
+            a_in, a_got = in_size[0] / in_size[1], size[0] / max(size[1], 1)
+            if abs(a_got - a_in) <= 0.005 * a_in:
+                raise NoImage(
+                    f"downloaded a {size[0]}x{size[1]} image with the same "
+                    f"shape as {src.name} ({in_size[0]}x{in_size[1]}) — that is "
+                    f"the attachment coming back, not a generated strip")
         if size and (size[0] < MIN_STRIP_W or size[0] / max(size[1], 1) < MIN_STRIP_ASPECT):
             raise NoImage(
                 f"downloaded a {size[0]}x{size[1]} image, which is not a strip "
@@ -589,7 +623,8 @@ def run(jobs: list[dict], args) -> int:
                 # an input and only the assistant's image can appear after here.
                 before |= {o["src"] for o in bot._images()}
                 url = bot.wait_for_image(before, timeout_s=args.timeout)
-                size = bot.download(url, job["out"])
+                size = bot.download(url, job["out"],
+                                    inputs=[f for f in (job["ref"], job["guide"]) if f])
                 job["sidecar"].write_text(json.dumps({
                     "character": job["char"], "sequence": job["seq"],
                     "roll": job["roll"], "frames": job["frames"],
