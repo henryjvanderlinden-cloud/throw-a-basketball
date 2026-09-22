@@ -308,18 +308,18 @@ sequences:
     # here is also FORWARD (he runs toward the right edge, ball ahead of him).
     # Contact, passing, contact, passing: each leg plants in front, passes
     # under the body with the other knee driving through, and trails behind.
-    # The free (far) arm swings against its own leg, as a fist. The hand
+    # The free arm swings against its own leg, open-handed. The hand
     # reaches the game's apex, 0.52, on the passing frames; its low point is
     # 0.36 -- lower than that is out of reach without a deep crouch (see the
     # stretch check in make-pose-guide.py). Each foot is placed from its OWN
     # hip (+-0.058 at turn 50): front foot 0.14 ahead of it, trailing foot
-    # 0.17 behind, driving knee 0.16 ahead -- so the far leg's frames sit
-    # further back in the picture than the near leg's. Stride and hand are reference-
+    # 0.17 behind, driving knee 0.16 ahead -- so the free-side leg's frames sit
+    # further back in the picture than the dribbling-side leg's. Stride and hand are reference-
     # free: the zombie has no run art, and the monkey's never lowers his hand.
     guide:
       file: art/guides/run_dribble_r.png
       side: right
-      colors: true              # limbs colour-coded: the near and far legs cross
+      colors: true              # limbs colour-coded: the two legs cross
       ears: true
       # The shared guide_note tells the two images apart as "the COLOUR image"
       # and "a black stick figure", which a coloured guide makes ambiguous, and
@@ -342,21 +342,26 @@ sequences:
         and which is lifted, how each knee is bent, the angle of each shoe, how
         far his body leans forward and how his back curves, how the shoulder
         line tilts, how high the dribbling hand is and how far ahead of him it
-        reaches, where the swinging fist is, and which way his head is turned.
+        reaches, where the swinging free hand is, and which way his head is turned.
         Where the words below and the pose guide describe the same thing, they
         agree; the pose guide is the exact version of it.
 
         THE COLOURS ON THE POSE GUIDE ONLY TELL THE LIMBS APART, so that where
-        his legs cross you can see which is which: ORANGE is the leg on the
-        dribbling side, nearer the viewer; GREEN is his other leg, further away;
-        RED is the dribbling arm; BLUE is the free arm. None of these colours
-        belongs in the drawing: his skin, his kit and his shoes keep exactly the
-        colours of the character reference.
+        his legs cross you can see which is which. He runs toward the right edge
+        with his chest turned toward the viewer, so his dribbling side is the
+        side FURTHER from the viewer: RED is the dribbling arm, reaching ahead
+        of him on the far side of his body; ORANGE is the leg on that same far
+        side; BLUE is the free arm, on the side NEARER the viewer; GREEN is the
+        leg on that near side. None of these colours belongs in the drawing:
+        his skin, his kit and his shoes keep exactly the colours of the
+        character reference.
 
         THE HANDS ON THE POSE GUIDE: the FLAT hand with its fingers spread is
-        the dribbling hand, palm to the floor, at exactly that height. The small
-        closed square at the end of the blue arm is the free hand, a loose fist,
-        swinging as he runs.
+        the dribbling hand, palm to the floor, at exactly that height. The
+        NARROW hand with its fingers pointing down is the free hand, open and
+        relaxed, swinging as he runs. BOTH HANDS STAY OPEN IN EVERY FRAME:
+        neither hand is ever a fist, and the dribbling arm never pumps like a
+        sprinter's -- it stays out ahead of him, pushing the ball down.
 
         THE HEAD ON THE POSE GUIDE: the curved line down the face shows which
         way he is looking -- toward the side it bulges to, the way he is
@@ -369,10 +374,10 @@ sequences:
         head are NOT part of the drawing and must not appear anywhere in it.
       frames:
         - {pose: calibration}
-        # Contact: the near (dribbling-side) foot lands in front, the far foot
+        # Contact: the dribbling-side foot lands in front, the other foot
         # toes off behind. The hand is at its low point, so the dribbling
         # shoulder dips with it -- the shoulders see-saw against the hips.
-        - name: contact-near
+        - name: contact-dribble-side
           drop: 0.08
           lean: 0.10
           arch: 0.03
@@ -383,13 +388,13 @@ sequences:
           hand: 0.36
           palm: 12
           free: [0.02, 0.52]
-          free_shape: fist
           joints: {ank_d: [0.20, 0.09], ank_f: [-0.23, 0.20], knee_f: [-0.11, 0.26]}
           feet: {d: -5, f: 45}
-        # Passing: the near foot is under him, the far knee drives through.
+        # Passing: the dribbling-side foot is under him, the other knee drives
+        # through.
         # The hand meets the ball at the game's apex; the swinging leg's hip
         # dips.
-        - name: passing-near
+        - name: passing-dribble-side
           drop: 0.10
           lean: 0.10
           arch: 0.03
@@ -399,10 +404,9 @@ sequences:
           hip_tilt: -0.015
           hand: 0.52
           free: [-0.12, 0.42]
-          free_shape: fist
           joints: {ank_d: [0.02, 0.09], ank_f: [-0.06, 0.22], knee_f: [0.10, 0.30]}
           feet: {d: 0, f: 30}
-        - name: contact-far
+        - name: contact-free-side
           drop: 0.08
           lean: 0.10
           arch: 0.03
@@ -413,10 +417,9 @@ sequences:
           hand: 0.36
           palm: 12
           free: [-0.20, 0.48]
-          free_shape: fist
           joints: {ank_f: [0.08, 0.09], ank_d: [-0.11, 0.20], knee_d: [0.01, 0.26]}
           feet: {f: -5, d: 45}
-        - name: passing-far
+        - name: passing-free-side
           drop: 0.10
           lean: 0.10
           arch: 0.03
@@ -426,7 +429,6 @@ sequences:
           hip_tilt: 0.015
           hand: 0.52
           free: [-0.12, 0.42]
-          free_shape: fist
           joints: {ank_f: [-0.10, 0.09], ank_d: [0.06, 0.22], knee_d: [0.22, 0.30]}
           feet: {f: 0, d: 30}
     kind: loop

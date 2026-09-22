@@ -155,12 +155,14 @@ FRAME_FIELDS = dict(
 
 # Guide-level switches, beside `file` and `side`:
 #   colors  true: each limb in its own colour, which is what makes a crossing
-#           of the near and far legs readable. Off, the guide is pure black --
+#           of the legs readable. Which side is NEAR the camera depends on the
+#           view -- running right with the chest turned to the viewer, the
+#           dribbling side is the FAR side -- so a guide's note says so. Off, the guide is pure black --
 #           dribble_idle's approved take was rolled with that one.
 #   ears    true: draw the ears schematically on the head circle.
 LIMB_COLOURS = {
-    "arm_d": (214, 39, 40),       # dribbling (near) arm   red
-    "arm_f": (31, 119, 180),      # free (far) arm         blue
+    "arm_d": (214, 39, 40),       # dribbling arm          red
+    "arm_f": (31, 119, 180),      # free arm               blue
     "leg_d": (255, 127, 14),      # dribbling-side leg     orange
     "leg_f": (44, 160, 44),       # free-side leg          green
 }
