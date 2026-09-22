@@ -100,6 +100,7 @@ SUPERSEDED = {
                      "point is the hem and its high point the waistband (the "
                      "game's apex), and the free arm swings against its own "
                      "leg, where the monkey's version swung it with it.",
+    "run_dribble_l": "the mirror of run_dribble_r, reworded with it.",
 }
 
 
