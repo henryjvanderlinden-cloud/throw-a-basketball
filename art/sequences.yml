@@ -490,6 +490,7 @@ sequences:
       side: left
       colors: true
       ears: true
+      nose: true                # all three of the first rolls looked RIGHT
       note: |
         POSE GUIDE: TWO images are attached, and they do different jobs.
 
@@ -527,10 +528,13 @@ sequences:
         fist, swinging as he runs. The dribbling hand never pumps like a
         sprinter's: it stays out ahead of him, pushing the ball down.
 
-        THE HEAD ON THE POSE GUIDE: the curved line down the face shows which
-        way he is looking -- toward the side it bulges to, the way he is
-        running. The small oval is the ear that shows. The short lines on top
-        are his hair sticking out at rest.
+        THE HEAD ON THE POSE GUIDE: the TRIANGLE on the face is his nose, and
+        it points the way he is looking -- toward the LEFT edge, the way he is
+        running. The curved line down the face bulges the same way, and the
+        small oval on the other side of the head is the ear that shows. HE IS
+        NOT LOOKING BACK OVER HIS SHOULDER AND NOT LOOKING AT THE VIEWER: he
+        looks where he is going, the same way in all five frames. The short
+        lines on top are his hair sticking out at rest.
 
         Draw the character from the reference running through those positions.
         The pose guide is an instruction, not artwork: its thin lines, its
@@ -547,7 +551,11 @@ sequences:
     view: |
       three-quarter view, running toward the left of frame, chest turned
       slightly toward the viewer so the jersey number stays readable and reads
-      forwards. {trail_right}
+      forwards. HIS HEAD AND FACE ARE TURNED TOWARD THE LEFT EDGE OF THE
+      PICTURE, the way he is running: his nose, his chin and his eyes all point
+      that way, so his face is seen in three-quarter view from his left-front.
+      He is not looking at the viewer and not looking back over his shoulder.
+      {trail_right}
     critical: |
       CRITICAL: he is DRIBBLING A BASKETBALL WHILE HE RUNS — this is not a plain
       sprint. The hand on the VIEWER'S LEFT is the dribbling hand in frames

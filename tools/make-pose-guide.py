@@ -160,6 +160,11 @@ FRAME_FIELDS = dict(
 #           dribbling side is the FAR side -- so a guide's note says so. Off, the guide is pure black --
 #           dribble_idle's approved take was rolled with that one.
 #   ears    true: draw the ears schematically on the head circle.
+#   nose    true: draw a schematic nose on the face, pointing the way he looks.
+#           The face arc alone did not carry the head's direction -- all three
+#           of run_dribble_l's first rolls came back looking RIGHT while he ran
+#           left, which is the way sprite art faces by default. A nose is a
+#           bigger mark and an unmistakable one.
 LIMB_COLOURS = {
     "arm_d": (214, 39, 40),       # dribbling arm          red
     "arm_f": (31, 119, 180),      # free arm               blue
@@ -534,7 +539,25 @@ def draw_spine(d, P, j, f, side, cx, ink) -> None:
     d.line(pts, fill=ink, width=LINE, joint="curve")
 
 
-def draw_face(d, hx, hy, r, f: dict, side: int, ears: bool, ink) -> None:
+def draw_nose(d, hx, hy, r, f: dict, side: int, ex, ey, ax, ay, ink) -> None:
+    """A wedge on the face, pointing where he looks: its tip sits outside the
+    face's centre line by sin(yaw), so a head turned further has a nose that
+    juts further, and a head-on face gets a small triangle down the middle."""
+    yaw_s = math.sin(math.radians(f["yaw"]))
+    def at(s_, out):
+        return (hx + ax * s_ * r + ex * out * r, hy + ay * s_ * r + ey * out * r)
+    # kept BELOW the eye line and clear of it, so the mark reads as a nose on
+    # a face rather than as an arrow drawn across it
+    base_hi, base_lo = at(-0.26, side * yaw_s * 0.45), at(-0.74, side * yaw_s * 0.45)
+    tip = at(-0.50, side * yaw_s * 1.45)
+    if not yaw_s:                      # head-on: a wedge down the middle
+        base_hi, base_lo = at(-0.24, -0.20), at(-0.24, 0.20)
+        tip = at(-0.78, 0.0)
+    d.polygon([base_hi, tip, base_lo], outline=ink, width=LINE)
+
+
+def draw_face(d, hx, hy, r, f: dict, side: int, ears: bool, ink,
+              nose: bool = False) -> None:
     """The crown-to-chin line and the eye line, tilted with the head; with a
     yaw the vertical line becomes the construction arc of a turned head."""
     th = math.radians(f["head"] * side)
@@ -563,6 +586,10 @@ def draw_face(d, hx, hy, r, f: dict, side: int, ears: bool, ink) -> None:
         oy = r * 0.30
         d.line([(hx + ex * lo, hy + ey * lo + oy), (hx + ex * hi, hy + ey * hi + oy)],
                fill=ink, width=LINE)
+    if nose:
+        th = math.radians(f["head"] * side)
+        draw_nose(d, hx, hy, r, f, side, math.cos(th), math.sin(th),
+                  math.sin(th), -math.cos(th), ink)
     if ears:
         # ears sit 90 degrees either side of the face; one turns out of sight
         yaw = math.radians(f["yaw"])
@@ -579,7 +606,8 @@ def draw_face(d, hx, hy, r, f: dict, side: int, ears: bool, ink) -> None:
 
 
 def draw_cell(d: ImageDraw.ImageDraw, cx: float, f: dict, side: int,
-              ink=INK, colors: bool = False, ears: bool = False) -> None:
+              ink=INK, colors: bool = False, ears: bool = False,
+              nose: bool = False) -> None:
     j = skeleton(f, side)
     P = lambda k: to_px(cx, j[k])
     paint = colors and ink == INK
@@ -610,7 +638,7 @@ def draw_cell(d: ImageDraw.ImageDraw, cx: float, f: dict, side: int,
     draw_hand(d, f["free_shape"], P("hand_f"), P("elb_f"), -side, f["palm"],
               col("arm_f"))
 
-    draw_face(d, hx, hy, r, f, side, ears, ink)
+    draw_face(d, hx, hy, r, f, side, ears, ink, nose)
     th = math.radians(f["head"] * side)
     ax, ay = math.sin(th), -math.cos(th)
     d.line([P("chest"), (hx - ax * r, hy - ay * r)], fill=ink, width=LINE)
@@ -623,12 +651,13 @@ def draw_cell(d: ImageDraw.ImageDraw, cx: float, f: dict, side: int,
 
 
 def build(cells: list[dict], side: int, colors: bool = False,
-          ears: bool = False) -> Image.Image:
+          ears: bool = False, nose: bool = False) -> Image.Image:
     im = Image.new("RGB", (CELL_W * len(cells), CELL_H), PAPER)
     d = ImageDraw.Draw(im)
     d.line([(0, GROUND_Y), (im.width, GROUND_Y)], fill=INK, width=LINE)
     for i, f in enumerate(cells):
-        draw_cell(d, i * CELL_W + CELL_W / 2, f, side, colors=colors, ears=ears)
+        draw_cell(d, i * CELL_W + CELL_W / 2, f, side, colors=colors, ears=ears,
+                  nose=nose)
     return im
 
 
@@ -700,7 +729,7 @@ def main() -> None:
         out = out.with_name(out.stem + "-left" + out.suffix)
     out.parent.mkdir(parents=True, exist_ok=True)
     colors, ears = bool(spec.get("colors")), bool(spec.get("ears"))
-    build(cells, side, colors, ears).save(out)
+    build(cells, side, colors, ears, bool(spec.get("nose"))).save(out)
     print(f"{out.relative_to(ROOT).as_posix()}  {CELL_W * len(cells)}x{CELL_H}, "
           f"standing height {STANDING}px  (from {entry['_where']})")
     for f in cells:
