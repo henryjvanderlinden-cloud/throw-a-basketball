@@ -540,7 +540,76 @@ sequences:
         The pose guide is an instruction, not artwork: its thin lines, its
         colours, its joint dots, its white background and its blank circular
         head are NOT part of the drawing and must not appear anywhere in it.
-      frames: *run_guide_frames
+      # The frame table is no longer shared with run_dribble_r: that guide is
+      # frozen by its approved take, and the two passing frames need changing.
+      # Rick, on the first left batch: "in the second and fourth frame the
+      # raised leg is still the same". It was -- because in the guide those two
+      # frames had near-identical SILHOUETTES (knee up, shoe hanging behind,
+      # planted foot under the body) and differed only in which limb was orange
+      # and which green. Anything not reading the colour draws the same pose
+      # twice. So they now differ in shape, as they really do in a three-quarter
+      # view: a NEAR leg swinging through passes in front of the body and
+      # projects large -- high knee, foot carried well forward; a FAR leg swings
+      # behind the planted one and comes back foreshortened -- lower knee,
+      # shorter reach, tucked closer to his centre line.
+      frames:
+        - {pose: calibration}
+        - name: contact-dribble-side
+          drop: 0.08
+          lean: 0.10
+          arch: 0.03
+          turn: 50
+          yaw: 55
+          sh_tilt: 0.025
+          hip_tilt: 0.0
+          hand: 0.36
+          palm: 12
+          free: [0.02, 0.52]
+          free_shape: fist
+          joints: {ank_d: [0.20, 0.09], ank_f: [-0.23, 0.20], knee_f: [-0.11, 0.26]}
+          feet: {d: -5, f: 45}
+        # The far leg is planted; the NEAR leg swings through in front of him.
+        - name: passing-dribble-side
+          drop: 0.10
+          lean: 0.10
+          arch: 0.03
+          turn: 50
+          yaw: 55
+          sh_tilt: -0.015
+          hip_tilt: -0.015
+          hand: 0.52
+          free: [-0.12, 0.42]
+          free_shape: fist
+          joints: {ank_d: [0.02, 0.09], ank_f: [0.05, 0.27], knee_f: [0.12, 0.32]}
+          feet: {d: 0, f: 40}
+        - name: contact-free-side
+          drop: 0.08
+          lean: 0.10
+          arch: 0.03
+          turn: 50
+          yaw: 55
+          sh_tilt: 0.025
+          hip_tilt: 0.0
+          hand: 0.36
+          palm: 12
+          free: [-0.20, 0.48]
+          free_shape: fist
+          joints: {ank_f: [0.08, 0.09], ank_d: [-0.11, 0.20], knee_d: [0.01, 0.26]}
+          feet: {f: -5, d: 45}
+        # The near leg is planted; the FAR leg swings behind it, foreshortened.
+        - name: passing-free-side
+          drop: 0.115
+          lean: 0.10
+          arch: 0.03
+          turn: 50
+          yaw: 55
+          sh_tilt: -0.015
+          hip_tilt: 0.015
+          hand: 0.52
+          free: [-0.12, 0.42]
+          free_shape: fist
+          joints: {ank_f: [-0.10, 0.09], ank_d: [-0.02, 0.19], knee_d: [0.07, 0.25]}
+          feet: {f: 0, d: 22}
     kind: loop
     frames: 4
     ref: front
@@ -572,8 +641,11 @@ sequences:
           arm swung forward across his chest.
       - >-
           Dribbling hand risen to the waistband of his shorts, palm still
-          down. Legs mid-stride: the planted foot under his body, the other
-          knee driving forward past it. Torso leaning forward.
+          down. Legs mid-stride: the far foot planted under his body, and the
+          leg NEARER THE VIEWER swinging through IN FRONT of it — that near
+          knee comes up high and its shin crosses in front of his standing
+          leg, so the whole swinging leg is plainly visible. Torso leaning
+          forward.
       - >-
           Dribbling hand pushed down to the hem of his shorts again, palm flat
           down. Legs: the other leg forward and planted, the leg on the
@@ -581,8 +653,11 @@ sequences:
           arm swung back behind him.
       - >-
           Dribbling hand risen to the waistband of his shorts, palm down. Legs
-          mid-stride the other way: the planted foot under his body, the knee
-          on the dribbling side driving forward past it.
+          mid-stride the other way, and it must NOT repeat the pose of the
+          earlier mid-stride frame: this time the NEAR foot is planted under
+          his body and the leg FURTHER FROM THE VIEWER swings through BEHIND
+          it, half hidden by his standing leg and his shorts — that far knee
+          lifts less, and less of that leg shows.
     ball: |
       The character is NOT holding a basketball in any frame — the ball is drawn
       separately by the game. His hand pushes down as if a ball were there.
