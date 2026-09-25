@@ -573,8 +573,13 @@ class ChatGPT:
             hits = [o for o in self._images()
                     if o.get("role") != "user"
                     and o["src"] not in before
-                    and ("oaiusercontent" in o["src"] or "/backend-api/" in o["src"])
-                    and not o["src"].startswith("blob:")
+                    # a blob: URL counts: the current UI hands the finished
+                    # picture over as one, and refusing those waited out the
+                    # whole timeout in front of a strip that was plainly there.
+                    # The aspect check in download() is what keeps an echo of
+                    # an upload out, whatever scheme it arrives under.
+                    and ("oaiusercontent" in o["src"] or "/backend-api/" in o["src"]
+                         or o["src"].startswith("blob:"))
                     and o["w"] >= MIN_STRIP_W
                     and o["h"] and o["w"] / o["h"] >= MIN_STRIP_ASPECT]
             if hits:
@@ -599,7 +604,28 @@ class ChatGPT:
                 if time.time() - idle_since > 20:
                     raise NoImage(self.last_reply())
             self.page.wait_for_timeout(3000)
+        log("    pictures on the page when the wait ran out:")
+        for line in self.image_report().splitlines():
+            log(f"      {line}")
         raise TimeoutError(f"no image after {timeout_s}s")
+
+    def image_report(self) -> str:
+        """Every picture on the page and why it did or did not qualify, for a
+        wait that ran out in front of a strip that was visibly there."""
+        try:
+            imgs = self._images()
+        except Exception as e:                 # noqa: BLE001
+            return f"could not list the images: {e.__class__.__name__}"
+        if not imgs:
+            return "no <img> elements at all"
+        lines = []
+        for o in imgs[:24]:
+            src = o["src"]
+            scheme = src.split(":", 1)[0] if ":" in src else "?"
+            host = src.split("/")[2][:40] if src.startswith("http") else ""
+            lines.append(f"{o['w']}x{o['h']} role={o.get('role') or '-'} "
+                         f"{scheme}:{host} ...{src[-28:]}")
+        return "\n".join(lines)
 
     def last_reply(self, limit: int = 400) -> str:
         """The text of the newest turn, for putting in an error message."""
