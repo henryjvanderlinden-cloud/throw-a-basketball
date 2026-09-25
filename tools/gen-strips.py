@@ -30,12 +30,26 @@ closed the tab it was holding, then woke up and touched a dead page.
 
 RESUMABILITY
 ------------
-Every job is keyed on (character, sequence, roll, prompt text). A strip already
-on disk whose sidecar records the same prompt hash is skipped, so the script can
-be killed and restarted freely -- which matters, because eighty generations will
-walk into ChatGPT's rate limits repeatedly and the only sane response is to wait
-and carry on. Editing a prompt changes its hash, so the next run produces a NEW
-roll rather than silently reusing the old strip.
+Every job is keyed on (character, sequence, roll) and on everything that was
+SENT: the prompt text, the pose guide's bytes and the reference image's bytes.
+A strip already on disk whose sidecar records the same prompt hash, guide md5
+and reference md5 is skipped, so the script can be killed and restarted freely
+-- which matters, because eighty generations will walk into ChatGPT's rate
+limits repeatedly and the only sane response is to wait and carry on. Editing a
+prompt, redrawing a guide or replacing a reference each makes the old strip
+stale, so the next run produces a NEW roll rather than silently reusing it.
+(Until 2026-09-25 only the prompt was compared, so a guide fixed without
+touching the prose was skipped as current: handover 06 section 5.)
+
+A sidecar written before then records no md5s. Such a strip is treated as
+current -- nothing re-rolls on its own -- and the plan names it, so a guide
+you know you changed can be re-rolled by moving that roll aside first.
+
+A stale roll is never overwritten. Before its replacement is generated, the old
+<seq>.r<M>.png/.json pair is renamed to <seq>.b<N>r<M>.png/.json, where N is
+the first batch number not yet used for that sequence, so a whole batch keeps
+one N. If the rename is refused (Controlled Folder Access on Rick's machine),
+that job stops with a message and nothing is overwritten. Nothing is deleted.
 
 WHEN IT BREAKS
 --------------
@@ -135,6 +149,71 @@ def prompt_hash(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()[:12]
 
 
+def file_md5(path: Path | None) -> str | None:
+    """md5 of a file's bytes, or None when there is no file to hash."""
+    if path is None or not path.exists():
+        return None
+    return hashlib.md5(path.read_bytes()).hexdigest()
+
+
+def stale_reasons(side: dict, h: str, guide_md5: str | None,
+                  ref_md5: str | None) -> list[str] | None:
+    """Why an existing roll no longer matches what would be sent now.
+
+    Returns [] when it matches, a list of reasons when it does not, and None
+    for a legacy sidecar that recorded no md5s (only its prompt can be checked).
+    """
+    reasons = []
+    if side.get("prompt_hash") != h:
+        reasons.append("prompt changed")
+    if "guide_md5" not in side or "ref_md5" not in side:
+        return reasons or None
+    if side["guide_md5"] != guide_md5:
+        reasons.append("guide changed")
+    if side["ref_md5"] != ref_md5:
+        reasons.append("reference changed")
+    return reasons
+
+
+def next_batch(out_dir: Path, seq: str) -> int:
+    """The first N with no <seq>.b<N>r*.png in out_dir."""
+    used = set()
+    for f in out_dir.glob(f"{seq}.b*r*.png"):
+        m = re.fullmatch(re.escape(seq) + r"\.b(\d+)r\d+\.png", f.name)
+        if m:
+            used.add(int(m.group(1)))
+    n = 1
+    while n in used:
+        n += 1
+    return n
+
+
+def archive_roll(job: dict) -> None:
+    """Rename a stale roll to its batch name before it is replaced.
+
+    Rename only: tools in this repo must not depend on deleting files, and an
+    overwrite is refused on Rick's machine anyway. Raises if a target already
+    exists or the rename is refused, so the job stops before anything is lost.
+    """
+    moves = []
+    for src in (job["out"], job["sidecar"]):
+        if src.exists():
+            dst = src.with_name(src.name.replace(
+                f".r{job['roll']}.", f".b{job['archive_as']}r{job['roll']}.", 1))
+            if dst.exists():
+                raise RuntimeError(f"cannot archive {src.name}: {dst.name} "
+                                   f"already exists")
+            moves.append((src, dst))
+    for src, dst in moves:
+        try:
+            src.rename(dst)
+        except OSError as e:
+            raise RuntimeError(f"could not rename {src.name} to {dst.name} "
+                               f"({e}); move the old roll aside by hand and "
+                               f"run again") from e
+        log(f"    archived {src.name} -> {dst.name}")
+
+
 # --------------------------------------------------------------------------
 # job planning -- no browser involved, so --dry-run exercises all of it
 # --------------------------------------------------------------------------
@@ -144,7 +223,7 @@ def plan(characters: list[str], sequences: list[str], rolls: int) -> list[dict]:
         sys.exit(f"no {INDEX.relative_to(ROOT)} -- run tools/gen-prompts.py first")
     index = json.loads(INDEX.read_text(encoding="utf-8"))
 
-    jobs, skipped = [], 0
+    jobs, skipped, legacy = [], 0, []
     for key, char in index["characters"].items():
         if characters and key not in characters:
             continue
@@ -154,25 +233,51 @@ def plan(characters: list[str], sequences: list[str], rolls: int) -> list[dict]:
                 continue
             text = (PROMPTS / key / f"{seq}.txt").read_text(encoding="utf-8")
             h = prompt_hash(text)
+            ref = ROOT / meta["ref"]
+            guide = ROOT / meta["guide"] if meta.get("guide") else None
+            ref_md5, guide_md5 = file_md5(ref), file_md5(guide)
+            batch = None                  # one archive number per sequence
             for roll in range(1, rolls + 1):
                 png = out_dir / f"{seq}.r{roll}.png"
                 side = png.with_suffix(".json")
-                if png.exists() and side.exists():
-                    try:
-                        if json.loads(side.read_text(encoding="utf-8")).get("prompt_hash") == h:
-                            skipped += 1
-                            continue
-                    except (ValueError, OSError):
-                        pass          # unreadable sidecar: regenerate
+                reasons, archive_as = ["new"], None
+                if png.exists() or side.exists():
+                    reasons = ["unreadable sidecar"]
+                    if png.exists() and side.exists():
+                        try:
+                            got = stale_reasons(
+                                json.loads(side.read_text(encoding="utf-8")),
+                                h, guide_md5, ref_md5)
+                            if got is None:      # legacy sidecar, prompt matches
+                                legacy.append(png)
+                                skipped += 1
+                                continue
+                            if not got:
+                                skipped += 1
+                                continue
+                            reasons = got
+                        except (ValueError, OSError):
+                            pass
+                    if batch is None:
+                        batch = next_batch(out_dir, seq)
+                    archive_as = batch
                 jobs.append({
+                    "reasons": reasons, "archive_as": archive_as,
+                    "guide_md5": guide_md5, "ref_md5": ref_md5,
                     "char": key, "label": char["label"], "seq": seq, "roll": roll,
                     "frames": meta["frames"], "cells": meta["frames"] + 1,
-                    "ref": ROOT / meta["ref"], "out": png, "sidecar": side,
-                    "guide": ROOT / meta["guide"] if meta.get("guide") else None,
+                    "ref": ref, "out": png, "sidecar": side,
+                    "guide": guide,
                     "text": text, "hash": h,
                 })
     if skipped:
-        log(f"{skipped} strip(s) already on disk with a matching prompt — skipping")
+        log(f"{skipped} strip(s) already on disk and current — skipping")
+    if legacy:
+        log(f"{len(legacy)} of those predate the guide/reference check: their "
+            f"prompt matches, but whether their guide does is unknown. If you "
+            f"changed one of these guides, move its rolls aside and run again:")
+        for p in legacy:
+            log(f"    {p.relative_to(ROOT)}")
     return jobs
 
 
@@ -765,6 +870,8 @@ def run(jobs: list[dict], args) -> int:
                 failed += 1
                 continue
             try:
+                if job["archive_as"] is not None:
+                    archive_roll(job)
                 bot.new_chat()
                 # The reference goes first and stays the authority on identity;
                 # the guide is attached second and the prompt names it by what
@@ -816,6 +923,7 @@ def run(jobs: list[dict], args) -> int:
                     "character": job["char"], "sequence": job["seq"],
                     "roll": job["roll"], "frames": job["frames"],
                     "cells": job["cells"], "prompt_hash": job["hash"],
+                    "guide_md5": job["guide_md5"], "ref_md5": job["ref_md5"],
                     "reference": str(job["ref"].relative_to(ROOT)),
                     "guide": (str(job["guide"].relative_to(ROOT))
                               if job["guide"] else None),
@@ -903,7 +1011,10 @@ def main() -> None:
             print(f"  {j['char']:<14} {j['seq']:<20} r{j['roll']}  "
                   f"{j['cells']} cells  ref={j['ref'].name}  "
                   f"guide={j['guide'].name if j['guide'] else '--'}  "
-                  f"prompt={j['hash']}  -> {j['out'].relative_to(ROOT)}")
+                  f"prompt={j['hash']}  -> {j['out'].relative_to(ROOT)}  "
+                  f"[{', '.join(j['reasons'])}"
+                  + (f"; old roll -> b{j['archive_as']}r{j['roll']}"
+                     if j['archive_as'] is not None else "") + "]")
         return
     sys.exit(run(jobs, args))
 
