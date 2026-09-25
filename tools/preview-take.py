@@ -17,8 +17,10 @@ and writes
     py tools\\preview-take.py "artwork\\basketball-players\\Zombie poses\\idle.r3.png" --hz 5
     py tools\\preview-take.py <strip> --frames 1 3 --hz 2.5      # a subset, as a loop
 
-Standing sequences only: a run's feet travel on purpose and build-sprites.py
-anchors those on the torso instead.
+A run's feet travel on purpose, so build-sprites.py anchors a run on the
+torso instead; --torso does the same here, with its own torso_centre():
+
+    py tools\\preview-take.py "artwork\\basketball-players\\Zombie poses\\run_l.r1.png" --torso --hz 7
 """
 import argparse, importlib.util, itertools
 from pathlib import Path
@@ -29,6 +31,9 @@ from PIL import Image, ImageDraw
 ROOT = Path(__file__).resolve().parent.parent
 _spec = importlib.util.spec_from_file_location("ss", ROOT / "tools" / "slice-strips.py")
 ss = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(ss)
+
+_bspec = importlib.util.spec_from_file_location("bs", ROOT / "tools" / "build-sprites.py")
+bs = importlib.util.module_from_spec(_bspec); _bspec.loader.exec_module(bs)
 
 SHOE_BAND = 0.07        # the bottom 7% of standing height holds both shoes
 TILE_H, SHOW_H = 360, 300
@@ -66,6 +71,8 @@ def main() -> None:
                     help="1-based animation frames to show (default all)")
     ap.add_argument("--hz", type=float, default=5.0, help="loop rate")
     ap.add_argument("--out", type=Path, default=None)
+    ap.add_argument("--torso", action="store_true",
+                    help="anchor on the torso, as the game does a run")
     a = ap.parse_args()
     out = a.out or ROOT / "build" / "preview" / a.strip.stem
     out.mkdir(parents=True, exist_ok=True)
@@ -95,6 +102,9 @@ def main() -> None:
         f = figs[i]
         (L, R, bot) = feet[i]
         cx = (L[0] + R[1]) / 2
+        if a.torso:
+            m = np.array(f.getchannel("A")) > ss.ALPHA_CUT
+            cx = bs.torso_centre(m, bs.bbox(m))
         s = f.resize((int(f.width * S), int(f.height * S)), Image.NEAREST)
         t = Image.new("RGBA", (W, TILE_H), (250, 250, 250, 255))
         t.alpha_composite(s, (int(round(W / 2 - cx * S)), int(round(TILE_H - 12 - bot * S))))

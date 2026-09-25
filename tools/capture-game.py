@@ -51,6 +51,11 @@ async def main(a) -> None:
         await pg.evaluate(f"__hoop.reset(); __hoop.setMode({2 if a.p2 else 1}); {picks}")
         await pg.evaluate("__pump(90)")
         await pg.wait_for_timeout(1500)            # let the sprites arrive
+        if a.start:
+            # past the START overlay, so the capture shows play, not the dimmed
+            # gate with the logo over the court
+            await pg.evaluate("__hoop.dismissGate(); __hoop.startMatch()")
+            await pg.evaluate("__pump(30)")
         if a.hold:
             await pg.evaluate(f"__hoop.press({a.watch}, '{a.hold}')")
         n = int(a.seconds * 60 / a.every)
@@ -94,6 +99,8 @@ if __name__ == "__main__":
     ap.add_argument("--seconds", type=float, default=3.0)
     ap.add_argument("--every", type=int, default=5, help="game ticks between captures")
     ap.add_argument("--out", default="build/capture")
+    ap.add_argument("--start", action="store_true",
+                    help="dismiss the START overlay and begin the match first")
     a = ap.parse_args()
     if a.watch is None:
         a.watch = 1 if a.p2 else 0
