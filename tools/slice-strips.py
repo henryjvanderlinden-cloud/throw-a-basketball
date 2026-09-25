@@ -76,6 +76,11 @@ STRIPS = {
         # those two. Rick, 2026-09-25: "more dynamic ... except for the feet,
         # but it's forgivable".
         ("idle",            "idle.approved.png", 4, True, [1, 3]),
+        # Running without the ball: four frames, a full stride. Batch 2 of the
+        # guided pipeline, 2026-09-25 -- r3 running right, r1 running left,
+        # picked by Rick.
+        ("run_r",           "run_r.approved.png", 4, True),
+        ("run_l",           "run_l.approved.png", 4, True),
     ],
 }
 
