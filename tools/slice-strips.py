@@ -69,6 +69,7 @@ STRIPS = {
     "Zombie": [
         ("dribble_idle",    "dribble_idle.approved.png", 4, True),
         ("run_dribble_r",   "run_dribble_r.approved.png", 4, True),
+        ("run_dribble_l",   "run_dribble_l.approved.png", 4, True),
     ],
 }
 

@@ -783,17 +783,31 @@ window.SPRITE_MANIFEST = {
     "run_dribble_l": [
      {
       "src": "sprites/zombie/run_dribble_l/01.png",
-      "w": 91.96,
-      "h": 132.0,
-      "footX": 45.93,
-      "footY": 132.0
+      "w": 98.74,
+      "h": 129.33,
+      "footX": 34.49,
+      "footY": 129.33
      },
      {
       "src": "sprites/zombie/run_dribble_l/02.png",
-      "w": 94.95,
-      "h": 129.9,
-      "footX": 49.98,
-      "footY": 129.9
+      "w": 66.31,
+      "h": 132.41,
+      "footX": 33.05,
+      "footY": 132.41
+     },
+     {
+      "src": "sprites/zombie/run_dribble_l/03.png",
+      "w": 86.63,
+      "h": 129.33,
+      "footX": 43.01,
+      "footY": 129.33
+     },
+     {
+      "src": "sprites/zombie/run_dribble_l/04.png",
+      "w": 72.67,
+      "h": 129.33,
+      "footX": 36.23,
+      "footY": 129.33
      }
     ],
     "run_r": [
@@ -877,17 +891,22 @@ window.SPRITE_MANIFEST = {
      }
     ]
    },
-   "ballSide": {},
+   "ballSide": {
+    "run_dribble_l": -1
+   },
    "fixed": [
     "dribble_idle",
+    "run_dribble_l",
     "run_dribble_r"
    ],
    "apexFrame": {
     "dribble_idle": 2,
-    "run_dribble_r": 1
+    "run_dribble_r": 1,
+    "run_dribble_l": 1
    },
    "loopBounces": {
-    "run_dribble_r": 2
+    "run_dribble_r": 2,
+    "run_dribble_l": 2
    },
    "standH": 132.0,
    "handX": 13.91,

@@ -126,6 +126,10 @@ POSE_SCALE = {
 # the art: the generator put the monkey's dribbling hand on the viewer's LEFT
 # for the standing poses, not the right the prompt asked for.
 BALL_SIDE = {
+    # Running left, the ball is ahead of him on the LEFT; everything else the
+    # zombie has is drawn with the ball on the viewer's right, which is the
+    # default.
+    "zombie": {"run_dribble_l": -1},
     "monkey": {
         "dribble_idle": -1, "break_banana": -1, "break_wave": -1,
         "pickup": -1, "panic": -1, "run_dribble_r": +1, "run_dribble_l": -1,
@@ -139,7 +143,8 @@ BALL_SIDE = {
 # drawn for.
 APEX_FRAME = {
     "zombie": {"dribble_idle": 3,      # LOWEST, RISING, HIGHEST, DRIVING DOWN
-               "run_dribble_r": 2},    # contact, PASSING, contact, passing
+               "run_dribble_r": 2,     # contact, PASSING, contact, passing
+               "run_dribble_l": 2},
 }
 
 # How many bounces of the ball one loop of a sequence covers. Default 1. The
@@ -147,7 +152,7 @@ APEX_FRAME = {
 # the hand pushes once per step -- so its four frames span two bounces. A
 # runner bounces the ball as each foot lands.
 LOOP_BOUNCES = {
-    "zombie": {"run_dribble_r": 2},
+    "zombie": {"run_dribble_r": 2, "run_dribble_l": 2},
 }
 
 # Sequences anchored on the cell rather than on the feet: either the feet
