@@ -889,6 +889,22 @@ window.SPRITE_MANIFEST = {
       "footX": 47.57,
       "footY": 139.37
      }
+    ],
+    "idle": [
+     {
+      "src": "sprites/zombie/idle/01.png",
+      "w": 104.37,
+      "h": 119.9,
+      "footX": 56.64,
+      "footY": 119.9
+     },
+     {
+      "src": "sprites/zombie/idle/02.png",
+      "w": 97.52,
+      "h": 115.33,
+      "footX": 52.18,
+      "footY": 115.33
+     }
     ]
    },
    "ballSide": {
@@ -896,6 +912,7 @@ window.SPRITE_MANIFEST = {
    },
    "fixed": [
     "dribble_idle",
+    "idle",
     "run_dribble_l",
     "run_dribble_r"
    ],

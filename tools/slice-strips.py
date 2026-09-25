@@ -70,6 +70,12 @@ STRIPS = {
         ("dribble_idle",    "dribble_idle.approved.png", 4, True),
         ("run_dribble_r",   "run_dribble_r.approved.png", 4, True),
         ("run_dribble_l",   "run_dribble_l.approved.png", 4, True),
+        # The strip is four frames -- set left, up, set right, up again -- but
+        # the feet only hold still between the two SET frames (3.6% of standing
+        # height, against 5-9% for any pairing with an UP frame), so the loop is
+        # those two. Rick, 2026-09-25: "more dynamic ... except for the feet,
+        # but it's forgivable".
+        ("idle",            "idle.approved.png", 4, True, [1, 3]),
     ],
 }
 
@@ -263,6 +269,9 @@ def slice_character(name: str, seqs) -> None:
     for entry in seqs:
         seq, filename, n = entry[0], entry[1], entry[2]
         calib = len(entry) > 3 and entry[3]
+        # A fifth element keeps only those animation frames (1-based, calibration
+        # not counted), renumbered 01, 02, ... in that order.
+        pick = list(entry[4]) if len(entry) > 4 else None
         path = src_dir / filename
         if not path.exists():
             print(f"  {seq:<16} MISSING {filename}")
@@ -300,6 +309,9 @@ def slice_character(name: str, seqs) -> None:
             if not groups:      # by figure, nothing bleeds in to remove
                 cleaned += drop_bleed(cell, touch_left=i > 0,
                                       touch_right=i < cells - 1)
+            k = i if calib else i + 1          # 1-based animation frame; 0 = calib
+            if pick is not None and k and k not in pick:
+                continue
             m = np.array(cell.getchannel("A")) > ALPHA_CUT
             ys, xs = np.where(m)
             # The calibration frame is 00 and is not part of the animation, so
@@ -307,7 +319,9 @@ def slice_character(name: str, seqs) -> None:
             if not (calib and i == 0):
                 heights.append(int(ys.max() - ys.min()))
                 feet.append(int(ys.max()))
-            cell.save(out_dir / f"{(i if calib else i + 1):02d}.png")
+            if pick is not None and k:
+                k = pick.index(k) + 1
+            cell.save(out_dir / f"{k:02d}.png")
 
         flags = []
         if seq not in AIRBORNE and max(feet) - min(feet) > 12:
@@ -316,6 +330,8 @@ def slice_character(name: str, seqs) -> None:
             flags.append(f"removed {cleaned} bleed fragment(s)")
         if not groups:
             flags.append("figures touch — cut by column, not by figure")
+        if pick is not None:
+            flags.append(f"kept frames {pick} of {n}")
         note = "  <-- " + "; ".join(flags) if flags else ""
         print(f"  {seq:<16} {n} frames{' +calib' if calib else '       '}  "
               f"h={min(heights)}-{max(heights)}  "

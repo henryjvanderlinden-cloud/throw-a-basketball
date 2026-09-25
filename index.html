@@ -995,7 +995,9 @@ const HAS_SPRITES = CHARS.length > 0;
 // Frames per second for the sequences that run on a clock. Dribbling is the
 // exception -- it is driven by the ball's own bounce. RUN covers chasing a
 // loose ball, where there is no bounce to follow.
-const ANIM_HZ = { aim: 2.6, run: 7, gameover: 2.5, panic: 6 };
+// idle: the ball-less defensive stance, a two-frame weight shift -- slow, so
+// it reads as a guard settling from foot to foot rather than as a jitter.
+const ANIM_HZ = { aim: 2.6, run: 7, gameover: 2.5, panic: 6, idle: 2.5 };
 const RISE_HOLD = 0.05;         // the shot's rising frame, if the art has one
 const RELEASE_HOLD = 0.27;      // ...then the release
 const FOLLOW_HOLD = 0.5;        // ...then the follow-through
@@ -1079,7 +1081,7 @@ function armFrame(im) {
 
 // Every frame this character will need, queued in the order it comes up: what he
 // does the instant the match starts, first.
-const FRAME_ORDER = ['dribble_idle', 'run_dribble_r', 'run_dribble_l', 'pickup',
+const FRAME_ORDER = ['dribble_idle', 'run_dribble_r', 'run_dribble_l', 'idle', 'pickup',
                      'turn', 'aim', 'charge', 'shot', 'run_r', 'run_l', 'panic'];
 function queueCharacter(p) {
   if (!p || !p.char) return;
@@ -2758,9 +2760,14 @@ function animatePlayer(p) {
     const n = seqOf(p, 'panic').length;
     return showFrame(p, 'panic', Math.floor(p.animT * ANIM_HZ.panic) % n);
   }
-  // Standing without the ball. Until a ball-less idle exists, the upright
-  // dribble frame: on a sheet that opens on a crouch, frame 0 would leave him
-  // bent over with his hand at his knee and nothing under it.
+  // Standing without the ball: a defensive stance where the art has one. It is
+  // drawn for one facing (the jersey number must not read backwards), so it
+  // is never mirrored.
+  const idle = seqOf(p, 'idle');
+  if (idle) return showFrame(p, 'idle', Math.floor(p.animT * ANIM_HZ.idle) % idle.length);
+  // Otherwise the upright dribble frame: on a sheet that opens on a crouch,
+  // frame 0 would leave him bent over with his hand at his knee and nothing
+  // under it.
   p.mirrorPose = p.char.mirror;
   return showFrame(p, 'dribble_idle', (p.char.apexFrame && p.char.apexFrame.dribble_idle) || 0);
 }
