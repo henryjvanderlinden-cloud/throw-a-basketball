@@ -53,6 +53,7 @@ import base64
 import hashlib
 import json
 import random
+import re
 import sys
 import time
 from datetime import datetime, timezone
@@ -86,6 +87,15 @@ SEL = {
     ],
     "file_input": [
         "input[type='file']",
+    ],
+    "plus": [
+        "[data-testid='composer-plus-btn']",
+        "[data-testid='composer-action-file-upload']",
+        "form button[aria-label*='add' i]",
+        "form button[aria-label*='voeg' i]",
+        "form button[aria-label*='bestand' i]",
+        "form button[aria-label*='file' i]",
+        "form button[aria-label*='attach' i]",
     ],
     "send": [
         "[data-testid='send-button']",
@@ -282,6 +292,76 @@ class ChatGPT:
             self.page.wait_for_timeout(1000)
         return False
 
+    def dom_report(self) -> str:
+        """What the composer looks like right now, for a failure to explain
+        itself. ChatGPT's UI is redesigned without notice -- when an attach
+        stops working, this says whether the file input, the composer and the
+        plus button are there at all, rather than leaving a bare exception."""
+        try:
+            info = self.page.evaluate("""() => {
+                const sel = s => document.querySelectorAll(s).length;
+                const inputs = [...document.querySelectorAll("input[type=file]")]
+                    .map(e => ({accept: e.accept || "", hidden: e.offsetParent === null,
+                                inForm: !!e.closest("form"), multiple: e.multiple}));
+                const buttons = [...document.querySelectorAll("form button, [data-testid*=composer] button")]
+                    .slice(0, 14)
+                    .map(b => (b.getAttribute("aria-label") || b.getAttribute("data-testid")
+                               || (b.textContent || "").trim()).slice(0, 34));
+                return {
+                    url: location.href,
+                    title: document.title,
+                    promptTextarea: sel("#prompt-textarea"),
+                    contenteditable: sel("div[contenteditable='true']"),
+                    forms: sel("form"),
+                    turns: sel("[data-testid^='conversation-turn-']"),
+                    fileInputs: inputs,
+                    composerButtons: buttons,
+                };
+            }""")
+        except Exception as e:                 # noqa: BLE001
+            return f"could not read the DOM: {e.__class__.__name__}: {e}"
+        lines = [f"url {info['url']}",
+                 f"title {info['title']!r}",
+                 f"#prompt-textarea={info['promptTextarea']}  "
+                 f"contenteditable={info['contenteditable']}  forms={info['forms']}  "
+                 f"turns={info['turns']}",
+                 f"file inputs: {len(info['fileInputs'])}"]
+        for i in info["fileInputs"]:
+            lines.append(f"  accept={i['accept']!r} hidden={i['hidden']} "
+                         f"inForm={i['inForm']} multiple={i['multiple']}")
+        lines.append("composer buttons: " + ", ".join(repr(b) for b in info["composerButtons"]))
+        return "\n".join(lines)
+
+    def _via_file_chooser(self, path: Path) -> bool:
+        """Click the composer's plus button and answer the file dialog.
+
+        The route for a composer that keeps its input out of the DOM until the
+        menu is open, which is what the September redesign does.
+        """
+        for sel in SEL["plus"]:
+            try:
+                btn = self.page.locator(sel).first
+                if not btn.count():
+                    continue
+                with self.page.expect_file_chooser(timeout=8000) as fc:
+                    btn.click()
+                fc.value.set_files(str(path))
+                return True
+            except Exception:                  # noqa: BLE001
+                # the plus may open a MENU whose item opens the chooser
+                try:
+                    with self.page.expect_file_chooser(timeout=8000) as fc:
+                        for label in ("bestand", "file", "upload", "computer", "afbeelding"):
+                            item = self.page.get_by_text(re.compile(label, re.I)).first
+                            if item.count():
+                                item.click()
+                                break
+                    fc.value.set_files(str(path))
+                    return True
+                except Exception:              # noqa: BLE001
+                    continue
+        return False
+
     def attach(self, path: Path) -> None:
         """Attach the reference, and REFUSE to continue if it did not land.
 
@@ -296,11 +376,26 @@ class ChatGPT:
         settle = 2500 if self.slow else 1200
         wait = 90 if self.slow else 60
 
+        # Any file input on the page, not only one inside the composer's form:
+        # the September 2026 redesign moved it out, and the old selector then
+        # matched nothing at all.
+        def any_file_input():
+            inputs = self.page.locator("input[type='file']")
+            n = inputs.count()
+            if not n:
+                raise RuntimeError("no input[type=file] on the page")
+            last = None
+            for i in range(n):
+                try:
+                    inputs.nth(i).set_input_files(str(path), timeout=8000)
+                    return
+                except Exception as e:         # noqa: BLE001
+                    last = e
+            raise last or RuntimeError("no file input accepted the file")
+
         for label, act in (
-            ("input#upload-files",
-             lambda: self.page.locator(
-                 "form:has(#prompt-textarea) input[type='file'], #upload-files"
-             ).first.set_input_files(str(path), timeout=15000)),
+            ("input[type=file]", any_file_input),
+            ("plus menu", lambda: self._via_file_chooser(path)),
             ("drop", lambda: self._drop(path)),
         ):
             try:
@@ -449,8 +544,14 @@ class ChatGPT:
             #   1. the strip appears only AFTER the prompt is sent
             #   2. the strip is WIDE; a reference is portrait, and UI icons are
             #      small or square
+            # NOT in the user's turn, rather than "in the assistant's": a
+            # generated image does not always sit inside a role-tagged
+            # container, and requiring one threw away a real generation (the
+            # reply read "Bewerken", the Edit caption under a picture). Our own
+            # uploads are reliably tagged `user`, which is all this needs; the
+            # aspect check in download() is what stops an untagged copy of one.
             hits = [o for o in self._images()
-                    if o.get("role") == "assistant"
+                    if o.get("role") != "user"
                     and o["src"] not in before
                     and ("oaiusercontent" in o["src"] or "/backend-api/" in o["src"])
                     and not o["src"].startswith("blob:")
@@ -458,7 +559,9 @@ class ChatGPT:
                     and o["h"] and o["w"] / o["h"] >= MIN_STRIP_ASPECT]
             if hits:
                 best = max(hits, key=lambda o: o["w"])
-                log(f"    image {best['w']}x{best['h']}")
+                log(f"    image {best['w']}x{best['h']}"
+                    + (f" (turn role {best['role']!r})" if best.get("role") else
+                       " (in no role-tagged turn)"))
                 return best["src"]
 
             streaming = bool(self.page.locator(SEL["stop"][0]).count())
@@ -581,6 +684,12 @@ def run(jobs: list[dict], args) -> int:
                 sys.exit("still not signed in after waiting; stopping")
         log("signed in")
 
+        if getattr(args, "dom", False):
+            for line in bot.dom_report().splitlines():
+                log("  " + line)
+            ctx.close()
+            return 0
+
         for n, job in enumerate(jobs, 1):
             tag = f"{job['char']}/{job['seq']} r{job['roll']}"
             log(f"[{n}/{len(jobs)}] {tag} — {job['cells']} cells, "
@@ -684,6 +793,9 @@ def main() -> None:
     ap.add_argument("--rolls", type=int, default=1,
                     help="takes per sequence (default 1). Re-rolls are a coin "
                          "flip, so 2 is a reasonable first pass.")
+    ap.add_argument("--dom", action="store_true",
+                    help="open ChatGPT, print what the composer looks like, and "
+                         "exit — for when an attach stops working")
     ap.add_argument("--dry-run", action="store_true",
                     help="print the job list and exit; no browser")
     ap.add_argument("--once", action="store_true", help="stop after one strip")
@@ -702,6 +814,8 @@ def main() -> None:
     args = ap.parse_args()
 
     jobs = plan(args.char, args.seq, args.rolls)
+    if args.dom:
+        sys.exit(run(jobs or [], args))
     if not jobs:
         log("nothing to do — every requested strip is already on disk")
         return
