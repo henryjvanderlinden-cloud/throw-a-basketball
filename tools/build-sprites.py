@@ -79,6 +79,10 @@ MIXED = {"zombie"}
 # all move with the pose, not just with the scale), so these are measured by eye
 # against the standing dribble. Regenerating a strip at a matching scale is the
 # real fix; then its entry goes back to 1.0.
+#
+# A strip with a calibration frame is scaled from that frame, and the entry here
+# is then a correction on top: the model can draw the calibration pose out of
+# proportion to the body beside it, and the whole strip inherits the error.
 SEQ_SCALE = {
     "monkey": {
         "aim": 0.72, "turn": 0.87, "charge": 0.86, "shot": 0.94,
@@ -87,6 +91,10 @@ SEQ_SCALE = {
         "panic": 0.95, "celebrate_flip": 1.16,
         "run_dribble_r": 0.95, "run_dribble_l": 0.98,
     },
+    # Calibration corrections. In both strips the body came out smaller than in
+    # the runs and the aim (the "13" about 17 px against 19-20, the head about a
+    # tenth shorter); set by eye against those, side by side (2026-09-25).
+    "zombie": {"dribble_idle": 1.12, "idle": 1.08},
 }
 
 # How big each character is, as a multiple of the standing height above.
@@ -270,7 +278,7 @@ def build_from_sequences(key: str, stem: str, label: str) -> dict | None:
 
         if calib is not None:
             ch = bbox(mask_of(Image.open(calib).convert("RGBA")))
-            s = target_h / (ch[3] - ch[1])
+            s = target_h / (ch[3] - ch[1]) * seq_scale.get(d.name, 1.0)
             auto.append(d.name)
             # The calibration pose IS the standing height. The game otherwise
             # takes it from the first dribble frame, which on a strip that opens

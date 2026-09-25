@@ -723,31 +723,31 @@ window.SPRITE_MANIFEST = {
     "dribble_idle": [
      {
       "src": "sprites/zombie/dribble_idle/01.png",
-      "w": 77.41,
-      "h": 114.88,
-      "footX": 38.61,
-      "footY": 115.07
+      "w": 86.7,
+      "h": 128.67,
+      "footX": 43.24,
+      "footY": 128.88
      },
      {
       "src": "sprites/zombie/dribble_idle/02.png",
-      "w": 77.6,
-      "h": 115.07,
-      "footX": 38.71,
-      "footY": 115.07
+      "w": 86.91,
+      "h": 128.88,
+      "footX": 43.35,
+      "footY": 128.88
      },
      {
       "src": "sprites/zombie/dribble_idle/03.png",
-      "w": 77.22,
-      "h": 115.07,
-      "footX": 38.52,
-      "footY": 115.26
+      "w": 86.49,
+      "h": 128.88,
+      "footX": 43.14,
+      "footY": 129.09
      },
      {
       "src": "sprites/zombie/dribble_idle/04.png",
-      "w": 77.41,
-      "h": 114.88,
-      "footX": 38.61,
-      "footY": 115.07
+      "w": 86.7,
+      "h": 128.67,
+      "footX": 43.24,
+      "footY": 128.88
      }
     ],
     "run_dribble_r": [
@@ -921,17 +921,17 @@ window.SPRITE_MANIFEST = {
     "idle": [
      {
       "src": "sprites/zombie/idle/01.png",
-      "w": 104.37,
-      "h": 119.9,
-      "footX": 56.64,
-      "footY": 119.9
+      "w": 112.72,
+      "h": 129.49,
+      "footX": 61.17,
+      "footY": 129.49
      },
      {
       "src": "sprites/zombie/idle/02.png",
-      "w": 97.52,
-      "h": 115.33,
-      "footX": 52.18,
-      "footY": 115.33
+      "w": 105.32,
+      "h": 124.56,
+      "footX": 56.36,
+      "footY": 124.56
      }
     ]
    },
