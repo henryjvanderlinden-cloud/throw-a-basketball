@@ -141,21 +141,26 @@ sequences:
     # from this table (its FRAME_FIELDS lists every field); gen-strips.py
     # attaches `file`. All lengths are fractions of standing height.
     #
-    # The crouch depths (drop) were measured off the earlier approved take:
-    # DRIVING DOWN is already deeper than RISING -- the body leads the hand.
-    # The hand ladder is knee, hem, WAISTBAND, above the hem, and the waistband
-    # is 0.52: where index.html actually puts the ball at its apex. The spine
-    # leans toward the dribbling hand on the downstroke and is straight at the
-    # top (Rick, 2026-09-21). Hair is drawn because two prose wordings of it
-    # failed; only LOWEST tilts the palm, "at the end of the push".
+    # SUBTLE, face-on, ball on the viewer's LEFT (Rick, 2026-09-25). The earlier
+    # table (crouch 0.016-0.150, hand 0.26-0.52, head up to 9 deg, hair up and
+    # flat) asked for about six times the monkey's movement: his dribble_idle
+    # changes height by ~2% across the loop, and every zombie take changed it
+    # by 6-8%. Rick: "too stiff, primarily because it is too exaggerated". The
+    # crouch now holds at 0.095-0.12, the stance matches the ball-less idle's
+    # (0.27) so he keeps his footing between the two, and the hand tops out at
+    # 0.42 -- DRIBBLE_HAND_H in index.html, where the ball actually peaks; the
+    # old 0.52 put the hand above the ball. Hair stays at rest.
+    #
+    # Face-on: every earlier take copied the reference drawing's three-quarter
+    # turn toward the viewer's right, so stopping after a run to the left
+    # turned his head the wrong way. Nose and both ears on the guide, as the
+    # ball-less idle has them, and the note says what they mean.
+    #
+    # History: take32 (handover 03) was the four-frame original; the face-on
+    # r3 was tried as a two-frame loop (its frames 2 and 3) and judged stiff.
     guide:
       file: art/guides/dribble_idle.png
-      side: right
-      # Face-on (Rick, 2026-09-25): every earlier take copied the reference
-      # drawing's three-quarter turn and looked toward the viewer's RIGHT, so
-      # stopping after a run to the left turned his head the wrong way. The
-      # guide now draws a head-on nose and both ears, as the ball-less idle
-      # does, and the note below says what they mean.
+      side: left
       ears: true
       nose: true
       note: |
@@ -173,31 +178,26 @@ sequences:
         same left-to-right order as the FRAMES listed below. The Nth figure in
         the pose guide is the pose for the Nth frame. Take the GEOMETRY from it
         and only the geometry: where each foot stands on the ground line, how
-        deeply each knee is bent and which knee is bent more than the other,
-        how far the shoulder line is tilted away from level, how far his spine
-        leans away from upright, how high the dribbling hand is and how far out
-        from his centre line it reaches, how far the head is tilted, and which
-        way his face points. Where the words below and the pose guide describe
-        the same thing, they agree; the pose guide is the exact version of it.
+        deeply the knees are bent, how far the shoulder line is tilted, how high
+        the dribbling hand is and how far out from his centre line it reaches,
+        and which way his face points. Where the words below and the pose guide
+        describe the same thing, they agree; the pose guide is the exact version
+        of it. The four dribbling figures are MEANT to look almost alike: the
+        differences between them are small, and they should stay small.
 
         THE HANDS ON THE POSE GUIDE are drawn too. The FLAT hand with its
         fingers spread out sideways is the dribbling hand: palm to the floor, at
-        exactly that height and that angle. The NARROW hand with its fingers
-        pointing down at the floor is the free hand, palm turned in toward his
-        leg. Each is ONE drawing, moved from frame to frame, and so is his.
+        exactly that height. The NARROW hand with its fingers pointing down at
+        the floor is the free hand, palm turned in toward his leg. Each is ONE
+        drawing, moved from frame to frame.
 
         THE HEAD ON THE POSE GUIDE: the small TRIANGLE in the middle of the
         face, pointing straight down, is his nose, and the two small ovals on
         either side of the head are BOTH of his ears. His face points STRAIGHT
         OUT OF THE PICTURE AT THE VIEWER in every frame: nose in the middle of
         his face, both eyes seen, both ears showing equally. The upright line
-        down the face marks its centre and the level line his eyes.
-
-        THE SHORT LINES ON THE POSE GUIDE'S HEAD show which way his hair points
-        in that frame: standing straight up off his scalp, lying down flat along
-        the sides of his head, or sticking out at rest. Draw HIS OWN ragged brown
-        hair pointing the way those lines point. The lines are a direction, not
-        hair.
+        down the face marks its centre and the level line his eyes. The short
+        lines on top are his hair, at rest.
 
         Draw the character from the colour reference standing in those
         positions. The pose guide is an instruction, not artwork: its thin flat
@@ -206,164 +206,96 @@ sequences:
         must not appear anywhere in it.
       frames:
         - {pose: calibration}
-        - {name: lowest,  drop: 0.150, tilt: 0.035, lean: 0.045, hand: 0.26,
-           head: 9, hair: up, palm: 18}
-        - {name: rising,  drop: 0.093, tilt: 0.018, lean: 0.020, hand: 0.38,
-           head: 5}
-        - {name: highest, drop: 0.016, tilt: 0.000, lean: 0.000, hand: 0.52,
-           head: 0, hair: flat}
-        # The hand TRAILS: the body has already dropped, the hand is still
-        # above the hem. At 0.33 this frame was drawn almost like LOWEST and
-        # every guided roll gave a dead seam (6-12%) between the two.
-        - {name: driving, drop: 0.101, tilt: 0.018, lean: 0.035, hand: 0.42,
-           head: 5}
+        - {name: lowest,  drop: 0.120, tilt: 0.010, lean: 0.012, stance: 0.27,
+           hand: 0.30, head: 3, palm: 8}
+        - {name: rising,  drop: 0.105, tilt: 0.005, lean: 0.006, stance: 0.27,
+           hand: 0.35, head: 1.5}
+        - {name: highest, drop: 0.095, tilt: 0.000, lean: 0.000, stance: 0.27,
+           hand: 0.42, head: 0}
+        # the hand trails the body on the way down, as before, but by less
+        - {name: driving, drop: 0.112, tilt: 0.006, lean: 0.008, stance: 0.27,
+           hand: 0.39, head: 1.5}
     kind: loop
     frames: 4
     ref: front
-    # Take 9 measured the hand at 25.8 / 43.5 / 33.9 / 36.3 percent of standing
-    # height: a good ladder hung on the wrong frames, which reads as jitter. The
-    # two mid frames shared a landmark (MID-THIGH), so nothing ranked them.
-    #
-    # Everything that has landed in this sequence is a RELATION -- the shoulder
-    # line tilts, the head sits over the dribbling shoulder, the hand is further
-    # out than the shoulder, the hand overlaps the knee. Everything that failed
-    # was a PROPERTY expected to persist between frames. So constancy is now
-    # written as an operation (one drawing, moved) and the heights as one
-    # ordered list with four distinct landmarks and an ordinal claim.
     view: |
       front view, facing the viewer, squared to camera: his chest, his hips and
       his face all point straight out of the picture, both shoulders the same
       distance from the camera, the number on his jersey in the middle of his
-      chest. Low athletic stance with the knees bent and the feet planted
-      shoulder-width apart.
+      chest. A relaxed, low athletic stance: knees bent, feet planted a little
+      wider than his shoulders, holding that crouch steadily.
     critical: |
-      CRITICAL: exactly ONE hand dribbles — the hand nearer the RIGHT EDGE of
-      the picture, on the {dribble_side} — in all four frames.
+      CRITICAL: exactly ONE hand dribbles — the hand nearer the LEFT EDGE of the
+      picture, on the VIEWER'S LEFT — in all four frames. The other hand never
+      dribbles.
+
+      THIS IS A CALM, EASY DRIBBLE, AND HIS BODY HARDLY MOVES. He holds one
+      steady low crouch in all four frames: his head sits at almost the same
+      height in every frame, his shoulders stay almost level, his back stays
+      almost upright. The only thing that plainly moves is the dribbling
+      FOREARM AND HAND, bouncing the ball from the elbow and the wrist. Keep
+      every other difference between the frames SMALL — a slight dip, a slight
+      rise — never a lunge, a heave or a deep knee bend.
 
       THE DRIBBLING HAND is flat and open: palm facing DOWN at the floor,
       fingers spread and straight, the shape of a hand resting on the top of a
-      ball. DRAW THE SAME HAND FOUR TIMES — one drawing of that hand, the same
-      shape, the same spread of the fingers and the same angle to the floor,
-      simply moved up and down the picture from frame to frame. It travels in
-      one straight line OUTSIDE HIS HIP, further out from his centre line than
-      his shoulder is, with clear background showing between his forearm and
-      his jersey.
+      ball. DRAW THE SAME HAND FOUR TIMES — the same shape, the same spread of
+      the fingers, the same angle to the floor — simply moved up and down from
+      frame to frame. It travels in one short straight line OUTSIDE HIS HIP,
+      beside his thigh, with clear background between his forearm and his
+      jersey.
 
-      THE HAND'S FOUR HEIGHTS, IN ORDER: in the LOWEST frame it is beside his
-      KNEE, overlapping the knee in the silhouette, with the hem of his shorts
-      clearly above his wrist; in the RISING frame it is level with the HEM of
-      his shorts; in the HIGHEST frame it is up at the WAISTBAND of his shorts,
-      higher than it is in any other frame; in the DRIVING DOWN frame it is
-      STILL UP ABOVE THE HEM, halfway between the hem and the waistband,
-      trailing behind his body, which has already dropped. The HIGHEST frame is unmistakably the highest
-      of the four and the LOWEST frame unmistakably the lowest. Only in the
-      LOWEST frame does the hand tilt a little further down, at the end of the
-      push.
+      THE HAND'S FOUR HEIGHTS, IN ORDER, all of them low: in the LOWEST frame it
+      is beside his KNEE; in the RISING frame it is a little higher, on his
+      LOWER THIGH; in the HIGHEST frame it is just ABOVE THE HEM of his shorts,
+      and never higher than that; in the DRIVING DOWN frame it is level with the
+      HEM. Each frame has the hand at a DIFFERENT height, but the whole travel
+      is short: from the knee to just above the hem, and no further.
 
       THE FREE HAND IS NOT DRIBBLING AND DOES NOT COPY IT. That arm simply
       hangs: upper arm against his ribs, elbow almost straight, and the hand
       hanging from the wrist with the PALM TURNED IN toward his thigh, fingers
       straight, relaxed and a little apart, pointing down at the floor. It is
-      ONE DRAWING REPEATED IN ALL FOUR FRAMES — the same shape and the same
-      spread of the fingers every time — held just clear of his leg so the whole
-      hand shows against the background. {no_shamble}
-
-      This is a WHOLE-BODY action, not an arm action, and that is what makes it
-      read as weight. HIS WEIGHT SHIFTS ONTO THE LEG UNDER THE DRIBBLING HAND —
-      the leg nearer the RIGHT EDGE of the picture. As the hand goes down he
-      leans that way and settles onto that leg: THAT KNEE, the one nearer the
-      RIGHT EDGE, is the one that bends, and it bends deepest at the bottom of
-      the push, coming forward over its own shoe. That hip drops and that
-      shoulder drops with it, so the SHOULDER LINE TILTS. The far leg stays
-      straighter and carries less of him. As the hand comes up, that knee
-      straightens again and his weight comes back toward the middle.
-
-      HIS SPINE TILTS WITH THE PUSH, and only a little. Take a line from the middle
-      of his belt up through the middle of his chest: in the LOWEST frame that line
-      leans toward the RIGHT EDGE of the picture, his chest further toward the right
-      edge than his belt buckle is, out over the loaded hip; in the DRIVING DOWN
-      frame it leans almost as far; in the RISING frame it leans only slightly; in
-      the HIGHEST frame it is STRAIGHT UP AND DOWN, his chest directly above his belt
-      buckle. The LOWEST frame leans the most of the four and the HIGHEST frame not
-      at all. His shoulders and his head go with his chest, as one piece.
+      ONE DRAWING REPEATED IN ALL FOUR FRAMES, held just clear of his leg so
+      the whole hand shows against the background. {no_shamble}
 
       HIS FEET ARE ONE DRAWING REPEATED IN ALL FOUR FRAMES: both shoes in the
-      same place on the floor, the same distance apart, at the same angle, as if
-      traced from one frame into the next three. THE GAP BETWEEN HIS SHOES IS
-      THE SAME WIDTH IN EVERY FRAME. He gets LOWER AND HIGHER BY BENDING AND
-      STRAIGHTENING HIS KNEES, never by spreading his feet or drawing them back
-      in: the knee on the dribbling side bends more deeply and comes forward
-      over his toes as he sinks, and straightens as he rises. His knees do all
-      the work his feet are not allowed to do.
+      same place on the floor, the same distance apart, at the same angle, as
+      if traced from one frame into the next three. The small dip and rise
+      come from his knees, never from moving his feet.
 
       HE LOOKS STRAIGHT AT THE VIEWER IN ALL FOUR FRAMES: both eyes seen, his
       nose in the middle of his face, both ears showing. The character
       reference shows him turned toward the RIGHT edge with his head in
       profile; that is how he stood for that drawing, NOT this pose, so do not
       copy the turn. His head never turns toward the dribbling hand or toward
-      either edge of the picture.
-
-      HIS HEAD SITS ON TOP OF HIS SPINE — it stays directly above his chest and
-      moves only as far as his chest moves, and his face stays turned to the
-      viewer. What changes is its TILT, and only slightly:
-      in the LOWEST frame his head tips a little toward the dribbling side, the
-      ear on that side dropping toward that shoulder and the chin dipping; in
-      the two middle frames the tilt is about half of that; in the HIGHEST frame
-      his head is level and square to the camera, looking straight at the
-      viewer. A slight tilt throughout, never a full lean.
-
-      HIS HAIR MOVES WITH THE BOUNCE. In the LOWEST frame his hair STANDS UP
-      off the top of his head, the ragged tufts pointing straight up at the
-      ceiling, the way hair does when a body drops out from under it. In the
-      HIGHEST frame his hair LIES FLAT on the top of his head, the tufts pointing
-      down toward his ears, pressed down by the rise. In the RISING and DRIVING
-      DOWN frames his hair is exactly as it is in frame 1. It is the same colour
-      and the same ragged tufts in every frame.
+      either edge of the picture. At most it tips a hair toward the dribbling
+      side in the LOWEST frame. His hair is the same, at rest, in every frame.
     poses:
       - >-
-          LOWEST, the push landed. His most compressed frame: both knees
-          bent, and the knee nearer the RIGHT EDGE of the picture bent
-          DEEPEST of the four frames, forward over its own shoe, with his
-          weight plainly on that leg — that hip dropped and that shoulder
-          dropped so the shoulder line is visibly tilted — and his shoes
-          still exactly where they are in every other frame. His head is
-          tilted a little toward the dribbling side, chin dipped.
-          The dribbling arm is straight and the hand is at its lowest,
-          overlapping his KNEE, wrist loose at the end of the
-          follow-through. The free hand hangs at his side, swung slightly
-          BEHIND him as he sinks.
+          LOWEST, the push landed. The dribbling hand is at its lowest, beside
+          his KNEE, arm almost straight, wrist loose. He has dipped a little
+          into his crouch, the shoulder on the dribbling side a touch lower
+          than the other. The free hand hangs at his side.
       - >-
-          RISING, and the HAND leads. The wrist bends back first and the
-          hand has come up off the knee, elbow starting to fold. The body
-          is still catching up: the dribbling shoulder is only beginning to
-          lift, the knees are only beginning to straighten, and the head
-          still carries about half its tilt. The torso visibly lags
-          behind the hand. The free hand hangs at his side, swinging
-          forward.
+          RISING. The hand has come up a little, to his LOWER THIGH, the elbow
+          starting to bend. His body is almost exactly as in the LOWEST frame,
+          a touch less dipped. The free hand hangs at his side.
       - >-
-          HIGHEST, his tallest and most open frame. His hand has reached
-          the top of its travel, still out beyond his hip, elbow folded,
-          ready to push down again. The shoulder line and the hips are
-          level and the knees are at their straightest — still bent, still
-          an athletic stance, and his shoes no further apart than in any
-          other frame. His head is level and square to the camera, looking
-          straight at the viewer. The free hand hangs at his side
-          at the forward end of its swing.
+          HIGHEST. The hand is at the top of its short travel, just ABOVE THE
+          HEM of his shorts, elbow bent, ready to push down again. His
+          shoulders are level and his crouch is at its shallowest, but he is
+          still in the same low athletic stance. His head is level, looking
+          straight at the viewer. The free hand hangs at his side.
       - >-
-          DRIVING DOWN, and now the BODY leads. The KNEE nearer the RIGHT
-          EDGE of the picture bends again and takes him down, his weight
-          settling back onto that leg — that shoulder drops, that hip
-          sinks, his shoes stay exactly where they are — and the head
-          tilts halfway back toward the dribbling side, while the dribbling
-          hand is still high, trailing behind. This frame is the one that
-          sells the weight: the body has committed to the push and the hand
-          has not caught up yet. The free hand hangs at his side, swinging
-          back again.
+          DRIVING DOWN. His knees give a little and the hand pushes down,
+          still level with the HEM, following the body down. Almost the same
+          pose as the RISING frame, with the hand a little higher. The free
+          hand hangs at his side.
     extra: |
-      Everything above his feet — knees, hips, shoulders, spine, head — moves
-      with the dribble. The four frames must differ clearly BOTH in the height
-      of the dribbling hand AND in the tilt of the shoulder line.
-
+      The four frames are nearly the same picture with the dribbling forearm
+      and hand at four different heights and his body dipping and rising only
+      slightly. Subtle, relaxed, steady: this is how he waits with the ball.
 
   run_dribble_r:
     title: Run-dribble, moving right
