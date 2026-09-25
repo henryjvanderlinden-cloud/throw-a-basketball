@@ -126,10 +126,11 @@ POSE_SCALE = {
 # the art: the generator put the monkey's dribbling hand on the viewer's LEFT
 # for the standing poses, not the right the prompt asked for.
 BALL_SIDE = {
-    # Running left, the ball is ahead of him on the LEFT; everything else the
-    # zombie has is drawn with the ball on the viewer's right, which is the
-    # default.
-    "zombie": {"run_dribble_l": -1},
+    # Running left, the ball is ahead of him on the LEFT. Standing, the subtle
+    # face-on dribble (2026-09-25) bounces it on the viewer's left too, like the
+    # monkey, so it stays in the same hand when he stops after a left run.
+    # Everything else is the default, the viewer's right.
+    "zombie": {"dribble_idle": -1, "run_dribble_l": -1},
     "monkey": {
         "dribble_idle": -1, "break_banana": -1, "break_wave": -1,
         "pickup": -1, "panic": -1, "run_dribble_r": +1, "run_dribble_l": -1,

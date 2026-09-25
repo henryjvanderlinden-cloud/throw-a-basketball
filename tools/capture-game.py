@@ -9,6 +9,8 @@ are, and a frame can be captured at any step.
     python -m http.server 8899                  # from the repo root
     python tools/capture-game.py --p1 nba --p2 zombie
     python tools/capture-game.py --p1 zombie --watch 0 --hold right
+    python tools/capture-game.py --p1 zombie --p2 nba --watch 0 --start \
+        --script right:0.8,-:0.8,left:0.8,-:1.2      # run, stop, turn, stop
 
 Writes into --out: one PNG per step, `loop.gif` (a crop around the watched
 player at true speed) and `shown.txt` (which sequence and frame the game drew
@@ -58,9 +60,27 @@ async def main(a) -> None:
             await pg.evaluate("__pump(30)")
         if a.hold:
             await pg.evaluate(f"__hoop.press({a.watch}, '{a.hold}')")
+        # --script: segments "dir:seconds", '-' for nothing held, played in
+        # order; the capture lasts as long as the script does.
+        plan = []
+        if a.script:
+            for seg in a.script.split(","):
+                d, s = seg.split(":")
+                plan.append((None if d in ("-", "none") else d, float(s)))
+            a.seconds = sum(s for _, s in plan)
         n = int(a.seconds * 60 / a.every)
+        held, marks, acc = None, [], 0.0
+        for d, s in plan:
+            marks.append((int(acc * 60 / a.every), d)); acc += s
         shown, crops = [], []
         for k in range(n):
+            for at, d in marks:
+                if at == k and d != held:
+                    if held:
+                        await pg.evaluate(f"__hoop.release({a.watch}, '{held}')")
+                    if d:
+                        await pg.evaluate(f"__hoop.press({a.watch}, '{d}')")
+                    held = d
             await pg.evaluate(f"__pump({a.every})")
             await pg.wait_for_timeout(30)
             p = await pg.evaluate(f"(() => {{ const p = __hoop.players[{a.watch}];"
@@ -97,6 +117,8 @@ if __name__ == "__main__":
                     help="which player to follow, 0 or 1 (default: the last one picked)")
     ap.add_argument("--hold", default=None, help="hold a direction: left | right")
     ap.add_argument("--seconds", type=float, default=3.0)
+    ap.add_argument("--script", default=None,
+                    help="held directions in turn, e.g. right:0.8,-:0.8,left:0.8,-:1.2")
     ap.add_argument("--every", type=int, default=5, help="game ticks between captures")
     ap.add_argument("--out", default="build/capture")
     ap.add_argument("--start", action="store_true",

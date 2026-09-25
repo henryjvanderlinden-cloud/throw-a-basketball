@@ -723,31 +723,31 @@ window.SPRITE_MANIFEST = {
     "dribble_idle": [
      {
       "src": "sprites/zombie/dribble_idle/01.png",
-      "w": 74.22,
-      "h": 117.81,
-      "footX": 35.98,
-      "footY": 118.02
+      "w": 77.41,
+      "h": 114.88,
+      "footX": 38.61,
+      "footY": 115.07
      },
      {
       "src": "sprites/zombie/dribble_idle/02.png",
-      "w": 75.46,
-      "h": 124.6,
-      "footX": 36.7,
-      "footY": 124.8
+      "w": 77.6,
+      "h": 115.07,
+      "footX": 38.71,
+      "footY": 115.07
      },
      {
       "src": "sprites/zombie/dribble_idle/03.png",
-      "w": 76.49,
-      "h": 128.5,
-      "footX": 35.88,
-      "footY": 128.71
+      "w": 77.22,
+      "h": 115.07,
+      "footX": 38.52,
+      "footY": 115.26
      },
      {
       "src": "sprites/zombie/dribble_idle/04.png",
-      "w": 74.64,
-      "h": 121.31,
-      "footX": 36.29,
-      "footY": 121.31
+      "w": 77.41,
+      "h": 114.88,
+      "footX": 38.61,
+      "footY": 115.07
      }
     ],
     "run_dribble_r": [
@@ -936,6 +936,7 @@ window.SPRITE_MANIFEST = {
     ]
    },
    "ballSide": {
+    "dribble_idle": -1,
     "run_dribble_l": -1
    },
    "fixed": [

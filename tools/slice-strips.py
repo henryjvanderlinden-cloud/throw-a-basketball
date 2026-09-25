@@ -67,6 +67,9 @@ STRIPS = {
     # counterparts from the eight old poses, which still supply the rest (see
     # build-sprites.py). Each is the approved take of the guided pipeline.
     "Zombie": [
+        # Subtle and face-on, dribbling on the viewer's LEFT as the monkey does
+        # (BALL_SIDE in build-sprites.py): r3 of the subtle batch, 2026-09-25,
+        # picked by Rick, all four frames. It replaces take32 (handover 03).
         ("dribble_idle",    "dribble_idle.approved.png", 4, True),
         ("run_dribble_r",   "run_dribble_r.approved.png", 4, True),
         ("run_dribble_l",   "run_dribble_l.approved.png", 4, True),
