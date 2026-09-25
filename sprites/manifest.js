@@ -436,6 +436,20 @@ window.SPRITE_MANIFEST = {
     "run_dribble_r": 1,
     "run_dribble_l": -1
    },
+   "pickupBall": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     0
+    ],
+    [
+     1,
+     0.42
+    ]
+   ],
    "handX": 13.52,
    "handY": -145.77
   },
@@ -933,6 +947,29 @@ window.SPRITE_MANIFEST = {
       "footX": 56.36,
       "footY": 124.56
      }
+    ],
+    "pickup": [
+     {
+      "src": "sprites/zombie/pickup/01.png",
+      "w": 96.05,
+      "h": 112.48,
+      "footX": 47.92,
+      "footY": 112.48
+     },
+     {
+      "src": "sprites/zombie/pickup/02.png",
+      "w": 93.77,
+      "h": 90.02,
+      "footX": 46.78,
+      "footY": 90.02
+     },
+     {
+      "src": "sprites/zombie/pickup/03.png",
+      "w": 93.35,
+      "h": 116.43,
+      "footX": 46.57,
+      "footY": 116.43
+     }
     ]
    },
    "ballSide": {
@@ -942,6 +979,7 @@ window.SPRITE_MANIFEST = {
    "fixed": [
     "dribble_idle",
     "idle",
+    "pickup",
     "run_dribble_l",
     "run_dribble_r",
     "run_l",
@@ -957,6 +995,20 @@ window.SPRITE_MANIFEST = {
     "run_dribble_l": 2
    },
    "standH": 132.0,
+   "pickupBall": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     0.42
+    ]
+   ],
    "handX": 13.91,
    "handY": -140.41
   }

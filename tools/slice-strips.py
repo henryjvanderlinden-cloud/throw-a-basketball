@@ -84,6 +84,10 @@ STRIPS = {
         # picked by Rick.
         ("run_r",           "run_r.approved.png", 4, True),
         ("run_l",           "run_l.approved.png", 4, True),
+        # Face-on, two-handed: reach, scoop between the feet, gathered in front
+        # of the waist. r1 of the first batch, 2026-09-25, picked by Rick; the
+        # game puts the ball in his hands frame by frame (PICKUP_BALL).
+        ("pickup",          "pickup.approved.png", 3, True),
     ],
 }
 

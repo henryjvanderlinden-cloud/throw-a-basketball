@@ -800,24 +800,146 @@ sequences:
 
   pickup:
     title: Pick the ball up off the floor
+    # Face-on, one version for both directions, three frames of 0.1 s each
+    # (PICKUP_TIME in index.html is 0.30 s). Rick, 2026-09-25, all defaults:
+    #
+    # AMPLITUDE FROM THE MONKEY (handover 07 §4 #25). His pickup, head top to
+    # floor as a share of his dribbling height: 0.87, ~0.75, 0.99 -- a quick,
+    # deep scoop between his feet and back up. The table below is that, on the
+    # zombie's proportions: head top at about 0.75, 0.63 and 0.87 of standing.
+    #
+    # THE BALL FOLLOWS THE HANDS. The game used to start the dribble the moment
+    # he reached the ball, so it bounced up at his side while his hands were
+    # still at the floor. Now the ball rests on the floor between his feet for
+    # frames 1-2 and sits between his hands in frame 3 (index.html, via the
+    # manifest's pickupBall), and the first bounce starts after. So the hands
+    # here are placed around WHERE THE GAME PUTS THE BALL: BALL_R is 13 of his
+    # 132, a ball 0.20 of standing across.
+    #
+    # FRAME 3 IS TWO-HANDED AND CENTRED, not one hand coming up on the
+    # dribbling side: what follows can be the stationary dribble (viewer's
+    # left) or either run (right for run_dribble_r), so no one side is right.
+    #
+    # The forward bend is drawn with `joints`: the tool's `drop` lowers hips
+    # and shoulders together (a squat), and a bend toward the camera is the
+    # torso FORESHORTENING -- shoulders and head come down toward the hips.
+    guide:
+      file: art/guides/pickup.png
+      side: left
+      ears: true
+      nose: true
+      note: |
+        POSE GUIDE: TWO images are attached, and they do different jobs.
+
+        The COLOUR image of the character is the only authority on WHO HE IS.
+        His colours, his proportions, his build, his height, his face, his kit
+        and the drawing style all come from that image and from the SUBJECT
+        above, and nothing below changes any of them. It does NOT decide which
+        way he faces: in that drawing he is turned toward the right edge, and
+        in this sheet he is not.
+
+        The other image is a POSE GUIDE: a plain black stick figure on a white
+        background, four figures standing in a row on one ground line, in the
+        same left-to-right order as the FRAMES listed below. The Nth figure in
+        the pose guide is the pose for the Nth frame. Take the GEOMETRY from it
+        and only the geometry: where each foot stands on the ground line, how
+        deeply the knees are bent, how far down his shoulders and head have
+        come, and where BOTH hands are. Where the words below and the pose
+        guide describe the same thing, they agree; the pose guide is the exact
+        version of it.
+
+        THE BODY ON THE POSE GUIDE is seen from the front while he bends
+        forward TOWARD THE VIEWER. That is why, in the second and third
+        figures, the shoulders sit so close above the hips: the chest is tipped
+        toward the camera, not squashed. Draw a man bending forward at the
+        waist and the knees, seen from the front.
+
+        THE HANDS ON THE POSE GUIDE are the narrow shapes at the end of each
+        arm. BOTH hands do the same thing in every frame, one on each side of
+        his centre line, the same height as each other: this is a two-handed
+        move.
+
+        THE HEAD ON THE POSE GUIDE: the small TRIANGLE in the middle of the
+        face is his nose, and the two small ovals on either side of the head
+        are BOTH of his ears. His face points toward the viewer in every
+        frame: nose in the middle of his face, both ears showing equally. The
+        upright line down the face marks its centre and the level line his
+        eyes. The short lines on top are his hair, at rest.
+
+        Draw the character from the colour reference standing in those
+        positions. The pose guide is an instruction, not artwork: its thin flat
+        lines, its joint dots, its white background, its circular head, its
+        triangle, its ovals and its face lines are NOT part of the drawing and
+        must not appear anywhere in it.
+      frames:
+        - {pose: calibration}
+        - name: reaching
+          drop: 0.14
+          stance: 0.27
+          hand: [0.08, 0.21]
+          hand_shape: hang
+          free: [-0.08, 0.21]
+          joints: {chest: [0, 0.56], sh_d: [0.13, 0.56], sh_f: [-0.13, 0.56],
+                   head: [0, 0.68], elb_d: [0.126, 0.392], elb_f: [-0.126, 0.392]}
+        - name: scooping
+          drop: 0.22
+          stance: 0.27
+          hand: [0.115, 0.10]
+          hand_shape: hang
+          free: [-0.115, 0.10]
+          joints: {chest: [0, 0.45], sh_d: [0.13, 0.45], sh_f: [-0.13, 0.45],
+                   head: [0, 0.555], elb_d: [0.143, 0.282], elb_f: [-0.143, 0.282]}
+        - name: gathered
+          drop: 0.11
+          stance: 0.27
+          hand: [0.10, 0.47]
+          hand_shape: hang
+          free: [-0.10, 0.47]
+          # elbows out and bent: the forearms point at the camera
+          joints: {elb_d: [0.19, 0.53], elb_f: [-0.19, 0.53]}
     kind: one_shot
     frames: 3
     ref: front
     view: |
-      front view, facing the viewer, squared to camera.
+      front view, facing the viewer, squared to camera: his chest, his hips and
+      his face all point out of the picture, both shoulders the same distance
+      from the camera, the number on his jersey in the middle of his chest.
+      In frames 2, 3 and 4 his feet are planted a little wider than his
+      shoulders, and they stay exactly where they are: he bends, he does not
+      step.
+    critical: |
+      CRITICAL: this is a TWO-HANDED move, and it is SYMMETRICAL. In every
+      frame both hands are at the same height, one each side of his centre
+      line, doing the same thing. Neither hand dribbles.
+
+      THE BALL IS NOT DRAWN, but it is there: the game draws a basketball on
+      the floor between his feet in frames 2 and 3, and between his hands in
+      frame 4. His hands go where that ball is. In frames 3 and 4 there is a
+      gap between his two hands exactly as wide as a basketball -- about the
+      width of his own head -- and in that gap there is NOTHING: no ball, no
+      shape, only empty background.
     poses:
       - >-
-          Starting from a low athletic stance, bending forward at the
-          waist, both arms reaching down and forward toward the floor in
-          front of the feet, knees beginning to bend.
+          REACHING: bending forward at the waist, knees bending, both arms
+          reaching straight down toward the floor in front of his feet, hands
+          open, at the height of his shins. Head tipped forward, eyes on the
+          floor in front of him.
       - >-
-          Bent right down, knees deeply bent, both hands at floor level
-          just in front of the feet, cupped as if scooping something up.
-          Head down, looking at the floor. {balance_low}
+          SCOOPING, the lowest point: knees deeply bent and chest tipped well
+          forward over his thighs, both hands down at the floor between his
+          feet with the palms facing each other, fingers curled, cupping the
+          two sides of a ball-sized gap. Head down, looking at the floor
+          between his hands.
       - >-
-          Rising back up, weight coming back over the feet, head lifting.
-          The hand on the {dribble_side} is coming up to about hip height,
-          palm down; the other arm returns to the side.
+          GATHERED: back up in his low athletic crouch, head up, looking at
+          the viewer. Both forearms forward, both hands in front of his
+          waistband with the palms facing each other, a ball-sized gap
+          between them, as if holding a basketball in front of his belly with
+          both hands.
+    ball: |
+      The character is NOT holding a basketball in any frame, and none is
+      drawn anywhere: the game draws the ball separately, in the gap between
+      his hands.
 
   steal:
     title: Steal attempt

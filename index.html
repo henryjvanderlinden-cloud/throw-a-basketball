@@ -1003,6 +1003,9 @@ const RELEASE_HOLD = 0.27;      // ...then the release
 const FOLLOW_HOLD = 0.5;        // ...then the follow-through
 const TURN_TIME = 0.36;         // front stance -> back stance
 const PICKUP_TIME = 0.30;       // gathering the ball off the floor
+// which frame of an n-frame pickup is up; step() and the drawing must agree
+const pickupFrame = (p, n) =>
+  Math.min(n - 1, Math.floor((PICKUP_TIME - p.pickupT) / PICKUP_TIME * n));
 // Celebrations vary in length, so their duration comes from the frame count
 // rather than a fixed timer. The handspring plays faster -- a six-frame tumble
 // at the others' pace would be slow motion -- and rarely, because a backflip on
@@ -2296,6 +2299,8 @@ function giveBall(p, viaPickup) {
   p.dribT = 0; p.stillT = 0; p.dribPh = 0;
   p.breakSeq = null; p.breakT = 0;
   if (viaPickup) p.pickupT = PICKUP_TIME;
+  p.gatherX = null;
+  p.reachX = g.ball.x - p.px;      // where the ball lay when he reached it
   g.stealImmune = STEAL_IMMUNE;
   g.ball.rest = false;
   // Gathering the ball is what starts the clock again. Chasing a rebound is
@@ -2519,6 +2524,31 @@ function step(dt) {
       b.y = GROUND - BALL_R - h;
       b.spin += dt * 300 * p.facing;
       b.vx = 0; b.vy = 0;
+      // Picking it up: the ball goes where the pickup art's hands are, frame by
+      // frame (the manifest's pickupBall: [out, up] per frame), and the dribble
+      // is held at the top of a bounce, so the first bounce starts from his
+      // hand once he has it. During that first drop the ball slides across from
+      // where he gathered it to the side he dribbles on now.
+      const pb = p.char && p.char.pickupBall;
+      const pickup = pb && seqOf(p, 'pickup');
+      if (p.pickupT > 0 && pickup) {
+        const k = pickupFrame(p, pickup.length);
+        const [out, up] = pb[k] || [0, 0];
+        p.dribT = Math.PI / 2;
+        b.x = p.px + bodyH(p) * 0.26 * out * ballSide(p, 'pickup');
+        // He can reach a ball lying well to one side, so during the first
+        // frame it slides in under his hands rather than jumping there.
+        if (k === 0 && p.reachX != null) {
+          const f = (PICKUP_TIME - p.pickupT) / (PICKUP_TIME / pickup.length);
+          b.x = p.px + p.reachX + (b.x - p.px - p.reachX) * Math.min(1, f);
+        }
+        b.y = GROUND - Math.max(BALL_R, up * bodyH(p));
+        p.gatherX = b.x - p.px;
+      } else if (p.gatherX != null) {
+        const t = (p.dribT - Math.PI / 2) / (Math.PI / 2);
+        if (t >= 1) p.gatherX = null;
+        else b.x = p.px + p.gatherX + (b.x - p.px - p.gatherX) * Math.max(0, t);
+      }
       // The ball is on the floor every time sin(dribT) crosses zero, so counting
       // half-turns of dribT counts bounces. Quiet: it is the heartbeat under the
       // music, not an event.
@@ -2714,8 +2744,7 @@ function animatePlayer(p) {
   if (p.state === PS.DRIBBLE) {
     const pickup = seqOf(p, 'pickup');
     if (p.pickupT > 0 && pickup) {
-      const k = Math.floor((PICKUP_TIME - p.pickupT) / PICKUP_TIME * pickup.length);
-      return showFrame(p, 'pickup', Math.min(pickup.length - 1, k));
+      return showFrame(p, 'pickup', pickupFrame(p, pickup.length));
     }
     // The old-style characters have no left/right art, so their front stance is
     // mirrored to keep the dribbling hand over the ball.

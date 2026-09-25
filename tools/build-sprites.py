@@ -94,7 +94,8 @@ SEQ_SCALE = {
     # Calibration corrections. In both strips the body came out smaller than in
     # the runs and the aim (the "13" about 17 px against 19-20, the head about a
     # tenth shorter); set by eye against those, side by side (2026-09-25).
-    "zombie": {"dribble_idle": 1.12, "idle": 1.08},
+    # pickup the same way: shoes 41-42 px against the dribble's 44-46.
+    "zombie": {"dribble_idle": 1.12, "idle": 1.08, "pickup": 1.06},
 }
 
 # How big each character is, as a multiple of the standing height above.
@@ -162,6 +163,24 @@ APEX_FRAME = {
 # runner bounces the ball as each foot lands.
 LOOP_BOUNCES = {
     "zombie": {"run_dribble_r": 2, "run_dribble_l": 2},
+}
+
+# Where the ball is in each frame of the pickup, so the hands meet it instead
+# of the ball bouncing up beside him on its own (2026-09-25). One [out, up]
+# pair per frame: `out` is the ball's distance from his centre line as a share
+# of the dribble's own (0 between his feet, 1 out on the side the pickup art
+# puts its hand, BALL_SIDE["pickup"]), `up` the ball centre's height as a share
+# of standing height (0: resting on the floor). The dribble starts after the
+# last frame, from the top of a bounce, and the ball slides across to the
+# dribbling side of whatever comes next during that first drop. A character with no entry keeps the old
+# behaviour: the dribble starts the moment he reaches the ball.
+PICKUP_BALL = {
+    # read off sprites/monkey/pickup: both hands at the floor between his feet,
+    # then his hand on the viewer's left, a little above the top of a bounce
+    "monkey": [[0, 0], [0, 0], [1, 0.42]],
+    # both hands at the floor, then the ball held in both in front of his belly;
+    # 0.42 filmed against r1's hands (0.47 hid the "13" and sat above them)
+    "zombie": [[0, 0], [0, 0], [0, 0.42]],
 }
 
 # Sequences anchored on the cell rather than on the feet: either the feet
@@ -329,6 +348,10 @@ def build_from_sequences(key: str, stem: str, label: str) -> dict | None:
         char["loopBounces"] = bounces
     if stand_h is not None:
         char["standH"] = stand_h
+    if key in PICKUP_BALL and "pickup" in sequences:
+        assert len(PICKUP_BALL[key]) == len(sequences["pickup"]), \
+            f"{key}: PICKUP_BALL has {len(PICKUP_BALL[key])} frames, pickup has {len(sequences['pickup'])}"
+        char["pickupBall"] = PICKUP_BALL[key]
     return char
 
 
@@ -391,7 +414,7 @@ def build_mixed(key: str, stem: str, label: str) -> dict | None:
     base["sequences"].update(strips["sequences"])
     base["fixed"] = sorted(strips["sequences"])
     base["ballSide"] = strips["ballSide"]
-    for k in ("apexFrame", "loopBounces", "standH"):
+    for k in ("apexFrame", "loopBounces", "standH", "pickupBall"):
         if k in strips:
             base[k] = strips[k]
     return base
