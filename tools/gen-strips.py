@@ -455,25 +455,31 @@ class ChatGPT:
             return true;
         }""", {"b64": b64, "name": path.name}))
 
-    def sent_with_image(self) -> bool:
-        """Did the message we just sent actually carry an image?
+    def sent_images(self) -> int | None:
+        """How many pictures the message we just sent carries; None if the page
+        cannot tell (no turns found, or the query failed).
 
         Checked straight after sending, because the answer is available in
         seconds and the alternative is waiting out the whole generation timeout
-        to be told the reference was missing.
+        to be told the reference was missing. A COUNT, not a yes/no: with a
+        pose guide attached, "an image" was satisfied by the guide alone, and
+        ChatGPT replied in words that the colour reference was not attached
+        (idle, 2026-09-25) -- the plus-menu path had passed attach() on the
+        button count its own open menu added.
         """
         try:
-            return bool(self.page.evaluate("""() => {
+            return self.page.evaluate("""() => {
                 const turns = [...document.querySelectorAll(
                     "[data-testid^='conversation-turn-']")];
-                if (!turns.length) return true;
+                if (!turns.length) return null;
                 const user = turns.filter(t =>
                     t.querySelector("[data-message-author-role='user']"));
                 const last = (user.length ? user : turns).slice(-1)[0];
-                return !!last.querySelector("img");
-            }"""))
+                return new Set([...last.querySelectorAll("img")]
+                    .map(i => i.currentSrc || i.src)).size;
+            }""")
         except Exception:                      # noqa: BLE001
-            return True                        # can't tell: don't block
+            return None                        # can't tell: don't block
 
     def send(self, text: str) -> None:
         box, sel = self.first("composer")
@@ -678,7 +684,7 @@ class ChatGPT:
                 continue
             a_in, a_got = in_size[0] / in_size[1], size[0] / max(size[1], 1)
             if abs(a_got - a_in) <= 0.005 * a_in:
-                raise NoImage(
+                raise Echo(
                     f"downloaded a {size[0]}x{size[1]} image with the same "
                     f"shape as {src.name} ({in_size[0]}x{in_size[1]}) — that is "
                     f"the attachment coming back, not a generated strip")
@@ -699,6 +705,12 @@ class NoImage(Exception):
     """The model answered in words instead of producing an image."""
     def __init__(self, reply: str):
         super().__init__(f"ChatGPT replied without an image: {reply!r}")
+
+
+class Echo(NoImage):
+    """A download that is one of our own attachments coming back."""
+    def __init__(self, what: str):
+        Exception.__init__(self, what)
 
 
 # --------------------------------------------------------------------------
@@ -762,10 +774,17 @@ def run(jobs: list[dict], args) -> int:
                     bot.attach(job["guide"])
                 before = {o["src"] for o in bot._images()}
                 bot.send(job["text"])
-                bot.page.wait_for_timeout(4000)
-                if not bot.sent_with_image():
-                    raise NoImage("the sent message carried no image — the "
-                                  "reference did not travel with the prompt")
+                want = 1 + bool(job["guide"])
+                got = None
+                for _ in range(6):             # thumbnails render lazily
+                    bot.page.wait_for_timeout(2000)
+                    got = bot.sent_images()
+                    if got is None or got >= want:
+                        break
+                if got is not None and got < want:
+                    raise NoImage(f"the sent message carried {got} of {want} "
+                                  f"images — an attachment did not travel with "
+                                  f"the prompt")
                 # A SECOND snapshot, and it cost two rolls to learn why. Until
                 # a message is sent its attachments are buttons, not <img>, so
                 # the snapshot above cannot see them; wait_for_image then falls
@@ -777,9 +796,22 @@ def run(jobs: list[dict], args) -> int:
                 # The user turn has now rendered, so everything on the page is
                 # an input and only the assistant's image can appear after here.
                 before |= {o["src"] for o in bot._images()}
-                url = bot.wait_for_image(before, timeout_s=args.timeout)
-                size = bot.download(url, job["out"],
-                                    inputs=[f for f in (job["ref"], job["guide"]) if f])
+                # An echo of an attachment can land BEFORE the generation
+                # does (idle, 2026-09-25: two rolls lost while ChatGPT was
+                # still thinking). The aspect guard spots it; ignore that
+                # picture and keep waiting for the real strip, in one budget.
+                deadline = time.time() + args.timeout
+                while True:
+                    url = bot.wait_for_image(
+                        before, timeout_s=max(1, int(deadline - time.time())))
+                    try:
+                        size = bot.download(
+                            url, job["out"],
+                            inputs=[f for f in (job["ref"], job["guide"]) if f])
+                        break
+                    except Echo as e:
+                        log(f"    ignoring an echo, still waiting: {e}")
+                        before.add(url)
                 job["sidecar"].write_text(json.dumps({
                     "character": job["char"], "sequence": job["seq"],
                     "roll": job["roll"], "frames": job["frames"],
