@@ -116,10 +116,15 @@ STRETCH_WARN = 0.05
 #           on the ball's own line (GAME_LATERAL); [x, y] places the wrist
 #           anywhere (x out from the centre line, toward the dribbling side);
 #           null lets it hang.
-#   hand_shape  flat | hang | fist. Defaults to flat when `hand` is given.
+#   hand_shape  flat | hang | fist | open. Defaults to flat when `hand` is given.
+#           open: the palm faces the VIEWER, fingers spread and continuing the
+#           line of the forearm -- up for a raised hand, out and down for a low
+#           one -- with the thumb on the side nearer his centre line. A
+#           defender's hand, drawn as a broad paddle so it cannot be mistaken
+#           for the edge-on hanging hand.
 #   free    the other hand: null hangs it; [x, y] places its wrist (x toward
 #           the dribbling side, like `hand`).
-#   free_shape  flat | hang | fist. Defaults to hang.
+#   free_shape  flat | hang | fist | open. Defaults to hang.
 #   palm    extra downward tilt of a flat palm, in degrees.
 #   head    head tilt in degrees, the ear dropping toward the dribbling
 #           shoulder. The head itself rides on top of the spine.
@@ -442,6 +447,39 @@ def draw_fist(d, wrist, elbow, ink) -> None:
     d.line([(fx - kx, fy - ky), (fx + kx, fy + ky)], fill=ink, width=LINE)
 
 
+OPEN_FAN = (-21, -7, 7, 21)          # open-hand fingers, degrees off the forearm
+OPEN_THUMB = 55                      # the thumb, off the forearm toward the centre
+
+
+def draw_open_hand(d, wrist, elbow, dribble: int, ink) -> None:
+    """Open, palm to the viewer: a broad paddle continuing the forearm past the
+    wrist, four fingers fanned off its end and the thumb splayed toward his
+    centre line. `dribble` is the side this hand is on (+1 the right edge).
+    Pixel coords, y down."""
+    S = STANDING
+    ux, uy = wrist[0] - elbow[0], wrist[1] - elbow[1]
+    n = math.hypot(ux, uy) or 1.0
+    ux, uy = ux / n, uy / n
+    ex, ey, nx, ny = _paddle(d, *wrist, ux, uy, PALM_LEN * 1.2 * S, PALM_W * 1.4 * S, ink)
+    base = math.atan2(uy, ux)
+    for i, fan in enumerate(OPEN_FAN):
+        t = (i / (len(OPEN_FAN) - 1) - 0.5) * 1.6
+        sx, sy = ex + nx * t, ey + ny * t
+        b = base + math.radians(fan)
+        d.line([(sx, sy), (sx + math.cos(b) * FINGER * S,
+                           sy + math.sin(b) * FINGER * S)], fill=ink, width=LINE)
+    # the thumb leaves the palm's inner edge, a third of the way up it
+    a = math.radians(OPEN_THUMB)
+    cand = [base + a, base - a]
+    # inner = the direction whose x points back toward the centre line
+    th = min(cand, key=lambda c: dribble * math.cos(c))
+    side_n = 1 if (nx * -dribble) >= 0 else -1
+    sx = wrist[0] + ux * PALM_LEN * 1.2 * S * 0.35 + nx * side_n * 0.8
+    sy = wrist[1] + uy * PALM_LEN * 1.2 * S * 0.35 + ny * side_n * 0.8
+    d.line([(sx, sy), (sx + math.cos(th) * FINGER * 0.8 * S,
+                       sy + math.sin(th) * FINGER * 0.8 * S)], fill=ink, width=LINE)
+
+
 def draw_hand(d, shape: str, wrist, elbow, dribble: int, palm: float, ink) -> None:
     if shape == "flat":
         draw_flat_hand(d, wrist, dribble, palm, ink)
@@ -449,8 +487,10 @@ def draw_hand(d, shape: str, wrist, elbow, dribble: int, palm: float, ink) -> No
         draw_fist(d, wrist, elbow, ink)
     elif shape == "hang":
         draw_hanging_hand(d, wrist, ink)
+    elif shape == "open":
+        draw_open_hand(d, wrist, elbow, dribble, ink)
     else:
-        sys.exit(f"unknown hand shape {shape!r} (flat | hang | fist)")
+        sys.exit(f"unknown hand shape {shape!r} (flat | hang | fist | open)")
 
 
 def draw_hair(d, hx, hy, r, crown_deg: float, mode: str, ink) -> None:

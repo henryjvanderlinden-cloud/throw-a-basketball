@@ -664,37 +664,142 @@ sequences:
 
   idle:
     title: Defensive stance, no ball
+    # Standing without the ball: the shooter after his follow-through, and in
+    # two-player the whole time the other player has it. Until now that was
+    # dribble_idle's HIGHEST frame, hand out over nothing.
+    #
+    # Four frames, not two (Rick, 2026-09-25): every take that worked came off a
+    # five-cell strip, and a two-frame loop only flicks. He shuffles his weight
+    # in place -- set onto one leg, up through the middle, set onto the other,
+    # up again -- with the feet as one drawing. The two UP frames are one pose.
+    #
+    # The hands are ASYMMETRIC -- one high to contest, one low for the passing
+    # lane -- because that is a difference in silhouette, and silhouette is
+    # what reaches the art (handover 04 §0(B)). Each arm is held fixed relative
+    # to its own shoulder, so it is one drawing moved with the body. The
+    # classic zombie reach, both arms straight out at the viewer, is the prior
+    # to beat (§0(C)): the guide puts both elbows OUT to the side and the prose
+    # says so.
+    guide:
+      file: art/guides/idle.png
+      side: right              # the RAISED hand is on the viewer's right
+      note: |
+        POSE GUIDE: TWO images are attached, and they do different jobs.
+
+        The COLOUR image of the character is the only authority on WHO HE IS.
+        His colours, his proportions, his build, his height, his face, his kit
+        and the drawing style all come from that image and from the SUBJECT
+        above, and nothing below changes any of them.
+
+        The other image is a POSE GUIDE: a plain black stick figure on a white
+        background, five figures standing in a row on one ground line, in the
+        same left-to-right order as the FRAMES listed below. The Nth figure in
+        the pose guide is the pose for the Nth frame. Take the GEOMETRY from it
+        and only the geometry: where each foot stands on the ground line, how
+        deeply the knees are bent, how far the shoulder line tilts, how far his
+        body leans to one side, and exactly where each elbow and each hand is.
+        Where the words below and the pose guide describe the same thing, they
+        agree; the pose guide is the exact version of it.
+
+        THE HANDS ON THE POSE GUIDE are both OPEN, with the palm facing the
+        viewer: the broad rectangle is the palm, the four lines off its end are
+        the fingers spread apart, and the short line off its side is the thumb.
+        The hand on the VIEWER'S RIGHT is raised beside his head, the wrist
+        level with the top of it, fingers pointing up at the ceiling. The hand on the VIEWER'S LEFT is held low
+        and wide, out beside his thigh, fingers pointing out and down. Each is
+        ONE drawing, moved from frame to frame with his body.
+
+        THE SHORT LINES ON THE POSE GUIDE'S HEAD are his hair sticking out at
+        rest. Draw HIS OWN ragged hair that way. The lines are a direction, not
+        hair.
+
+        Draw the character from the colour reference standing in those
+        positions. The pose guide is an instruction, not artwork: its thin flat
+        lines, its joint dots, its white background, its blank circular head
+        and its missing face are NOT part of the drawing and must not appear
+        anywhere in it.
+      frames:
+        - {pose: calibration}
+        - {name: set-left, drop: 0.13, tilt: -0.025, lean: -0.04, head: -4, stance: 0.27,
+           hand: [0.17, 0.85], hand_shape: open,
+           free: [-0.37, 0.395], free_shape: open,
+           joints: {elb_d: [0.23, 0.715], elb_f: [-0.29, 0.505]}}
+        - {name: up, drop: 0.095, stance: 0.27,
+           hand: [0.21, 0.86], hand_shape: open,
+           free: [-0.33, 0.455], free_shape: open,
+           joints: {elb_d: [0.27, 0.725], elb_f: [-0.25, 0.565]}}
+        - {name: set-right, drop: 0.13, tilt: 0.025, lean: 0.04, head: 4, stance: 0.27,
+           hand: [0.25, 0.8], hand_shape: open,
+           free: [-0.29, 0.445], free_shape: open,
+           joints: {elb_d: [0.31, 0.665], elb_f: [-0.21, 0.555]}}
+        - {name: up-again, drop: 0.095, stance: 0.27,
+           hand: [0.21, 0.86], hand_shape: open,
+           free: [-0.33, 0.455], free_shape: open,
+           joints: {elb_d: [0.27, 0.725], elb_f: [-0.25, 0.565]}}
     kind: loop
-    frames: 2
+    frames: 4
     ref: front
-    # NEW. Today a player without the ball stands in dribble_idle frame 0, which
-    # reads as a defensive stance but is not one — the hand is reaching for a
-    # ball that is not there. This must look unmistakably different from
-    # dribble_idle: wide stance, both hands UP and out, nothing reaching down.
     view: |
       front view, facing the viewer, squared to camera, in a wide low defensive
-      stance — knees bent, feet planted well wider than shoulder-width, weight
-      on the balls of the feet. He does NOT have the ball and is not dribbling.
+      stance: knees bent, feet planted well wider than his shoulders, weight on
+      the balls of his feet. He does NOT have the ball and is not dribbling.
     critical: |
-      CRITICAL: BOTH hands are held UP and AWAY from the body, palms open and
-      facing forward, ready to block. Neither hand reaches down toward the floor
-      at any point — nothing about this pose should suggest dribbling.
+      CRITICAL: this is a basketball DEFENDER'S stance, and the two hands do
+      DIFFERENT jobs. They are held the same way in all four frames.
+
+      THE HAND NEARER THE RIGHT EDGE OF THE PICTURE IS RAISED: elbow bent and
+      pointing out to the side, level with his chest, forearm upright, and the
+      hand held up beside his head, the wrist level with the top of his head
+      and the fingers reaching above it, palm open and facing the viewer,
+      fingers spread and pointing up at the ceiling.
+
+      THE HAND NEARER THE LEFT EDGE OF THE PICTURE IS LOW AND WIDE: the arm
+      reaches OUT SIDEWAYS and down, elbow slightly bent, and the hand is out
+      beyond his hip at the height of his thigh, well clear of his leg, palm
+      open and facing the viewer, fingers spread and pointing out and down.
+
+      NEITHER ARM IS STRETCHED STRAIGHT OUT IN FRONT OF HIM toward the viewer,
+      and neither is held at shoulder height reaching forward. Both elbows
+      point OUT TO THE SIDES, so each whole arm shows against the background,
+      clear of his body. Neither hand reaches down toward the floor — nothing
+      about this pose suggests dribbling.
+
+      HIS FEET ARE ONE DRAWING REPEATED IN ALL FOUR FRAMES: both shoes in the
+      same place on the floor, the same wide distance apart, at the same angle.
+      He moves by BENDING AND STRAIGHTENING HIS KNEES and shifting his weight
+      from one leg to the other, never by moving his feet.
+
+      HIS HEAD sits on top of his spine and his face stays turned to the
+      viewer, alert, eyes on the viewer as if the viewer were the player he is
+      guarding.
     poses:
       - >-
-          Low and wide, both hands out at about waist height, palms
-          forward, fingers spread, head up and eyes tracking an opponent,
-          weight settled evenly.
+          SET LEFT, one of his two lowest frames: knees bent deepest, his weight
+          shifted onto the leg nearer the LEFT EDGE of the picture, his hips and
+          shoulders leaning a little toward that edge and the shoulder line
+          tilted down on that side. Both hands exactly as described, moved with
+          his body.
       - >-
-          The same stance dropped a fraction lower, both hands lifted to
-          about chest height, weight shifted slightly onto the other foot,
-          shoulders squared — a small alert ready-shuffle.
+          UP, weight back in the middle: knees straightened a little so he
+          stands a touch taller, shoulders and hips level, still a wide low
+          stance. Both hands exactly as described, a little higher with his
+          body.
+      - >-
+          SET RIGHT, the mirror of SET LEFT in the body only: knees bent deepest,
+          his weight shifted onto the leg nearer the RIGHT EDGE of the picture,
+          his hips and shoulders leaning a little toward that edge and the
+          shoulder line tilted down on that side. The hands do NOT swap: the
+          raised hand is still the one nearer the right edge.
+      - >-
+          UP again, the same drawing as the first UP frame: weight back in the middle,
+          shoulders and hips level, a touch taller.
     extra: |
-      The feet stay in the same place on the floor in both frames: this is a
-      shuffle in place, not a step. The two frames must differ clearly in hand
-      height and body level — in a two-frame loop that difference is the whole
-      animation.
+      The difference between the frames is the whole animation: SET LEFT and
+      SET RIGHT are clearly lower than the two UP frames, and lean opposite ways. His arms
+      and hands keep one shape throughout, carried up, down and sideways with
+      his body.
     ball: |
-      The character is NOT holding a basketball in either frame and is NOT
+      The character is NOT holding a basketball in any frame and is NOT
       dribbling — the ball is drawn separately by the game and he does not have
       it.
 
