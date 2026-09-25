@@ -887,49 +887,70 @@ window.SPRITE_MANIFEST = {
     "aim": [
      {
       "src": "sprites/zombie/aim/01.png",
-      "w": 91.89,
-      "h": 130.16,
-      "footX": 44.58,
-      "footY": 130.16
+      "w": 95.3,
+      "h": 135.48,
+      "footX": 47.55,
+      "footY": 135.48
      },
      {
       "src": "sprites/zombie/aim/02.png",
-      "w": 94.08,
-      "h": 129.68,
-      "footX": 55.65,
-      "footY": 129.68
+      "w": 96.51,
+      "h": 128.82,
+      "footX": 48.15,
+      "footY": 128.82
      }
     ],
     "charge": [
      {
       "src": "sprites/zombie/charge/01.png",
-      "w": 69.14,
-      "h": 149.42,
-      "footX": 34.52,
-      "footY": 149.42
+      "w": 83.92,
+      "h": 137.88,
+      "footX": 41.87,
+      "footY": 137.88
      },
      {
       "src": "sprites/zombie/charge/02.png",
-      "w": 63.02,
-      "h": 144.27,
-      "footX": 31.46,
-      "footY": 144.27
+      "w": 84.67,
+      "h": 117.46,
+      "footX": 42.24,
+      "footY": 117.46
+     },
+     {
+      "src": "sprites/zombie/charge/03.png",
+      "w": 82.24,
+      "h": 89.92,
+      "footX": 41.03,
+      "footY": 89.92
      }
     ],
     "shot": [
      {
       "src": "sprites/zombie/shot/01.png",
-      "w": 82.61,
-      "h": 140.41,
-      "footX": 49.93,
-      "footY": 140.41
+      "w": 88.55,
+      "h": 112.03,
+      "footX": 44.15,
+      "footY": 112.03
      },
      {
       "src": "sprites/zombie/shot/02.png",
-      "w": 83.77,
-      "h": 139.37,
-      "footX": 47.57,
-      "footY": 139.37
+      "w": 83.7,
+      "h": 141.12,
+      "footX": 41.72,
+      "footY": 141.12
+     },
+     {
+      "src": "sprites/zombie/shot/03.png",
+      "w": 54.35,
+      "h": 178.12,
+      "footX": 27.05,
+      "footY": 178.12
+     },
+     {
+      "src": "sprites/zombie/shot/04.png",
+      "w": 71.45,
+      "h": 155.15,
+      "footX": 35.6,
+      "footY": 155.15
      }
     ],
     "idle": [
@@ -970,6 +991,22 @@ window.SPRITE_MANIFEST = {
       "footX": 46.57,
       "footY": 116.43
      }
+    ],
+    "turn": [
+     {
+      "src": "sprites/zombie/turn/01.png",
+      "w": 88.53,
+      "h": 135.76,
+      "footX": 44.17,
+      "footY": 135.96
+     },
+     {
+      "src": "sprites/zombie/turn/02.png",
+      "w": 95.84,
+      "h": 135.56,
+      "footX": 47.82,
+      "footY": 135.56
+     }
     ]
    },
    "ballSide": {
@@ -977,13 +1014,17 @@ window.SPRITE_MANIFEST = {
     "run_dribble_l": -1
    },
    "fixed": [
+    "aim",
+    "charge",
     "dribble_idle",
     "idle",
     "pickup",
     "run_dribble_l",
     "run_dribble_r",
     "run_l",
-    "run_r"
+    "run_r",
+    "shot",
+    "turn"
    ],
    "apexFrame": {
     "dribble_idle": 2,
@@ -1009,8 +1050,8 @@ window.SPRITE_MANIFEST = {
      0.42
     ]
    ],
-   "handX": 13.91,
-   "handY": -140.41
+   "handX": 8.1,
+   "handY": -178.12
   }
  ]
 };

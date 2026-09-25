@@ -88,6 +88,14 @@ STRIPS = {
         # of the waist. r1 of the first batch, 2026-09-25, picked by Rick; the
         # game puts the ball in his hands frame by frame (PICKUP_BALL).
         ("pickup",          "pickup.approved.png", 3, True),
+        # The shooting chain, matched to the monkey's frames like for like
+        # (Rick, 2026-09-25). Batch 1, picked by Rick: turn r1, aim r1,
+        # charge r2, shot r1. The shot's first frame (the coil) is sliced but
+        # never shown; the game plays the last three.
+        ("turn",            "turn.approved.png", 2, True),
+        ("aim",             "aim.approved.png", 2, True),
+        ("charge",          "charge.approved.png", 3, True),
+        ("shot",            "shot.approved.png", 4, True),
     ],
 }
 

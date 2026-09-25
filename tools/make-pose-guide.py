@@ -147,6 +147,11 @@ STRETCH_WARN = 0.05
 #           vertical line becomes the head-construction arc, bowing that way
 #           by sin(yaw), the eye line slides with it, and the visible ear moves
 #           in from the far edge.
+#   back    true: seen from BEHIND. No face lines and no nose -- the head
+#           carries three strokes of hair across the back of the skull
+#           instead -- and both ears. The dribbling side is still the one
+#           nearer the viewer's `side` edge, which from behind is his OWN
+#           hand on that side.
 #   feet    {d: deg, f: deg}, each shoe's pitch -- positive puts the toe DOWN
 #           (toe-off, a foot swinging through), negative lifts it (heel
 #           strike). A turned body's shoes also point toward the dribbling
@@ -155,7 +160,7 @@ FRAME_FIELDS = dict(
     name="", drop=0.0, tilt=0.0, lean=0.0, turn=0.0, stance=STANCE_POSE,
     hand=None, hand_shape=None, free=None, free_shape="hang", palm=0.0,
     head=0.0, hair="rest", joints=None,
-    sh_tilt=None, hip_tilt=None, arch=0.0, yaw=0.0, feet=None,
+    sh_tilt=None, hip_tilt=None, arch=0.0, yaw=0.0, feet=None, back=False,
 )
 
 # Guide-level switches, beside `file` and `side`:
@@ -645,6 +650,29 @@ def draw_face(d, hx, hy, r, f: dict, side: int, ears: bool, ink,
                       outline=ink, width=LINE)
 
 
+def draw_back_of_head(d, hx, hy, r, f: dict, side: int, ink) -> None:
+    """Seen from behind: no face at all. Three strokes of hair across the
+    back of the skull, falling from the crown, and both ears on the edges."""
+    th = math.radians(f["head"] * side)
+    ex, ey = math.cos(th), math.sin(th)                   # across the head
+    ax, ay = math.sin(th), -math.cos(th)                  # toward the crown
+    for s_ in (0.45, 0.05, -0.35):                        # rows, crown down
+        half = r * math.sqrt(max(0.0, 1 - s_ * s_)) * 0.78
+        pts = []
+        for i in range(9):
+            u = -1 + 2 * i / 8
+            sag = 0.10 * r * (1 - u * u)                  # hanging, not ruled
+            pts.append((hx + ex * u * half + ax * s_ * r - ax * sag,
+                        hy + ey * u * half + ay * s_ * r - ay * sag))
+        d.line(pts, fill=ink, width=LINE, joint="curve")
+    ew, eh = r * 0.30, r * 0.46
+    for sgn in (-1, 1):
+        x = sgn * (r + ew * 0.35)
+        ox, oy = hx + ex * x, hy + ey * x + r * 0.30
+        d.ellipse([ox - ew / 2, oy - eh / 2, ox + ew / 2, oy + eh / 2],
+                  outline=ink, width=LINE)
+
+
 def draw_cell(d: ImageDraw.ImageDraw, cx: float, f: dict, side: int,
               ink=INK, colors: bool = False, ears: bool = False,
               nose: bool = False) -> None:
@@ -678,7 +706,10 @@ def draw_cell(d: ImageDraw.ImageDraw, cx: float, f: dict, side: int,
     draw_hand(d, f["free_shape"], P("hand_f"), P("elb_f"), -side, f["palm"],
               col("arm_f"))
 
-    draw_face(d, hx, hy, r, f, side, ears, ink, nose)
+    if f["back"]:
+        draw_back_of_head(d, hx, hy, r, f, side, ink)
+    else:
+        draw_face(d, hx, hy, r, f, side, ears, ink, nose)
     th = math.radians(f["head"] * side)
     ax, ay = math.sin(th), -math.cos(th)
     d.line([P("chest"), (hx - ax * r, hy - ay * r)], fill=ink, width=LINE)
@@ -768,6 +799,15 @@ def main() -> None:
     if a.left:
         out = out.with_name(out.stem + "-left" + out.suffix)
     out.parent.mkdir(parents=True, exist_ok=True)
+    # Hands overhead (the shot's release, at 1.17 of standing) reach past the
+    # standard canvas; grow it upward so nothing is clipped. A guide that fits
+    # keeps the old size exactly, so existing guides are unchanged.
+    global CELL_H, GROUND_Y
+    reach = max(y for f in cells for _, y in skeleton(f, side).values())
+    need = int(46 + (reach + FINGER + PALM_LEN * 1.2 + 0.03) * STANDING)
+    if need > CELL_H:
+        CELL_H = need
+        GROUND_Y = CELL_H - 46
     colors, ears = bool(spec.get("colors")), bool(spec.get("ears"))
     build(cells, side, colors, ears, bool(spec.get("nose"))).save(out)
     print(f"{out.relative_to(ROOT).as_posix()}  {CELL_W * len(cells)}x{CELL_H}, "

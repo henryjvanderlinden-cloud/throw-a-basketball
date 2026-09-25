@@ -821,3 +821,298 @@ zombie:
         The popped-out eyes are the only extra element and they stay close to
         his head. There is no sweat — he does not sweat.
 
+    # --- the shooting chain (handover 09) -----------------------------------
+    # The zombie's own copies of the shared turn / aim / charge / shot, made
+    # to match the MONKEY'S approved frames like for like (Rick, 2026-09-25:
+    # "every image in the four sequences read very well, so try to match them
+    # like for like"). Same frame counts, same poses, same back view. The
+    # ball is not in his hands in any of them: the game draws it above his
+    # head at the launch point, and that reads fine.
+    #
+    # THE GUIDES ARE THE MONKEY'S POSES, measured off sprites/monkey/<seq>
+    # against a grid in shares of his standing height (his dribble, 116, taken
+    # as 0.98 of it, as the zombie's is) and carried over onto the zombie's
+    # skeleton: head-top height -> `drop`, feet -> `stance`, elbows and hands
+    # from the grid. Head-top heights, monkey: turn .97 .96; aim .97 .93;
+    # charge .97 .86 .73; shot .73 .94 .98 .97, with the hands at 1.02 (rise),
+    # 1.20 (release, up on the toes) and 1.10 (follow-through).
+    #
+    # The shared prose's tail and coil traits are left out on purpose: the
+    # zombie's own coil traits ("spine folded over at an unnatural angle")
+    # would take the charge away from the monkey's.
+    turn:
+      title: Turn to shoot
+      kind: one_shot
+      frames: 2
+      ref: front
+      guide:
+        file: art/guides/turn.png
+        side: right
+        colors: true
+        ears: true
+        nose: true
+        note: &backnote |
+          POSE GUIDE: TWO images are attached, and they do different jobs.
+
+          The COLOUR image of the character is the only authority on WHO HE
+          IS. His colours, his proportions, his build, his height, his face,
+          his kit and the drawing style all come from that image and from the
+          SUBJECT above, and nothing below changes any of them. It does NOT
+          decide which way he faces: the FRAMES below do.
+
+          The other image is a POSE GUIDE: a stick figure on a white
+          background, standing in a row on one ground line, in the same
+          left-to-right order as the FRAMES listed below. The Nth figure in
+          the pose guide is the pose for the Nth frame. Take the GEOMETRY from
+          it and only the geometry: where each foot stands on the ground line,
+          how deeply the knees are bent, how low the shoulders and head are,
+          and where the elbows and hands are. Where the words below and the
+          pose guide describe the same thing, they agree; the pose guide is
+          the exact version of it.
+
+          THE COLOURS ON THE POSE GUIDE name the limbs: the RED arm and the
+          ORANGE leg are on the VIEWER'S RIGHT, the BLUE arm and the GREEN leg
+          on the viewer's left.
+
+          THE HEAD ON THE POSE GUIDE: in the first figure the upright line and
+          the level line mark the centre of his face, looking at the viewer. A
+          head with a small TRIANGLE jutting out of one side is seen in
+          profile: the triangle is his nose, pointing the way he looks. A head
+          with THREE CURVED STROKES across it and an oval on each side has NO
+          face: we are looking at the BACK of his head, the strokes are the
+          hair on the back of his skull, the ovals his two ears.
+
+          SEEN FROM BEHIND, his hands are in FRONT of his body, so where the
+          pose guide puts them in front of his chest they are hidden from the
+          viewer by his own back: only the elbows, sticking out to either
+          side, show that his arms are bent and raised.
+
+          Draw the character from the colour reference standing in those
+          positions. The pose guide is an instruction, not artwork: its thin
+          lines, its colours, its joint dots, its white background, its
+          circular head, its triangle, its ovals and its strokes are NOT part
+          of the drawing and must not appear anywhere in it.
+        frames:
+          - {pose: calibration}
+          - name: half-turned
+            yaw: 90
+            turn: 55
+            drop: 0.04
+            stance: 0.19
+            hand: [0.25, 0.43]
+            hand_shape: hang
+            free: [-0.25, 0.43]
+          - name: turned
+            back: true
+            drop: 0.05
+            stance: 0.20
+            hand: [0.08, 0.61]
+            hand_shape: fist
+            free: [-0.08, 0.61]
+            free_shape: fist
+            joints: {elb_d: [0.21, 0.58], elb_f: [-0.21, 0.58]}
+      view: |
+        the character turning on the spot, away from the viewer.
+      poses:
+        - >-
+            Halfway through the turn: a three-quarter view from behind,
+            shoulders rotated away from the viewer so that we see most of his
+            back and the number on it, feet pivoting wide apart with the knees
+            bent, both arms hanging out a little from his sides with the hands
+            open at hip height. His head is turned to the VIEWER'S RIGHT in
+            profile, lifting to look up and away over his shoulder.
+        - >-
+            Almost fully turned: his back square to the viewer, knees bent in
+            a wide shooting stance, both elbows bent and sticking out to his
+            sides with the hands up in front of his chest, out of sight. The
+            back of his head toward the viewer, tilted up.
+      closing: |
+        This is a one-shot, not a loop. Frame {first} must continue naturally from
+        a front view facing the viewer; frame {last} must settle into a back view
+        squared away from the viewer.
+
+    aim:
+      title: Aim hold
+      kind: loop
+      frames: 2
+      ref: back
+      guide:
+        file: art/guides/aim.png
+        side: right
+        colors: true
+        ears: true
+        note: *backnote
+        frames:
+          - {pose: calibration}
+          - name: aim
+            back: true
+            drop: 0.03
+            stance: 0.18
+            hand: [0.08, 0.63]
+            hand_shape: fist
+            free: [-0.08, 0.63]
+            free_shape: fist
+            joints: {elb_d: [0.21, 0.60], elb_f: [-0.21, 0.60]}
+          - name: settle
+            back: true
+            drop: 0.065
+            stance: 0.18
+            hand: [0.08, 0.595]
+            hand_shape: fist
+            free: [-0.08, 0.595]
+            free_shape: fist
+            joints: {elb_d: [0.21, 0.565], elb_f: [-0.21, 0.565]}
+      view: |
+        back view, seen from directly behind, squared away from the viewer and
+        looking up toward a basket high in front of him.
+      poses:
+        - >-
+            Knees slightly bent, feet shoulder-width apart, both hands raised
+            in front of the chest as if cradling something -- out of sight
+            behind his back, only the bent elbows showing at his sides -- head
+            tilted up.
+        - >-
+            The same pose settled very slightly lower: knees a touch more
+            bent, hands a fraction lower, weight eased. A small breathing
+            settle, nothing more -- the two frames should be close.
+
+    charge:
+      title: Charge / wind-up
+      kind: loop
+      frames: 3
+      ref: back
+      guide:
+        file: art/guides/charge.png
+        side: right
+        colors: true
+        ears: true
+        note: *backnote
+        frames:
+          - {pose: calibration}
+          - name: upright
+            back: true
+            drop: 0.03
+            stance: 0.21
+            hand: [0.08, 0.63]
+            hand_shape: fist
+            free: [-0.08, 0.63]
+            free_shape: fist
+            joints: {elb_d: [0.21, 0.60], elb_f: [-0.21, 0.60]}
+          - name: crouching
+            back: true
+            drop: 0.12
+            stance: 0.21
+            hand: [0.08, 0.54]
+            hand_shape: fist
+            free: [-0.08, 0.54]
+            free_shape: fist
+            joints: {elb_d: [0.21, 0.51], elb_f: [-0.21, 0.51]}
+          - &coiled
+            name: coiled
+            back: true
+            drop: 0.22
+            stance: 0.23
+            hand: [0.07, 0.44]
+            hand_shape: fist
+            free: [-0.07, 0.44]
+            free_shape: fist
+            # hunched forward over the thighs: seen from behind, the back
+            # tips toward the camera and the shoulders come down toward the hips
+            joints: {chest: [0, 0.52], sh_d: [0.13, 0.52], sh_f: [-0.13, 0.52],
+                     head: [0, 0.62], elb_d: [0.20, 0.41], elb_f: [-0.20, 0.41]}
+      ground: |
+        All frames share one ground line: the soles of the feet touch the same
+        horizontal line in every frame. The character's head height changes
+        between frames only because he is crouching, not because the drawing has
+        been rescaled.
+      view: |
+        back view, seen from directly behind, squared away from the viewer and
+        looking up toward a basket high in front of him.
+      preamble: |
+        Frames {first} to {last} are one single motion, coiling deeper each frame.
+      poses:
+        - >-
+            Upright: knees slightly bent, feet planted wide, hands up at chest
+            height in front of him (elbows showing at his sides), back
+            straight. The beginning of the wind-up.
+        - >-
+            Crouching: knees clearly bent, hips dropped, hands drawn in closer
+            to the chest, shoulders starting to hunch.
+        - >-
+            Fully coiled: a deep squat, knees wide and deeply bent, hips low,
+            back compressed and rounded forward over his thighs, hands tucked
+            tight against the chest, loaded and about to spring.
+      closing: |
+        Frames {first} to {last} are one continuous deepening crouch and will be
+        played forwards and then backwards, so the motion must read smoothly in
+        both directions.
+
+    shot:
+      title: The shot
+      kind: one_shot
+      frames: 4
+      ref: back
+      guide:
+        file: art/guides/shot.png
+        side: right
+        colors: true
+        ears: true
+        note: *backnote
+        frames:
+          - {pose: calibration}
+          - *coiled
+          - name: rising
+            back: true
+            drop: 0.03
+            stance: 0.19
+            hand: [0.06, 0.99]
+            hand_shape: fist
+            free: [-0.06, 0.99]
+            free_shape: fist
+            joints: {elb_d: [0.20, 0.86], elb_f: [-0.20, 0.86]}
+          - name: release
+            back: true
+            drop: -0.03
+            stance: 0.12
+            hand: [0.15, 1.17]
+            hand_shape: open
+            free: [-0.03, 1.16]
+            free_shape: open
+            feet: {d: 40, f: 40}
+            joints: {ank_d: [0.12, 0.12], ank_f: [-0.12, 0.12],
+                     elb_d: [0.14, 0.995], elb_f: [-0.08, 0.99]}
+          - name: follow-through
+            back: true
+            drop: 0.0
+            stance: 0.15
+            hand: [0.15, 1.10]
+            hand_shape: hang
+            free: [-0.04, 1.08]
+            free_shape: hang
+            joints: {elb_d: [0.17, 0.97], elb_f: [-0.13, 0.97]}
+      ground: |
+        Frames {f1}, {f2} and {f4} share one ground line with the soles of the
+        feet touching it; in frame {f3} he is up on his toes on that same line.
+      view: |
+        back view, seen from directly behind, squared away from the viewer and
+        looking up toward a basket high in front of him.
+      preamble: |
+        Frames {first} to {last} are one continuous shooting motion.
+      poses:
+        - >-
+            Fully coiled: a deep squat, knees wide and deeply bent, hips low,
+            back rounded forward, hands tucked tight against the chest.
+        - >-
+            Driving upward: legs extending, hips rising, both hands lifting
+            up to the top of his head, elbows bent and pointing out and up.
+        - >-
+            Full extension: standing at full stretch up on the toes, both
+            arms straight overhead, wrists snapped forward, fingers spread.
+            This is the moment of release.
+        - >-
+            Follow-through: still tall, arms still overhead but relaxing,
+            elbows bending, wrists flopped loosely downward, weight settling
+            back onto the heels.
+      closing: |
+        This is a one-shot, not a loop. Frame {first} must continue naturally from
+        a deep crouch, and frame {last} is the end of the motion.

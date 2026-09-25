@@ -1149,11 +1149,15 @@ function dribbleSeq(p) {
   return (p.breakSeq && seqOf(p, p.breakSeq)) ? p.breakSeq : 'dribble_idle';
 }
 
-// where the ball sits when the character is holding it
+// where the ball sits when the character is holding it: above his head, at
+// the launch point, the top of the release frame. It flips with facing only if
+// the SHOT art does -- a character part-way through moving to strips is
+// `mirror`, but his strips are drawn per facing and never flip, so for him a
+// plain facing test put the ball on the wrong side whenever he aimed left.
 function holdPos(p) {
   const hx = p.char ? p.char.handX : HAND_DX;
   const hy = p.char ? p.char.handY + 12 : HAND_DY - 14;
-  return [p.px + hx * (flipsWithFacing(p) ? p.facing : 1), GROUND + hy];
+  return [p.px + hx * (flipsWithFacing(p, 'shot') ? p.facing : 1), GROUND + hy];
 }
 
 // how tall the current character is, for shadow and pickup sizing

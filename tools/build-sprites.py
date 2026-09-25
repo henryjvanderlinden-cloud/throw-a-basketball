@@ -95,7 +95,15 @@ SEQ_SCALE = {
     # the runs and the aim (the "13" about 17 px against 19-20, the head about a
     # tenth shorter); set by eye against those, side by side (2026-09-25).
     # pickup the same way: shoes 41-42 px against the dribble's 44-46.
-    "zombie": {"dribble_idle": 1.12, "idle": 1.08, "pickup": 1.06},
+    "zombie": {"dribble_idle": 1.12, "idle": 1.08, "pickup": 1.06,
+               # The shooting chain (handover 09), set by eye beside the
+               # dribble and the run, and tied to each other through the poses
+               # they share: charge's first frame IS aim's pose, and turn's
+               # last is nearly so, so their silhouettes must match at the
+               # handover (charge/aim 1.004, turn/aim 0.97 at x1.00). Heads
+               # alone would have said charge 1.20 and shot 1.18 -- those two
+               # takes draw a smaller head on the same height of body.
+               "turn": 1.03, "aim": 1.06, "charge": 1.08, "shot": 1.10},
 }
 
 # How big each character is, as a multiple of the standing height above.
