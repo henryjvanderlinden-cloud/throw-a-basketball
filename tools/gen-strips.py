@@ -259,35 +259,55 @@ class ChatGPT:
     #     ("Bestand 1 verwijderen: zombie(2).png") -- there is no <img> chip,
     #     which is why counting images saw nothing and every method reported
     #     failure after succeeding, attaching the reference twice over
+    # What the composer holds. Anchored on whatever the composer IS today: the
+    # September 2026 redesign dropped #prompt-textarea, and anchoring on it
+    # alone made this return null -- so an attachment that had plainly landed
+    # (two thumbnails sitting in the composer) could never be seen.
     _STATE = """(stem) => {
-        const c = document.querySelector('#prompt-textarea');
-        if (!c) return null;
-        let scope = c.closest('form');
-        if (!scope) { scope = c;
+        const c = document.querySelector('#prompt-textarea')
+              || document.querySelector("div[contenteditable='true']")
+              || document.querySelector("textarea");
+        let scope = c && c.closest('form');
+        if (!scope && c) { scope = c;
             for (let i = 0; i < 5 && scope.parentElement; i++) scope = scope.parentElement; }
-        const s = stem.toLowerCase();
-        const named = [...scope.querySelectorAll('[aria-label]')].filter(
-            e => (e.getAttribute('aria-label') || '').toLowerCase().includes(s)).length;
-        return {named: named, buttons: scope.querySelectorAll('button').length};
+        if (!scope) scope = document.querySelector("[data-testid*='composer']");
+        if (!scope) scope = document.body;
+        const s = (stem || '').toLowerCase();
+        const named = [...scope.querySelectorAll('[aria-label], [title]')].filter(e =>
+            ((e.getAttribute('aria-label') || '') + ' ' +
+             (e.getAttribute('title') || '')).toLowerCase().includes(s)).length;
+        // a thumbnail is how the new composer shows an attachment: no filename
+        // anywhere, just the picture
+        const thumbs = [...scope.querySelectorAll('img')].filter(e => {
+            const src = e.currentSrc || e.src || '';
+            return src.startsWith('blob:') || src.startsWith('data:')
+                || src.includes('oaiusercontent') || src.includes('/backend-api/');
+        }).length + scope.querySelectorAll("[data-testid*='attachment']").length;
+        return {named: named, thumbs: thumbs,
+                buttons: scope.querySelectorAll('button').length};
     }"""
 
     def _state(self, stem: str):
         try:
-            return self.page.evaluate(self._STATE, stem) or {"named": 0, "buttons": 0}
+            return (self.page.evaluate(self._STATE, stem)
+                    or {"named": 0, "thumbs": 0, "buttons": 0})
         except Exception:                      # noqa: BLE001
-            return {"named": 0, "buttons": 0}
+            return {"named": 0, "thumbs": 0, "buttons": 0}
 
     def _wait_attached(self, before: dict, stem: str, seconds: int) -> bool:
-        """Attached = a control in the composer now names our file.
+        """Attached = the composer gained our file: named, shown or counted.
 
-        The filename is the one part of that chip no UI language changes, so
-        this works on a Dutch ChatGPT exactly as on an English one. Button
-        count is the fallback for a redesign that stops naming the file.
+        The filename is the one part of a chip no UI language changes, so it
+        works on a Dutch ChatGPT as on an English one -- but the current
+        composer shows a THUMBNAIL and no name at all, so a new picture inside
+        the composer counts too, and the button count remains the last resort.
         """
         deadline = time.time() + seconds
         while time.time() < deadline:
             now = self._state(stem)
-            if now["named"] > before["named"] or now["buttons"] > before["buttons"]:
+            if (now["named"] > before["named"]
+                    or now.get("thumbs", 0) > before.get("thumbs", 0)
+                    or now["buttons"] > before["buttons"]):
                 return True
             self.page.wait_for_timeout(1000)
         return False
