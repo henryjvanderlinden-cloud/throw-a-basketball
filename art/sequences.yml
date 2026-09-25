@@ -151,6 +151,59 @@ sequences:
     guide:
       file: art/guides/dribble_idle.png
       side: right
+      # Face-on (Rick, 2026-09-25): every earlier take copied the reference
+      # drawing's three-quarter turn and looked toward the viewer's RIGHT, so
+      # stopping after a run to the left turned his head the wrong way. The
+      # guide now draws a head-on nose and both ears, as the ball-less idle
+      # does, and the note below says what they mean.
+      ears: true
+      nose: true
+      note: |
+        POSE GUIDE: TWO images are attached, and they do different jobs.
+
+        The COLOUR image of the character is the only authority on WHO HE IS.
+        His colours, his proportions, his build, his height, his face, his kit
+        and the drawing style all come from that image and from the SUBJECT
+        above, and nothing below changes any of them. It does NOT decide which
+        way he faces: in that drawing he is turned toward the right edge, and
+        in this sheet he is not.
+
+        The other image is a POSE GUIDE: a plain black stick figure on a white
+        background, five figures standing in a row on one ground line, in the
+        same left-to-right order as the FRAMES listed below. The Nth figure in
+        the pose guide is the pose for the Nth frame. Take the GEOMETRY from it
+        and only the geometry: where each foot stands on the ground line, how
+        deeply each knee is bent and which knee is bent more than the other,
+        how far the shoulder line is tilted away from level, how far his spine
+        leans away from upright, how high the dribbling hand is and how far out
+        from his centre line it reaches, how far the head is tilted, and which
+        way his face points. Where the words below and the pose guide describe
+        the same thing, they agree; the pose guide is the exact version of it.
+
+        THE HANDS ON THE POSE GUIDE are drawn too. The FLAT hand with its
+        fingers spread out sideways is the dribbling hand: palm to the floor, at
+        exactly that height and that angle. The NARROW hand with its fingers
+        pointing down at the floor is the free hand, palm turned in toward his
+        leg. Each is ONE drawing, moved from frame to frame, and so is his.
+
+        THE HEAD ON THE POSE GUIDE: the small TRIANGLE in the middle of the
+        face, pointing straight down, is his nose, and the two small ovals on
+        either side of the head are BOTH of his ears. His face points STRAIGHT
+        OUT OF THE PICTURE AT THE VIEWER in every frame: nose in the middle of
+        his face, both eyes seen, both ears showing equally. The upright line
+        down the face marks its centre and the level line his eyes.
+
+        THE SHORT LINES ON THE POSE GUIDE'S HEAD show which way his hair points
+        in that frame: standing straight up off his scalp, lying down flat along
+        the sides of his head, or sticking out at rest. Draw HIS OWN ragged brown
+        hair pointing the way those lines point. The lines are a direction, not
+        hair.
+
+        Draw the character from the colour reference standing in those
+        positions. The pose guide is an instruction, not artwork: its thin flat
+        lines, its joint dots, its white background, its circular head, its
+        triangle, its ovals and its face lines are NOT part of the drawing and
+        must not appear anywhere in it.
       frames:
         - {pose: calibration}
         - {name: lowest,  drop: 0.150, tilt: 0.035, lean: 0.045, hand: 0.26,
@@ -178,8 +231,11 @@ sequences:
     # written as an operation (one drawing, moved) and the heights as one
     # ordered list with four distinct landmarks and an ordinal claim.
     view: |
-      front view, facing the viewer, squared to camera, low athletic stance with
-      the knees bent and the feet planted shoulder-width apart.
+      front view, facing the viewer, squared to camera: his chest, his hips and
+      his face all point straight out of the picture, both shoulders the same
+      distance from the camera, the number on his jersey in the middle of his
+      chest. Low athletic stance with the knees bent and the feet planted
+      shoulder-width apart.
     critical: |
       CRITICAL: exactly ONE hand dribbles — the hand nearer the RIGHT EDGE of
       the picture, on the {dribble_side} — in all four frames.
@@ -239,6 +295,13 @@ sequences:
       in: the knee on the dribbling side bends more deeply and comes forward
       over his toes as he sinks, and straightens as he rises. His knees do all
       the work his feet are not allowed to do.
+
+      HE LOOKS STRAIGHT AT THE VIEWER IN ALL FOUR FRAMES: both eyes seen, his
+      nose in the middle of his face, both ears showing. The character
+      reference shows him turned toward the RIGHT edge with his head in
+      profile; that is how he stood for that drawing, NOT this pose, so do not
+      copy the turn. His head never turns toward the dribbling hand or toward
+      either edge of the picture.
 
       HIS HEAD SITS ON TOP OF HIS SPINE — it stays directly above his chest and
       moves only as far as his chest moves, and his face stays turned to the
