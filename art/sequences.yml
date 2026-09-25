@@ -1025,56 +1025,392 @@ sequences:
 
   run_r:
     title: Run without the ball, moving right
+    # Four frames, not the two the monkey has: a two-frame loop cannot change
+    # which leg leads. The stride is run_dribble_l's (handover 04), reshaped the
+    # same way -- the near leg swings through large IN FRONT, the far leg swings
+    # BEHIND, foreshortened -- so the two passing frames differ in silhouette.
+    # He runs a little higher (drop 0.05-0.065) and leans a little further
+    # (0.12) than when dribbling. Both arms are sprinter's arms: bent near 90
+    # degrees at the ends of the swing and opening to ~120 as the arms pass his
+    # hips, fists, each swinging against its own leg. The elbows and wrists
+    # were computed from the calibration limb lengths (upper arm 0.176, forearm
+    # 0.190) with the sagittal swing foreshortened to 0.8 by the 50-degree
+    # turn, and written in as numbers. x is toward the FAR side, which here is
+    # forward; "hand"/"d" is the far arm, "free"/"f" the near one.
+    # The two STRIDES are placed by hand, not by angle: batch 1 (b1r1-3) drew
+    # them as one pose, because both had a fist out ahead of the chest. Now
+    # they differ in silhouette -- far-leg stride: near arm ACROSS the chest,
+    # far arm hidden behind him; near-leg stride: far arm reaching AHEAD,
+    # near elbow jutting out behind his back.
+    # Frozen once its take is approved: run_l has its own copy.
+    guide:
+      file: art/guides/run_r.png
+      side: right
+      colors: true
+      ears: true
+      nose: true
+      note: |
+        POSE GUIDE: TWO images are attached, and they do different jobs.
+
+        The CHARACTER REFERENCE -- the finished pixel-art drawing of the
+        character -- is the only authority on WHO HE IS. His colours, his
+        proportions, his build, his height, his face, his kit and the drawing
+        style all come from that image and from the SUBJECT above, and nothing
+        below changes any of them.
+
+        The other image is a POSE GUIDE: a stick-figure diagram on a plain white
+        background, five figures in a row on one ground line, in the same
+        left-to-right order as the FRAMES listed below. The Nth figure in the
+        pose guide is the pose for the Nth frame. Take the GEOMETRY from it and
+        only the geometry: where each foot is, which foot is on the ground line
+        and which is lifted, how each knee is bent, the angle of each shoe, how
+        far his body leans forward and how his back curves, how the shoulder
+        line tilts, where each elbow and each fist is, and which way his head
+        is turned. Where the words below and the pose guide describe the same
+        thing, they agree; the pose guide is the exact version of it.
+
+        THE COLOURS ON THE POSE GUIDE ONLY TELL THE LIMBS APART, so that where
+        his legs cross you can see which is which. He runs toward the RIGHT
+        edge with his chest turned toward the viewer: RED is the arm on the
+        side FURTHER from the viewer and ORANGE is the leg on that same far
+        side; BLUE is the arm on the side NEARER the viewer and GREEN is the
+        leg on that near side. None of these colours belongs in the drawing:
+        his skin, his kit and his shoes keep exactly the colours of the
+        character reference.
+
+        THE HANDS ON THE POSE GUIDE: the small closed square at the end of
+        each arm is a loose FIST, and both hands are fists in every frame.
+        Both arms are BENT AT THE ELBOW, close to a right angle, exactly as the
+        guide draws them: a sprinter's arm swing, pumping forward and back
+        beside his body. Neither arm is ever held straight out in front of him,
+        and neither hand ever reaches down toward the floor. Where an arm
+        crosses in front of his chest or passes behind his body in the guide,
+        draw it that way: in the first stride the near arm covers part of his
+        chest and the far arm cannot be seen.
+
+        THE HEAD ON THE POSE GUIDE: the TRIANGLE on the face is his nose, and
+        it points the way he is looking -- toward the RIGHT edge, the way he is
+        running. The curved line down the face bulges the same way, and the
+        small oval on the other side of the head is the ear that shows. HE IS
+        NOT LOOKING BACK OVER HIS SHOULDER AND NOT LOOKING AT THE VIEWER: he
+        looks where he is going, the same way in all five frames. The short
+        lines on top are his hair sticking out at rest.
+
+        Draw the character from the reference running through those positions.
+        The pose guide is an instruction, not artwork: its thin lines, its
+        colours, its joint dots, its white background and its blank circular
+        head are NOT part of the drawing and must not appear anywhere in it.
+      frames:
+        - {pose: calibration}
+        - name: stride-far-leg
+          drop: 0.05
+          lean: 0.12
+          arch: 0.03
+          turn: 50
+          yaw: 55
+          sh_tilt: 0.02
+          hip_tilt: 0.0
+          hand: [0.100, 0.490]
+          hand_shape: fist
+          free: [0.150, 0.680]
+          free_shape: fist
+          joints: {ank_d: [0.20, 0.09], ank_f: [-0.26, 0.22], knee_f: [-0.13, 0.28], elb_d: [0.100, 0.600], elb_f: [0.090, 0.600]}
+          feet: {d: -5, f: 45}
+        - name: passing-near-leg-in-front
+          drop: 0.06
+          lean: 0.12
+          arch: 0.03
+          turn: 50
+          yaw: 55
+          sh_tilt: -0.01
+          hip_tilt: -0.015
+          hand: [0.263, 0.440]
+          hand_shape: fist
+          free: [0.186, 0.464]
+          free_shape: fist
+          joints: {ank_d: [0.02, 0.09], ank_f: [0.04, 0.24], knee_f: [0.14, 0.36], elb_d: [0.155, 0.575], elb_f: [0.049, 0.545]}
+          feet: {d: 0, f: 40}
+        - name: stride-near-leg
+          drop: 0.05
+          lean: 0.12
+          arch: 0.03
+          turn: 50
+          yaw: 55
+          sh_tilt: -0.02
+          hip_tilt: 0.0
+          hand: [0.406, 0.703]
+          hand_shape: fist
+          free: [0.000, 0.490]
+          free_shape: fist
+          joints: {ank_f: [0.10, 0.09], ank_d: [-0.14, 0.21], knee_d: [0.00, 0.27], elb_d: [0.274, 0.608], elb_f: [-0.100, 0.630]}
+          feet: {f: -5, d: 45}
+        - name: passing-far-leg-behind
+          drop: 0.065
+          lean: 0.12
+          arch: 0.03
+          turn: 50
+          yaw: 55
+          sh_tilt: 0.01
+          hip_tilt: 0.015
+          hand: [0.354, 0.459]
+          hand_shape: fist
+          free: [0.096, 0.435]
+          free_shape: fist
+          joints: {ank_f: [-0.08, 0.09], ank_d: [-0.04, 0.21], knee_d: [0.08, 0.28], elb_d: [0.216, 0.540], elb_f: [-0.012, 0.570]}
+          feet: {f: 0, d: 22}
     kind: loop
-    frames: 2
+    frames: 4
     ref: front
     travelling: true
     ground: |
-      Frames {f1} and {f2} share one ground line: the sole of the planted foot
-      touches the same horizontal line.
+      All frames share one ground line: the sole of the planted foot touches the
+      same horizontal line in every frame.
     view: |
-      three-quarter view, the character sprinting toward the right of frame,
-      chest turned slightly toward the viewer so the jersey number stays
-      readable. {trail_left}
+      three-quarter view, sprinting toward the right of frame, chest turned
+      slightly toward the viewer so the jersey number stays readable and reads
+      forwards. HIS HEAD AND FACE ARE TURNED TOWARD THE RIGHT EDGE OF THE
+      PICTURE, the way he is running: his nose, his chin and his eyes all point
+      that way, so his face is seen in three-quarter view from his right-front.
+      He is not looking at the viewer and not looking back over his shoulder.
+      {trail_left}
+    critical: |
+      CRITICAL: he is SPRINTING WITHOUT THE BALL. BOTH hands are closed into
+      loose FISTS and BOTH arms are BENT AT THE ELBOW, close to a right angle,
+      pumping forward and back beside his body like a sprinter's, each arm
+      swinging the opposite way to its leg. NEITHER ARM IS EVER HELD STRAIGHT
+      OUT IN FRONT OF HIM -- he is not a zombie reaching forward with his arms
+      out -- and neither hand reaches down toward the floor: he is not
+      dribbling.
     poses:
       - >-
-          Contact: leading leg forward and planted, trailing leg stretched
-          out behind, both arms pumping — the arm on the viewer's left
-          driven forward across the chest, the other swung back. Leaning
-          into the sprint.
+          Stride, far leg leading: the leg FURTHER FROM THE VIEWER forward and
+          planted, the leg nearer the viewer stretched out behind him, its toe
+          pushing off the floor, fully visible. The arm NEARER THE VIEWER swings
+          forward ACROSS THE FRONT OF HIS CHEST, elbow bent, its fist in front
+          of the number on his jersey and partly covering it. The far arm is
+          swung back BEHIND HIS BODY and hidden by it: nothing sticks out behind
+          his back in this frame. Leaning into the sprint.
       - >-
-          Passing: the legs cross beneath the body mid-stride, arms
-          swapped — the other arm now driven forward. Leaning further
-          forward.
+          Mid-stride: the far foot planted under his body, and the leg NEARER
+          THE VIEWER swinging through IN FRONT of it -- that near knee comes up
+          high and its shin crosses in front of his standing leg, so the whole
+          swinging leg is plainly visible. Both arms swinging past his sides,
+          elbows still bent, fists at waist height.
+      - >-
+          Stride, near leg leading: the leg NEARER THE VIEWER forward and
+          planted, the far leg stretched out behind him, its toe pushing off.
+          The far arm driven forward, reaching out AHEAD of his chest, its fist
+          at chest height in front of him and well clear of his body; the arm
+          nearer the viewer swung back, its bent elbow jutting out BEHIND HIS
+          BACK and its fist beside his hip. The number on his jersey is fully
+          visible. Leaning into the sprint. This stride must NOT repeat the
+          earlier one: there, one arm crossed his chest and nothing showed
+          behind him; here, one arm reaches out ahead and the other juts out
+          behind.
+      - >-
+          Mid-stride the other way, and it must NOT repeat the pose of the
+          earlier mid-stride: this time the NEAR foot is planted under his body
+          and the leg FURTHER FROM THE VIEWER swings through BEHIND it, half
+          hidden by his standing leg and his shorts -- that far knee lifts less,
+          and less of that leg shows. Both arms swinging past his sides again,
+          elbows bent, fists at waist height.
     extra: |
-      He is running flat out and is not dribbling — neither hand reaches toward
+      He is running flat out and is not dribbling -- neither hand reaches toward
       the floor.
 
   run_l:
     title: Run without the ball, moving left
+    # Four frames, not the two the monkey has: a two-frame loop cannot change
+    # which leg leads. The stride is run_dribble_l's (handover 04), reshaped the
+    # same way -- the near leg swings through large IN FRONT, the far leg swings
+    # BEHIND, foreshortened -- so the two passing frames differ in silhouette.
+    # He runs a little higher (drop 0.05-0.065) and leans a little further
+    # (0.12) than when dribbling. Both arms are sprinter's arms: bent near 90
+    # degrees at the ends of the swing and opening to ~120 as the arms pass his
+    # hips, fists, each swinging against its own leg. The elbows and wrists
+    # were computed from the calibration limb lengths (upper arm 0.176, forearm
+    # 0.190) with the sagittal swing foreshortened to 0.8 by the 50-degree
+    # turn, and written in as numbers. x is toward the FAR side, which here is
+    # forward; "hand"/"d" is the far arm, "free"/"f" the near one.
+    # The two STRIDES are placed by hand, not by angle: batch 1 (b1r1-3) drew
+    # them as one pose, because both had a fist out ahead of the chest. Now
+    # they differ in silhouette -- far-leg stride: near arm ACROSS the chest,
+    # far arm hidden behind him; near-leg stride: far arm reaching AHEAD,
+    # near elbow jutting out behind his back.
+    # Frozen once its take is approved: run_r has its own copy.
+    guide:
+      file: art/guides/run_l.png
+      side: left
+      colors: true
+      ears: true
+      nose: true
+      note: |
+        POSE GUIDE: TWO images are attached, and they do different jobs.
+
+        The CHARACTER REFERENCE -- the finished pixel-art drawing of the
+        character -- is the only authority on WHO HE IS. His colours, his
+        proportions, his build, his height, his face, his kit and the drawing
+        style all come from that image and from the SUBJECT above, and nothing
+        below changes any of them.
+
+        The other image is a POSE GUIDE: a stick-figure diagram on a plain white
+        background, five figures in a row on one ground line, in the same
+        left-to-right order as the FRAMES listed below. The Nth figure in the
+        pose guide is the pose for the Nth frame. Take the GEOMETRY from it and
+        only the geometry: where each foot is, which foot is on the ground line
+        and which is lifted, how each knee is bent, the angle of each shoe, how
+        far his body leans forward and how his back curves, how the shoulder
+        line tilts, where each elbow and each fist is, and which way his head
+        is turned. Where the words below and the pose guide describe the same
+        thing, they agree; the pose guide is the exact version of it.
+
+        THE COLOURS ON THE POSE GUIDE ONLY TELL THE LIMBS APART, so that where
+        his legs cross you can see which is which. He runs toward the LEFT
+        edge with his chest turned toward the viewer: RED is the arm on the
+        side FURTHER from the viewer and ORANGE is the leg on that same far
+        side; BLUE is the arm on the side NEARER the viewer and GREEN is the
+        leg on that near side. None of these colours belongs in the drawing:
+        his skin, his kit and his shoes keep exactly the colours of the
+        character reference.
+
+        THE HANDS ON THE POSE GUIDE: the small closed square at the end of
+        each arm is a loose FIST, and both hands are fists in every frame.
+        Both arms are BENT AT THE ELBOW, close to a right angle, exactly as the
+        guide draws them: a sprinter's arm swing, pumping forward and back
+        beside his body. Neither arm is ever held straight out in front of him,
+        and neither hand ever reaches down toward the floor. Where an arm
+        crosses in front of his chest or passes behind his body in the guide,
+        draw it that way: in the first stride the near arm covers part of his
+        chest and the far arm cannot be seen.
+
+        THE HEAD ON THE POSE GUIDE: the TRIANGLE on the face is his nose, and
+        it points the way he is looking -- toward the LEFT edge, the way he is
+        running. The curved line down the face bulges the same way, and the
+        small oval on the other side of the head is the ear that shows. HE IS
+        NOT LOOKING BACK OVER HIS SHOULDER AND NOT LOOKING AT THE VIEWER: he
+        looks where he is going, the same way in all five frames. The short
+        lines on top are his hair sticking out at rest.
+
+        Draw the character from the reference running through those positions.
+        The pose guide is an instruction, not artwork: its thin lines, its
+        colours, its joint dots, its white background and its blank circular
+        head are NOT part of the drawing and must not appear anywhere in it.
+      frames:
+        - {pose: calibration}
+        - name: stride-far-leg
+          drop: 0.05
+          lean: 0.12
+          arch: 0.03
+          turn: 50
+          yaw: 55
+          sh_tilt: 0.02
+          hip_tilt: 0.0
+          hand: [0.100, 0.490]
+          hand_shape: fist
+          free: [0.150, 0.680]
+          free_shape: fist
+          joints: {ank_d: [0.20, 0.09], ank_f: [-0.26, 0.22], knee_f: [-0.13, 0.28], elb_d: [0.100, 0.600], elb_f: [0.090, 0.600]}
+          feet: {d: -5, f: 45}
+        - name: passing-near-leg-in-front
+          drop: 0.06
+          lean: 0.12
+          arch: 0.03
+          turn: 50
+          yaw: 55
+          sh_tilt: -0.01
+          hip_tilt: -0.015
+          hand: [0.263, 0.440]
+          hand_shape: fist
+          free: [0.186, 0.464]
+          free_shape: fist
+          joints: {ank_d: [0.02, 0.09], ank_f: [0.04, 0.24], knee_f: [0.14, 0.36], elb_d: [0.155, 0.575], elb_f: [0.049, 0.545]}
+          feet: {d: 0, f: 40}
+        - name: stride-near-leg
+          drop: 0.05
+          lean: 0.12
+          arch: 0.03
+          turn: 50
+          yaw: 55
+          sh_tilt: -0.02
+          hip_tilt: 0.0
+          hand: [0.406, 0.703]
+          hand_shape: fist
+          free: [0.000, 0.490]
+          free_shape: fist
+          joints: {ank_f: [0.10, 0.09], ank_d: [-0.14, 0.21], knee_d: [0.00, 0.27], elb_d: [0.274, 0.608], elb_f: [-0.100, 0.630]}
+          feet: {f: -5, d: 45}
+        - name: passing-far-leg-behind
+          drop: 0.065
+          lean: 0.12
+          arch: 0.03
+          turn: 50
+          yaw: 55
+          sh_tilt: 0.01
+          hip_tilt: 0.015
+          hand: [0.354, 0.459]
+          hand_shape: fist
+          free: [0.096, 0.435]
+          free_shape: fist
+          joints: {ank_f: [-0.08, 0.09], ank_d: [-0.04, 0.21], knee_d: [0.08, 0.28], elb_d: [0.216, 0.540], elb_f: [-0.012, 0.570]}
+          feet: {f: 0, d: 22}
     kind: loop
-    frames: 2
+    frames: 4
     ref: front
     travelling: true
     ground: |
-      Frames {f1} and {f2} share one ground line: the sole of the planted foot
-      touches the same horizontal line.
+      All frames share one ground line: the sole of the planted foot touches the
+      same horizontal line in every frame.
     view: |
-      three-quarter view, the character sprinting toward the left of frame,
-      chest turned slightly toward the viewer so the jersey number stays
-      readable and reads forwards. {trail_right}
+      three-quarter view, sprinting toward the left of frame, chest turned
+      slightly toward the viewer so the jersey number stays readable and reads
+      forwards. HIS HEAD AND FACE ARE TURNED TOWARD THE LEFT EDGE OF THE
+      PICTURE, the way he is running: his nose, his chin and his eyes all point
+      that way, so his face is seen in three-quarter view from his left-front.
+      He is not looking at the viewer and not looking back over his shoulder.
+      {trail_right}
+    critical: |
+      CRITICAL: he is SPRINTING WITHOUT THE BALL. BOTH hands are closed into
+      loose FISTS and BOTH arms are BENT AT THE ELBOW, close to a right angle,
+      pumping forward and back beside his body like a sprinter's, each arm
+      swinging the opposite way to its leg. NEITHER ARM IS EVER HELD STRAIGHT
+      OUT IN FRONT OF HIM -- he is not a zombie reaching forward with his arms
+      out -- and neither hand reaches down toward the floor: he is not
+      dribbling.
     poses:
       - >-
-          Contact: leading leg forward and planted, trailing leg stretched
-          out behind, both arms pumping — the arm on the viewer's right
-          driven forward across the chest, the other swung back. Leaning
-          into the sprint.
+          Stride, far leg leading: the leg FURTHER FROM THE VIEWER forward and
+          planted, the leg nearer the viewer stretched out behind him, its toe
+          pushing off the floor, fully visible. The arm NEARER THE VIEWER swings
+          forward ACROSS THE FRONT OF HIS CHEST, elbow bent, its fist in front
+          of the number on his jersey and partly covering it. The far arm is
+          swung back BEHIND HIS BODY and hidden by it: nothing sticks out behind
+          his back in this frame. Leaning into the sprint.
       - >-
-          Passing: the legs cross beneath the body mid-stride, arms
-          swapped — the other arm now driven forward. Leaning further
-          forward.
+          Mid-stride: the far foot planted under his body, and the leg NEARER
+          THE VIEWER swinging through IN FRONT of it -- that near knee comes up
+          high and its shin crosses in front of his standing leg, so the whole
+          swinging leg is plainly visible. Both arms swinging past his sides,
+          elbows still bent, fists at waist height.
+      - >-
+          Stride, near leg leading: the leg NEARER THE VIEWER forward and
+          planted, the far leg stretched out behind him, its toe pushing off.
+          The far arm driven forward, reaching out AHEAD of his chest, its fist
+          at chest height in front of him and well clear of his body; the arm
+          nearer the viewer swung back, its bent elbow jutting out BEHIND HIS
+          BACK and its fist beside his hip. The number on his jersey is fully
+          visible. Leaning into the sprint. This stride must NOT repeat the
+          earlier one: there, one arm crossed his chest and nothing showed
+          behind him; here, one arm reaches out ahead and the other juts out
+          behind.
+      - >-
+          Mid-stride the other way, and it must NOT repeat the pose of the
+          earlier mid-stride: this time the NEAR foot is planted under his body
+          and the leg FURTHER FROM THE VIEWER swings through BEHIND it, half
+          hidden by his standing leg and his shorts -- that far knee lifts less,
+          and less of that leg shows. Both arms swinging past his sides again,
+          elbows bent, fists at waist height.
     extra: |
-      He is running flat out and is not dribbling — neither hand reaches toward
+      He is running flat out and is not dribbling -- neither hand reaches toward
       the floor.
 
   # --- personality ---------------------------------------------------------
