@@ -1161,6 +1161,75 @@ window.SPRITE_MANIFEST = {
       "footY": 116.43
      }
     ],
+    "steal_l": [
+     {
+      "src": "sprites/zombie/steal_l/01.png",
+      "w": 101.23,
+      "h": 119.01,
+      "footX": 55.6,
+      "footY": 119.01
+     },
+     {
+      "src": "sprites/zombie/steal_l/02.png",
+      "w": 160.2,
+      "h": 110.55,
+      "footX": 90.94,
+      "footY": 112.07
+     },
+     {
+      "src": "sprites/zombie/steal_l/03.png",
+      "w": 89.96,
+      "h": 122.26,
+      "footX": 46.71,
+      "footY": 123.56
+     }
+    ],
+    "steal_r": [
+     {
+      "src": "sprites/zombie/steal_r/01.png",
+      "w": 109.2,
+      "h": 121.57,
+      "footX": 50.84,
+      "footY": 122.46
+     },
+     {
+      "src": "sprites/zombie/steal_r/02.png",
+      "w": 152.3,
+      "h": 114.5,
+      "footX": 66.31,
+      "footY": 114.94
+     },
+     {
+      "src": "sprites/zombie/steal_r/03.png",
+      "w": 91.51,
+      "h": 126.22,
+      "footX": 45.65,
+      "footY": 126.22
+     }
+    ],
+    "stolen": [
+     {
+      "src": "sprites/zombie/stolen/01.png",
+      "w": 88.47,
+      "h": 121.93,
+      "footX": 44.14,
+      "footY": 122.12
+     },
+     {
+      "src": "sprites/zombie/stolen/02.png",
+      "w": 82.8,
+      "h": 121.74,
+      "footX": 41.31,
+      "footY": 121.74
+     },
+     {
+      "src": "sprites/zombie/stolen/03.png",
+      "w": 75.05,
+      "h": 149.34,
+      "footX": 37.43,
+      "footY": 149.34
+     }
+    ],
     "turn": [
      {
       "src": "sprites/zombie/turn/01.png",
@@ -1202,6 +1271,9 @@ window.SPRITE_MANIFEST = {
     "run_l",
     "run_r",
     "shot",
+    "steal_l",
+    "steal_r",
+    "stolen",
     "turn"
    ],
    "apexFrame": {

@@ -113,7 +113,10 @@ SEQ_SCALE = {
                # and torso. Shoe width was no help here -- break_head's r2
                # and the panic draw small feet (it said x1.35).
                "break_face": 1.10, "break_head": 1.08, "panic": 1.15,
-               "celebrate_collapse": 1.15},
+               "celebrate_collapse": 1.15,
+               # Group C (handover 10): by eye, each steal's last frame and
+               # stolen's crouched frames against the dribble's still pose.
+               "steal_r": 1.06, "steal_l": 1.12, "stolen": 1.15},
 }
 
 # How big each character is, as a multiple of the standing height above.

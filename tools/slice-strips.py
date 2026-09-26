@@ -116,6 +116,13 @@ STRIPS = {
         # (celebrate_collapse.r1noheap.png), leaving five frames: triumph,
         # flying apart, reassembling, nearly whole, whole.
         ("celebrate_collapse", "celebrate_collapse.approved.png", 5, True),
+        # Group C (handover 10), picked by Rick 2026-09-26: steal_r r3,
+        # steal_l r1, stolen r1 -- the last played 1, 3, 2: "it looks left and
+        # right to see what happened, and then clenches fist in frustration",
+        # then hands over to the ball-less still pose.
+        ("steal_r",         "steal_r.approved.png", 3, True),
+        ("steal_l",         "steal_l.approved.png", 3, True),
+        ("stolen",          "stolen.approved.png", 3, True, [1, 3, 2]),
     ],
 }
 
