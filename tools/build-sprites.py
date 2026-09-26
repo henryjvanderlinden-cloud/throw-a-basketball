@@ -103,7 +103,12 @@ SEQ_SCALE = {
                # handover (charge/aim 1.004, turn/aim 0.97 at x1.00). Heads
                # alone would have said charge 1.20 and shot 1.18 -- those two
                # takes draw a smaller head on the same height of body.
-               "turn": 1.03, "aim": 1.06, "charge": 1.08, "shot": 1.10},
+               "turn": 1.03, "aim": 1.06, "charge": 1.08, "shot": 1.10,
+               # The celebrations and the buzzer (handover 10), from shoe
+               # width in the front-on stance they share with the dribble
+               # (22.0 units there; 20.6, 19.5 and 18.2 here at x1.00), then
+               # checked by eye: heads and the "13" match the dribble's.
+               "celebrate": 1.07, "celebrate_pump": 1.12, "gameover": 1.18},
 }
 
 # How big each character is, as a multiple of the standing height above.

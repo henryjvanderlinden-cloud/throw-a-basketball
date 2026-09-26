@@ -96,6 +96,13 @@ STRIPS = {
         ("aim",             "aim.approved.png", 2, True),
         ("charge",          "charge.approved.png", 3, True),
         ("shot",            "shot.approved.png", 4, True),
+        # The celebrations and the buzzer, matched to the monkey's frames like
+        # for like (handover 10). Picked by Rick, 2026-09-26: celebrate r3,
+        # celebrate_pump r1, gameover r1 ("looks more tired, and the heave of
+        # r2 is too much").
+        ("celebrate",       "celebrate.approved.png", 2, True),
+        ("celebrate_pump",  "celebrate_pump.approved.png", 3, True),
+        ("gameover",        "gameover.approved.png", 2, True),
     ],
 }
 

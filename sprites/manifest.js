@@ -953,6 +953,61 @@ window.SPRITE_MANIFEST = {
       "footY": 155.15
      }
     ],
+    "celebrate": [
+     {
+      "src": "sprites/zombie/celebrate/01.png",
+      "w": 89.13,
+      "h": 151.45,
+      "footX": 44.67,
+      "footY": 151.45
+     },
+     {
+      "src": "sprites/zombie/celebrate/02.png",
+      "w": 102.53,
+      "h": 119.33,
+      "footX": 51.16,
+      "footY": 119.33
+     }
+    ],
+    "celebrate_pump": [
+     {
+      "src": "sprites/zombie/celebrate_pump/01.png",
+      "w": 81.28,
+      "h": 150.52,
+      "footX": 40.55,
+      "footY": 150.52
+     },
+     {
+      "src": "sprites/zombie/celebrate_pump/02.png",
+      "w": 89.12,
+      "h": 128.33,
+      "footX": 44.47,
+      "footY": 128.33
+     },
+     {
+      "src": "sprites/zombie/celebrate_pump/03.png",
+      "w": 87.02,
+      "h": 127.95,
+      "footX": 43.41,
+      "footY": 127.95
+     }
+    ],
+    "gameover": [
+     {
+      "src": "sprites/zombie/gameover/01.png",
+      "w": 85.81,
+      "h": 116.47,
+      "footX": 42.82,
+      "footY": 116.47
+     },
+     {
+      "src": "sprites/zombie/gameover/02.png",
+      "w": 87.39,
+      "h": 131.97,
+      "footX": 43.61,
+      "footY": 131.97
+     }
+    ],
     "idle": [
      {
       "src": "sprites/zombie/idle/01.png",
@@ -1015,8 +1070,11 @@ window.SPRITE_MANIFEST = {
    },
    "fixed": [
     "aim",
+    "celebrate",
+    "celebrate_pump",
     "charge",
     "dribble_idle",
+    "gameover",
     "idle",
     "pickup",
     "run_dribble_l",

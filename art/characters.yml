@@ -1116,3 +1116,232 @@ zombie:
       closing: |
         This is a one-shot, not a loop. Frame {first} must continue naturally from
         a deep crouch, and frame {last} is the end of the motion.
+
+    # --- Group A: the celebrations and the buzzer (handover 10) -------------
+    # The zombie's own copies of the shared celebrate, celebrate_pump and
+    # gameover, matched to the MONKEY'S approved frames like for like, as the
+    # shooting chain was (handover 09 §0(A)). Where the shared prose and the
+    # monkey's frames disagree, the frames win: he is flat-footed in the
+    # triumph, the settle has one fist up at the shoulder and the other low at
+    # the hip, and the pump settles with BOTH fists at the hips.
+    #
+    # GUIDES TRACED OFF sprites/monkey/<seq> on the grid (handover 09 §0(B)),
+    # with one change of unit: standing fully upright (celebrate_pump frame 1)
+    # the monkey's head top reaches 1.10 of the unit handover 09 used, which
+    # would stretch the zombie past his own standing height. So these tables
+    # divide the monkey's numbers by 1.10: his upright pose is the zombie's
+    # standing height. Head tops, monkey, raw: celebrate 1.08 1.025;
+    # celebrate_pump 1.10 .98 .99; gameover .84 (the crown, head hanging)
+    # .97. Fists overhead in the triumph ~1.27 raw.
+    #
+    # No tail traits (he has none), and no no_shamble or coil traits: they
+    # would pull the arms and the back away from the monkey's poses. The
+    # faces are the monkey's expressions on the zombie's face (Rick,
+    # 2026-09-26: "let's just try it, I'll judge").
+    celebrate:
+      title: Made basket celebration A — arms overhead
+      kind: one_shot
+      frames: 2
+      ref: front
+      guide:
+        file: art/guides/celebrate.png
+        side: right
+        colors: true
+        ears: true
+        nose: true
+        note: &frontnote |
+          POSE GUIDE: TWO images are attached, and they do different jobs.
+
+          The COLOUR image of the character is the only authority on WHO HE
+          IS. His colours, his proportions, his build, his height, his face,
+          his kit and the drawing style all come from that image and from the
+          SUBJECT above, and nothing below changes any of them. It does NOT
+          decide which way he faces: in that drawing he is turned toward the
+          right edge, and in this sheet he faces the viewer squarely.
+
+          The other image is a POSE GUIDE: a stick figure on a white
+          background, standing in a row on one ground line, in the same
+          left-to-right order as the FRAMES listed below. The Nth figure in
+          the pose guide is the pose for the Nth frame. Take the GEOMETRY from
+          it and only the geometry: where each foot stands on the ground line,
+          how deeply the knees are bent, how low the shoulders and head are,
+          and where the elbows and hands are. Where the words below and the
+          pose guide describe the same thing, they agree; the pose guide is
+          the exact version of it.
+
+          THE COLOURS ON THE POSE GUIDE name the limbs: the RED arm and the
+          ORANGE leg are on the VIEWER'S RIGHT, the BLUE arm and the GREEN leg
+          on the viewer's left. The two arms do DIFFERENT things wherever the
+          pose guide draws them differently.
+
+          THE HANDS ON THE POSE GUIDE: a small rounded square is a clenched
+          FIST. A narrow shape pointing down is an open hand, fingers down.
+
+          THE HEAD ON THE POSE GUIDE: the small TRIANGLE in the middle of the
+          face is his nose, and the two small ovals on either side of the head
+          are BOTH of his ears. His face points toward the viewer: nose in the
+          middle of his face, both ears showing equally. The upright line down
+          the face marks its centre and the level line his eyes. A head with
+          THREE CURVED STROKES across it and no face lines is hanging so far
+          forward and down that we see only the TOP of his head, the hair on
+          his crown, and not his face.
+
+          Draw the character from the colour reference standing in those
+          positions. The pose guide is an instruction, not artwork: its thin
+          lines, its colours, its joint dots, its white background, its
+          circular head, its triangle, its ovals and its strokes are NOT part
+          of the drawing and must not appear anywhere in it.
+        frames:
+          - {pose: calibration}
+          - name: triumph
+            drop: 0.0
+            stance: 0.18
+            hand: [0.19, 1.15]
+            hand_shape: fist
+            free: [-0.21, 1.15]
+            free_shape: fist
+          - name: settling
+            drop: 0.045
+            stance: 0.24
+            hand: [0.23, 0.42]
+            hand_shape: fist
+            free: [-0.21, 0.76]
+            free_shape: fist
+            joints: {elb_d: [0.24, 0.58], elb_f: [-0.24, 0.585]}
+      ground: |
+        Frames {f1} and {f2} share one ground line: the soles of both feet
+        are flat on that line in both frames.
+      view: |
+        front view, facing the viewer, squared to camera.
+      poses:
+        - >-
+            Triumph: standing tall, both arms thrown straight up overhead in
+            a wide V with the fists clenched, head tipped back, mouth wide
+            open mid-roar, eyes screwed shut with delight.
+        - >-
+            Settling: dropped back into a low, wide athletic stance. The arm
+            on the VIEWER'S LEFT is bent with its fist pumped up beside his
+            shoulder; the arm on the VIEWER'S RIGHT is down, its fist clenched
+            beside his hip. A wide toothy grin, looking at the viewer.
+      closing: |
+        This is a one-shot, not a loop. Frame {first} is the moment the ball
+        drops through the net; frame {last} is where he comes to rest.
+
+    celebrate_pump:
+      title: Made basket celebration B — low fist pump
+      kind: one_shot
+      frames: 3
+      ref: front
+      guide:
+        file: art/guides/celebrate_pump.png
+        side: right
+        colors: true
+        ears: true
+        nose: true
+        note: *frontnote
+        frames:
+          - {pose: calibration}
+          - name: smug
+            drop: 0.0
+            stance: 0.22
+            hand: [0.10, 0.66]
+            hand_shape: fist
+            free: [-0.10, 0.66]
+            free_shape: fist
+            joints: {elb_d: [0.24, 0.62], elb_f: [-0.24, 0.62]}
+          - name: pump
+            drop: 0.085
+            stance: 0.27
+            hand: [0.05, 0.58]
+            hand_shape: fist
+            free: [-0.19, 0.46]
+            free_shape: fist
+            joints: {elb_d: [0.16, 0.52], elb_f: [-0.22, 0.55]}
+          - name: settled
+            drop: 0.075
+            stance: 0.27
+            hand: [0.19, 0.44]
+            hand_shape: fist
+            free: [-0.19, 0.44]
+            free_shape: fist
+            joints: {elb_d: [0.25, 0.56], elb_f: [-0.25, 0.56]}
+      ground: |
+        All frames share one ground line: the soles of both feet touch the
+        same horizontal line in every frame, and the feet stay planted.
+      view: |
+        front view, facing the viewer, squared to camera.
+      preamble: |
+        He has just sunk a shot and is quietly pleased with himself -- cocky
+        rather than ecstatic. This must read as a DIFFERENT reaction from the
+        arms-overhead celebration, not a smaller version of it. Nothing goes
+        above his chest.
+      poses:
+        - >-
+            Standing up tall out of his stance, both fists clenched in front
+            of his chest with the elbows out, chin lifted, one eyebrow raised,
+            a smug closed-mouth smirk.
+        - >-
+            The pump: knees bent into a wide stance, shoulders hunched
+            forward. The fist on the VIEWER'S LEFT is driven sharply down to
+            his hip; the fist on the VIEWER'S RIGHT stays up in front of his
+            chest. Teeth bared in a sharp grin.
+        - >-
+            Settled: still in the wide, low stance, BOTH fists down at his
+            hips with the elbows bent out, still grinning at the viewer.
+      closing: |
+        This is a one-shot, not a loop.
+
+    gameover:
+      title: Game over, panting
+      kind: loop
+      frames: 2
+      ref: front
+      guide:
+        file: art/guides/gameover.png
+        side: right
+        colors: true
+        ears: true
+        nose: true
+        note: *frontnote
+        frames:
+          - {pose: calibration}
+          - name: exhaled
+            back: true
+            drop: 0.07
+            stance: 0.27
+            hand: [0.19, 0.37]
+            hand_shape: hang
+            free: [-0.19, 0.37]
+            joints: {chest: [0, 0.64], sh_d: [0.15, 0.64], sh_f: [-0.15, 0.64],
+                     head: [0, 0.61]}
+          - name: inhaling
+            drop: 0.07
+            stance: 0.27
+            hand: [0.19, 0.37]
+            hand_shape: hang
+            free: [-0.19, 0.37]
+            joints: {chest: [0, 0.71], sh_d: [0.16, 0.715], sh_f: [-0.16, 0.715],
+                     head: [0, 0.79]}
+      ground: |
+        Frames {f1} and {f2} share one ground line: the soles of both feet
+        touch the same horizontal line.
+      view: |
+        front view, facing the viewer. In BOTH frames he is doubled over,
+        exhausted, bent forward at the waist toward the viewer, feet planted
+        wide, with BOTH PALMS PLANTED FLAT ON HIS OWN BENT KNEES, elbows
+        locked straight, propping himself up. The feet, legs and the
+        hands-on-knees are in EXACTLY the same position in both frames -- do
+        not let the arms hang loose.
+      critical: |
+        Frames {f1} and {f2} differ in ONE thing: how high his shoulders and
+        head are. That difference must be large and unmistakable, because it
+        is the whole animation.
+      poses:
+        - >-
+            EXHALED, at his lowest: shoulders dropped right down, back deeply
+            rounded, head hanging straight down so far that we see the top of
+            his head and not his face. {spent_low}
+        - >-
+            INHALING, at his highest: shoulders heaved right up around his
+            ears, chest puffed out, head lifted so the face points at the
+            viewer, jaw hanging wide open gasping for air.
