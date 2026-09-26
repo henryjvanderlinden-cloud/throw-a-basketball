@@ -73,12 +73,10 @@ STRIPS = {
         ("dribble_idle",    "dribble_idle.approved.png", 4, True),
         ("run_dribble_r",   "run_dribble_r.approved.png", 4, True),
         ("run_dribble_l",   "run_dribble_l.approved.png", 4, True),
-        # The strip is four frames -- set left, up, set right, up again -- but
-        # the feet only hold still between the two SET frames (3.6% of standing
-        # height, against 5-9% for any pairing with an UP frame), so the loop is
-        # those two. Rick, 2026-09-25: "more dynamic ... except for the feet,
-        # but it's forgivable".
-        ("idle",            "idle.approved.png", 4, True, [1, 3]),
+        # No `idle` any more (Rick, 2026-09-26): the ball-less defensive loop
+        # (idle.approved.png, set left / set right) read as "too desperate,
+        # with the arm wailing". Without the ball he now holds his dribble's
+        # highest-hand frame, still, exactly as the monkey does.
         # Running without the ball: four frames, a full stride. Batch 2 of the
         # guided pipeline, 2026-09-25 -- r3 running right, r1 running left,
         # picked by Rick.

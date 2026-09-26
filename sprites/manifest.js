@@ -1108,22 +1108,6 @@ window.SPRITE_MANIFEST = {
       "footY": 131.97
      }
     ],
-    "idle": [
-     {
-      "src": "sprites/zombie/idle/01.png",
-      "w": 112.72,
-      "h": 129.49,
-      "footX": 61.17,
-      "footY": 129.49
-     },
-     {
-      "src": "sprites/zombie/idle/02.png",
-      "w": 105.32,
-      "h": 124.56,
-      "footX": 56.36,
-      "footY": 124.56
-     }
-    ],
     "panic": [
      {
       "src": "sprites/zombie/panic/01.png",
@@ -1211,7 +1195,6 @@ window.SPRITE_MANIFEST = {
     "charge",
     "dribble_idle",
     "gameover",
-    "idle",
     "panic",
     "pickup",
     "run_dribble_l",
