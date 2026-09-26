@@ -152,7 +152,10 @@ BALL_SIDE = {
     # face-on dribble (2026-09-25) bounces it on the viewer's left too, like the
     # monkey, so it stays in the same hand when he stops after a left run.
     # Everything else is the default, the viewer's right.
-    "zombie": {"dribble_idle": -1, "run_dribble_l": -1},
+    "zombie": {"dribble_idle": -1, "run_dribble_l": -1,
+               # Group B (handover 10): the breaks and the panic keep the
+               # standing dribble's hand, on the viewer's left.
+               "break_face": -1, "break_head": -1, "panic": -1},
     "monkey": {
         "dribble_idle": -1, "break_banana": -1, "break_wave": -1,
         "pickup": -1, "panic": -1, "run_dribble_r": +1, "run_dribble_l": -1,
@@ -176,6 +179,24 @@ APEX_FRAME = {
 # runner bounces the ball as each foot lands.
 LOOP_BOUNCES = {
     "zombie": {"run_dribble_r": 2, "run_dribble_l": 2},
+}
+
+# STORY SEQUENCES: played ONCE, in order, one frame per HALF bounce (about
+# 0.22 s standing), starting on the ball's apex -- rather than looped four
+# frames to a bounce (0.11 s a frame), which is how a dribble plays and how
+# breaks played before. So in a four-frame story the ball meets the hand in
+# frames 1 and 3, and is at the floor in 2 and 4. Rick, 2026-09-26: the
+# zombie's breaks tell a story (the face dragged down and snapping back),
+# and the monkey's banana "should be at half speed and only once".
+#
+# The value is the frames to HOLD on afterwards, 0-based and cycled one per
+# half bounce, for a sequence that lasts as long as its condition does (the
+# panic: the zombie notices the clock slowly, then keeps his arm up and his
+# eyes pulse on their stalks until the clock is reset). None: the sequence
+# simply ends after its last frame (the idle breaks).
+STORY_SEQ = {
+    "zombie": {"break_face": None, "break_head": None, "panic": [2, 3]},
+    "monkey": {"break_banana": None},
 }
 
 # Where the ball is in each frame of the pickup, so the hands meet it instead
@@ -359,6 +380,9 @@ def build_from_sequences(key: str, stem: str, label: str) -> dict | None:
     bounces = {n: b for n, b in LOOP_BOUNCES.get(key, {}).items() if n in sequences}
     if bounces:
         char["loopBounces"] = bounces
+    story = {n: h for n, h in STORY_SEQ.get(key, {}).items() if n in sequences}
+    if story:
+        char["storySeq"] = story
     if stand_h is not None:
         char["standH"] = stand_h
     if key in PICKUP_BALL and "pickup" in sequences:
@@ -427,7 +451,7 @@ def build_mixed(key: str, stem: str, label: str) -> dict | None:
     base["sequences"].update(strips["sequences"])
     base["fixed"] = sorted(strips["sequences"])
     base["ballSide"] = strips["ballSide"]
-    for k in ("apexFrame", "loopBounces", "standH", "pickupBall"):
+    for k in ("apexFrame", "loopBounces", "storySeq", "standH", "pickupBall"):
         if k in strips:
             base[k] = strips[k]
     return base

@@ -436,6 +436,9 @@ window.SPRITE_MANIFEST = {
     "run_dribble_r": 1,
     "run_dribble_l": -1
    },
+   "storySeq": {
+    "break_banana": null
+   },
    "pickupBall": [
     [
      0,
@@ -1066,7 +1069,10 @@ window.SPRITE_MANIFEST = {
    },
    "ballSide": {
     "dribble_idle": -1,
-    "run_dribble_l": -1
+    "run_dribble_l": -1,
+    "break_face": -1,
+    "break_head": -1,
+    "panic": -1
    },
    "fixed": [
     "aim",

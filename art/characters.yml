@@ -645,58 +645,193 @@ zombie:
       His jaw drops open far wider than it should and hangs there, and a
       slow groan rises out of him.
   sequences:
+    # --- Group B: the zombie's own (handover 10) -----------------------------
+    # Rick's designs, with no monkey equivalent pose for pose; the monkey's
+    # panic and breaks fix only the STRUCTURE: the dribbling hand keeps going
+    # on the VIEWER'S LEFT while the rest acts. Two decisions, Rick 2026-09-26:
+    #
+    # STORIES, NOT LOOPS. These three play ONCE, in order, one frame per HALF
+    # bounce (about 0.22 s): build-sprites.py STORY_SEQ. So the ball meets the
+    # dribbling hand in frames 1 and 3 and is down at the floor in 2 and 4,
+    # and the guides give the hand exactly two positions, traced off his own
+    # approved dribble_idle: its HIGHEST frame (hand 0.42, drop 0.095) and its
+    # LOWEST (hand 0.30, drop 0.12). The panic then holds, cycling frames 3
+    # and 4 (arm up at the clock, eyes out and back) until the clock resets.
+    #
+    # BREAK A's X-LEGS: tried as Rick described them (feet where the dribble
+    # has them, knees crossed), knowing they snap in and out at the ends.
     break_face:
       title: "Idle break A: pulling his own face down"
       kind: one_shot
       frames: 4
       ref: front
+      guide:
+        file: art/guides/break_face.png
+        side: left
+        colors: true
+        ears: true
+        nose: true
+        note: &dribnote |
+          POSE GUIDE: TWO images are attached, and they do different jobs.
+
+          The COLOUR image of the character is the only authority on WHO HE
+          IS. His colours, his proportions, his build, his height, his face,
+          his kit and the drawing style all come from that image and from the
+          SUBJECT above, and nothing below changes any of them. It does NOT
+          decide which way he faces: in that drawing he is turned toward the
+          right edge, and in this sheet he faces the viewer squarely.
+
+          The other image is a POSE GUIDE: a stick figure on a white
+          background, standing in a row on one ground line, in the same
+          left-to-right order as the FRAMES listed below. The Nth figure in
+          the pose guide is the pose for the Nth frame. Take the GEOMETRY from
+          it and only the geometry: where each foot stands on the ground line,
+          how deeply the knees are bent and where they are, how low the
+          shoulders and head are, and where the elbows and hands are. Where
+          the words below and the pose guide describe the same thing, they
+          agree; the pose guide is the exact version of it.
+
+          THE COLOURS ON THE POSE GUIDE name the limbs: the RED arm and the
+          ORANGE leg are on the VIEWER'S LEFT, the BLUE arm and the GREEN leg
+          on the viewer's right. Where two limbs cross on the pose guide, they
+          cross in the drawing.
+
+          THE HANDS ON THE POSE GUIDE: the FLAT hand with its fingers spread
+          sideways is the DRIBBLING hand, on the viewer's left, palm to the
+          floor, at exactly that height. It has only TWO positions: higher in
+          frames 2 and 4 of the sheet, lower in frames 3 and 5. A narrow
+          shape pointing down is a hand hanging loose. A broad paddle with
+          spread fingers is an open hand with the palm facing the viewer.
+
+          THE HEAD ON THE POSE GUIDE: the small TRIANGLE is his nose and the
+          two small ovals are his ears. With the triangle in the middle of the
+          face he looks straight at the viewer; moved to one side, he has
+          turned his head that way. The upright line down the face marks its
+          centre and the level line his eyes.
+
+          Draw the character from the colour reference standing in those
+          positions. The pose guide is an instruction, not artwork: its thin
+          lines, its colours, its joint dots, its white background, its
+          circular head, its triangle, its ovals and its face lines are NOT
+          part of the drawing and must not appear anywhere in it.
+        frames:
+          - {pose: calibration}
+          - name: clamped
+            drop: 0.095
+            stance: 0.27
+            hand: 0.42
+            free: [-0.03, 0.86]
+            free_shape: open
+            joints: {knee_d: [-0.03, 0.20], knee_f: [0.03, 0.20]}
+          - name: hauled
+            drop: 0.12
+            tilt: 0.01
+            lean: 0.012
+            stance: 0.27
+            hand: 0.30
+            palm: 8
+            free: [-0.03, 0.70]
+            free_shape: open
+            joints: {knee_d: [-0.03, 0.19], knee_f: [0.03, 0.19]}
+          - name: snap
+            drop: 0.095
+            stance: 0.27
+            hand: 0.42
+            free: [-0.25, 0.60]
+            free_shape: open
+            joints: {knee_d: [-0.03, 0.20], knee_f: [0.03, 0.20]}
+          - name: askew
+            drop: 0.12
+            tilt: 0.01
+            lean: 0.012
+            stance: 0.27
+            hand: 0.30
+            palm: 8
+            head: -7
+            joints: {knee_d: [-0.03, 0.19], knee_f: [0.03, 0.19]}
       ground: |
         All frames share one ground line: the soles of the feet touch the same
         horizontal line in every frame. The feet stay planted throughout.
       view: |
         front view, facing the viewer, squared to camera, in a low athletic
-        stance with the knees bent.
+        stance.
       preamble: |
-        The hand on the VIEWER'S RIGHT is dribbling and cycles through four
-        fixed positions; the hand on the VIEWER'S LEFT drags his own face
-        downward and lets it snap back.
+        The hand on the VIEWER'S LEFT is dribbling a basketball: palm to the
+        floor, HIGH in frames {f1} and {f3}, pushed LOW in frames {f2} and
+        {f4}. The hand on the VIEWER'S RIGHT drags his own face downward and
+        lets it snap back.
 
-        Throughout all four frames his LEGS ARE CROSSED IN AN X — the knees
+        Throughout all four frames his LEGS ARE CROSSED IN AN X -- the knees
         knocked together and crossing over one another while the feet stay
-        planted apart on the ground line. It is a slack, boneless stance and he
-        does not appear to have noticed it.
+        planted wide apart on the ground line. It is a slack, boneless stance
+        and he does not appear to have noticed it.
       poses:
         - >-
-            Dribbling hand pushed all the way down at hip height, palm to
-            the floor. Other hand clamped flat over his own face with the
-            fingers spread, beginning to drag the flesh downward.
+            Dribbling hand high. His other hand clamped flat over his own
+            face with the fingers spread, beginning to drag the flesh
+            downward.
         - >-
-            Dribbling hand halfway up, between hip and chest. The face
-            hauled WAY down — the skin stretched far past anything a real
-            face could do, the eyes and mouth dragged into long droopy
-            ovals, the chin pulled down near his chest.
+            Dribbling hand pushed low. The face hauled WAY down -- the skin
+            stretched far past anything a real face could do, the eyes and
+            mouth dragged into long droopy ovals, the chin pulled down near
+            his chest.
         - >-
-            Dribbling hand at its highest, just below chest height. The
-            hand has let go and the face is caught mid-snap, rubbery and
-            rippling, the features springing back up past where they
-            belong.
+            Dribbling hand high. The other hand has let go and flung out to
+            his side, and the face is caught mid-snap, rubbery and rippling,
+            the features springing back up past where they belong.
         - >-
-            Dribbling hand dropping back toward the hip. The face has
-            settled again, back to normal but sitting very slightly askew,
-            the expression completely blank.
+            Dribbling hand pushed low. The other arm hangs loose. The face
+            has settled again, back to normal but sitting very slightly
+            askew, the expression completely blank.
       closing: |
-        This is a one-shot played between repeats of a dribbling loop. The
-        dribbling hand's four positions must exactly match a normal dribbling
-        cycle so the motion is continuous.
+        This is a one-shot played in the middle of a dribbling loop: frames
+        {f1} and {f3} have the dribbling hand in exactly the same place, and
+        so do frames {f2} and {f4}.
       extra: |
         His legs stay crossed in the same X in all four frames. Nothing leaves
-        his body — the face stretches, it does not come off.
+        his body -- the face stretches, it does not come off. No basketball is
+        drawn: the game draws the ball separately.
 
     break_head:
       title: "Idle break B: his head tips too far back"
       kind: one_shot
       frames: 4
       ref: front
+      guide:
+        file: art/guides/break_head.png
+        side: left
+        colors: true
+        ears: true
+        nose: true
+        note: *dribnote
+        frames:
+          - {pose: calibration}
+          - name: tipping
+            drop: 0.095
+            stance: 0.27
+            hand: 0.42
+            joints: {head: [0, 0.82]}
+          - name: back
+            drop: 0.12
+            tilt: 0.01
+            lean: 0.012
+            stance: 0.27
+            hand: 0.30
+            palm: 8
+            joints: {head: [0, 0.88]}
+          - name: snap
+            drop: 0.095
+            stance: 0.27
+            hand: 0.42
+            joints: {head: [0, 0.74]}
+          - name: askew
+            drop: 0.12
+            tilt: 0.01
+            lean: 0.012
+            stance: 0.27
+            hand: 0.30
+            palm: 8
+            head: -8
       ground: |
         All frames share one ground line: the soles of the feet touch the same
         horizontal line in every frame. The feet stay planted throughout.
@@ -704,35 +839,35 @@ zombie:
         front view, facing the viewer, squared to camera, in a low athletic
         stance with the knees bent.
       preamble: |
-        The hand on the VIEWER'S RIGHT is dribbling and cycles through four
-        fixed positions; his neck gives way and his head tips backwards far past
-        anything a neck should allow, then snaps upright again. The arm on the
-        VIEWER'S LEFT simply hangs at his side throughout.
+        The hand on the VIEWER'S LEFT is dribbling a basketball: palm to the
+        floor, HIGH in frames {f1} and {f3}, pushed LOW in frames {f2} and
+        {f4}. His neck gives way and his head tips backwards far past
+        anything a neck should allow, then snaps upright again. The arm on
+        the VIEWER'S RIGHT simply hangs at his side throughout.
       poses:
         - >-
-            Dribbling hand pushed all the way down at hip height, palm to
-            the floor. His head beginning to tip backwards, chin rising,
-            throat opening up.
+            Dribbling hand high. His head beginning to tip backwards, chin
+            rising, throat opening up.
         - >-
-            Dribbling hand halfway up, between hip and chest. The head
-            tipped FAR back past vertical, the neck bent at an impossible
-            backward angle and stretched long, the face pointing straight
-            up at the ceiling, jaw hanging open.
+            Dribbling hand pushed low. The head tipped FAR back past
+            vertical, the neck bent at an impossible backward angle and
+            stretched long, the face pointing straight up at the ceiling so
+            that we look up under his chin, jaw hanging open.
         - >-
-            Dribbling hand at its highest, just below chest height. The
-            head caught mid-snap, whipping back forward, the neck rubbery
-            and rippling with the recoil and overshot a little too far
-            forward.
+            Dribbling hand high. The head caught mid-snap, whipping back
+            forward, the neck rubbery and rippling with the recoil, the head
+            overshot a little too far forward and low.
         - >-
-            Dribbling hand dropping back toward the hip. The head upright
-            again but sitting a few degrees off true, expression blank.
+            Dribbling hand pushed low. The head upright again but sitting a
+            few degrees off true, expression blank.
       closing: |
-        This is a one-shot played between repeats of a dribbling loop. The
-        dribbling hand's four positions must exactly match a normal dribbling
-        cycle so the motion is continuous.
+        This is a one-shot played in the middle of a dribbling loop: frames
+        {f1} and {f3} have the dribbling hand in exactly the same place, and
+        so do frames {f2} and {f4}.
       extra: |
         Only the head and neck move. His shoulders, hips and feet stay exactly
-        where they are in all four frames.
+        where they are in all four frames. No basketball is drawn: the game
+        draws the ball separately.
 
     celebrate_collapse:
       title: "Made basket celebration C: falls apart and reassembles"
@@ -778,9 +913,48 @@ zombie:
 
     panic:
       title: Shot-clock panic
-      kind: loop
+      kind: one_shot
       frames: 4
       ref: front
+      guide:
+        file: art/guides/panic.png
+        side: left
+        colors: true
+        ears: true
+        nose: true
+        note: *dribnote
+        frames:
+          - {pose: calibration}
+          - name: noticing
+            drop: 0.095
+            stance: 0.27
+            hand: 0.42
+            yaw: -40
+          - name: eyes out
+            drop: 0.12
+            tilt: 0.01
+            lean: 0.012
+            stance: 0.27
+            hand: 0.30
+            palm: 8
+            yaw: -40
+          - name: reaching
+            drop: 0.095
+            stance: 0.27
+            hand: 0.42
+            yaw: -40
+            free: [-0.38, 0.955]
+            free_shape: open
+          - name: groaning
+            drop: 0.12
+            tilt: 0.01
+            lean: 0.012
+            stance: 0.27
+            hand: 0.30
+            palm: 8
+            yaw: -40
+            free: [-0.38, 0.93]
+            free_shape: open
       ground: |
         All frames share one ground line: the soles of the feet touch the same
         horizontal line in every frame. The feet stay planted throughout.
@@ -789,37 +963,44 @@ zombie:
         stance with the knees bent.
       preamble: |
         The shot clock is running out. He notices slowly, and reacts wrongly,
-        the way a dead thing would — no urgency in the body at all, just the
+        the way a dead thing would -- no urgency in the body at all, just the
         eyes and one stiff arm.
 
-        The hand on the VIEWER'S LEFT keeps dribbling through four fixed
-        positions. The arm on the VIEWER'S RIGHT comes up toward the clock
-        above him, off-screen to the viewer's upper right, straight and stiff
-        with the elbow locked, the way a zombie reaches for something.
+        The hand on the VIEWER'S LEFT is dribbling a basketball: palm to the
+        floor, HIGH in frames {f1} and {f3}, pushed LOW in frames {f2} and
+        {f4}. His head is turned up toward the VIEWER'S UPPER RIGHT in every
+        frame, where the clock is, off-screen above him. The arm on the
+        VIEWER'S RIGHT hangs until frame {f3}, then comes up toward the clock,
+        straight and stiff with the elbow locked, the way a zombie reaches for
+        something.
       poses:
         - >-
-            Dribbling hand pushed all the way down at knee height, palm to
-            the floor. His head cranking slowly round and up toward the
-            VIEWER'S UPPER RIGHT, jaw slack, eyes still normal.
+            Dribbling hand high. His head cranked slowly round and up toward
+            the VIEWER'S UPPER RIGHT, jaw slack, eyes still normal. The other
+            arm hangs.
         - >-
-            Dribbling hand risen to hip height. His EYES POP OUT of their
-            sockets on stalks, shooting out toward the clock in a
-            cartoonish bulge, jaw dropping wide open.
+            Dribbling hand pushed low. His EYES POP OUT of their sockets on
+            stalks, bulging out toward the clock cartoon-style, jaw dropping
+            wide open. The other arm still hangs.
         - >-
-            Dribbling hand at its highest, just below chest height. The
-            stiff arm raised straight out and up toward the clock with the
-            elbow locked and the fingers hooked into a claw, eyes still
-            out on their stalks, a long groan coming out of him.
+            Dribbling hand high. The stiff arm raised straight out and up
+            toward the clock, elbow locked, fingers hooked into a claw, eyes
+            still far out on their stalks, a long groan coming out of him.
         - >-
-            Dribbling hand dropping back toward the hip. The eyes sucking
-            back into their sockets, the arm still raised and locked, jaw
-            still hanging.
+            Dribbling hand pushed low. The arm still raised and locked at the
+            clock, the eyes sucked most of the way back toward their sockets,
+            jaw still hanging.
+      closing: |
+        Frames {f1} to {f4} play once, in order. After that the game keeps
+        alternating frames {f3} and {f4} until the clock is reset, so those
+        two differ ONLY in the dribbling hand and in how far the eyes stick
+        out: the raised arm, the head and the body are identical in both.
       extra: |
-        The feet do not move at any point, and the dribbling hand's four
-        positions must exactly match a normal dribbling cycle so the motion is
-        continuous.
+        The feet do not move at any point, and frames {f1} and {f3} have the
+        dribbling hand in exactly the same place, as do frames {f2} and {f4}.
         The popped-out eyes are the only extra element and they stay close to
-        his head. There is no sweat — he does not sweat.
+        his head. There is no sweat -- he does not sweat. No basketball is
+        drawn: the game draws the ball separately.
 
     # --- the shooting chain (handover 09) -----------------------------------
     # The zombie's own copies of the shared turn / aim / charge / shot, made

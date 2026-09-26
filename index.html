@@ -1010,15 +1010,36 @@ const pickupFrame = (p, n) =>
 // rather than a fixed timer. The handspring plays faster -- a six-frame tumble
 // at the others' pace would be slow motion -- and rarely, because a backflip on
 // every basket stops being a treat.
-const CELEB_HZ = { celebrate_flip: 8 };
+// The zombie's collapse is his showpiece, like the flip: six frames in about
+// 1.2 s, about one basket in eight (Rick, 2026-09-26).
+const CELEB_HZ = { celebrate_flip: 8, celebrate_collapse: 5 };
 const CELEB_HZ_DEFAULT = 2.5;
-const CELEB_RARE = { celebrate_flip: 0.12 };   // roughly one basket in eight
+const CELEB_RARE = { celebrate_flip: 0.12, celebrate_collapse: 0.12 };   // roughly one basket in eight
 const CELEBRATE_TIME = 1.3;     // the vector fallback, which has no sequences
 // With a 10s shot clock there is never a long quiet stretch, so breaks come
 // early and often; the clock floor is what stops them being a liability.
 const BREAK_MIN = 2, BREAK_MAX = 4;
 const BREAK_CLOCK_FLOOR = 4;    // never mug for the crowd under this much time
 const PANIC_CLOCK = 2;          // ...and start panicking about it under this
+
+// STORY SEQUENCES (the manifest's storySeq, from build-sprites.py STORY_SEQ):
+// played once, in order, one frame per HALF bounce, so the ball meets the hand
+// in frames 1 and 3. A dribble bounce is PI of dribT; a half bounce is PI/2.
+// Each starts with frame 1 centred on an apex, which falls at dribT = PI/2 mod
+// PI, so frame 1 opens a quarter bounce before it. Until that moment arrives
+// (at most one bounce) the plain dribble carries on.
+const HALF_BEAT = Math.PI / 2;
+const STORY_SECS = HALF_BEAT / 7;        // a half bounce standing, ~0.22 s
+const storyStart = d => Math.ceil((d - Math.PI / 4) / Math.PI) * Math.PI + Math.PI / 4;
+const storyOf = (p, name) => p.char && p.char.storySeq && name in p.char.storySeq;
+// Frame j of a story (j counted from its start), or null once a story with
+// nothing to hold on has run out. A held story cycles its hold frames.
+function storyFrame(p, name, j) {
+  const n = seqOf(p, name).length, hold = p.char.storySeq[name];
+  if (j < n) return j;
+  if (!hold || !hold.length) return null;
+  return hold[(j - n) % hold.length];
+}
 
 // ---------------------------------------------------------------- player rigs
 // One rig per player: its own DOM subtree, its own frame elements and its own
@@ -1200,6 +1221,8 @@ function makePlayer(n) {
     dribPh: 0,                      // which bounce of the dribble we are in
     runDir: 0, runIdle: 9,          // for the shoe squeak on a change of direction
     turnT: 0, pickupT: 0, celebT: 0, celebSeq: null,
+    panicT: 0, panicPh: null,       // how long the clock has been in panic range; its story's start in dribT
+    breakPh: null,                  // a story break's start in dribT
     breakSeq: null, breakT: 0, breakAt: BREAK_MIN + Math.random() * (BREAK_MAX - BREAK_MIN),
     stillT: 0, lockout: 0, stealCd: 0, mirrorPose: false,
     overSeq: null, overT: 0,        // the winner's lap of honour
@@ -2456,6 +2479,11 @@ function step(dt) {
       p[k] = Math.max(0, p[k] - dt);
     }
     if (!p.breakT) p.breakSeq = null;
+    // The panic's story starts when the clock first dips under PANIC_CLOCK,
+    // and is kept while it stays there, so stopping after a run carries on
+    // from where it was (arm up) rather than noticing the clock all over again.
+    const panicking = g.ms === MS.PLAY && g.clockOn && g.clock <= PANIC_CLOCK;
+    if (panicking) p.panicT += dt; else { p.panicT = 0; p.panicPh = null; }
   }
   g.stealImmune = Math.max(0, g.stealImmune - dt);
 
@@ -2522,8 +2550,18 @@ function step(dt) {
           (!g.clockOn || g.clock > BREAK_CLOCK_FLOOR)) {
         p.breakSeq = breaks[Math.floor(Math.random() * breaks.length)];
         p.breakT = Math.PI * 2 / 7;        // two bounces, the length of one loop
+        if (storyOf(p, p.breakSeq)) {
+          // A story runs on the ball, not on the timer: it starts on the next
+          // apex and ends after its last frame (below).
+          p.breakPh = storyStart(p.dribT);
+          p.breakT = 99;
+        }
         p.stillT = 0;
         p.breakAt = BREAK_MIN + Math.random() * (BREAK_MAX - BREAK_MIN);
+      }
+      if (p.breakSeq && storyOf(p, p.breakSeq) && p.breakPh != null &&
+          storyFrame(p, p.breakSeq, Math.floor((p.dribT - p.breakPh) / HALF_BEAT)) === null) {
+        p.breakSeq = null; p.breakT = 0; p.breakPh = null;
       }
       b.y = GROUND - BALL_R - h;
       b.spin += dt * 300 * p.facing;
@@ -2754,6 +2792,17 @@ function animatePlayer(p) {
     // mirrored to keep the dribbling hand over the ball.
     p.mirrorPose = p.char.mirror;
     const name = dribbleSeq(p);
+    if (storyOf(p, name)) {
+      // A break carries its start; the panic takes the next apex after the
+      // clock dips (and again after a pickup, which restarts the dribble).
+      let ph = name === 'panic' ? p.panicPh : p.breakPh;
+      if (name === 'panic' && (ph == null || p.dribT < ph - Math.PI)) ph = p.panicPh = storyStart(p.dribT);
+      const j = Math.floor((p.dribT - ph) / HALF_BEAT);
+      const k = j < 0 ? null : storyFrame(p, name, j);
+      if (k !== null) return showFrame(p, name, k);
+      const da = p.char.apexFrame && p.char.apexFrame.dribble_idle;
+      return showFrame(p, 'dribble_idle', dribbleFrame(p, seqOf(p, 'dribble_idle').length, da, null));
+    }
     const apex = p.char.apexFrame && p.char.apexFrame[name];
     const bounces = p.char.loopBounces && p.char.loopBounces[name];
     return showFrame(p, name, dribbleFrame(p, seqOf(p, name).length, apex, bounces));
@@ -2791,6 +2840,7 @@ function animatePlayer(p) {
   if (g.clockOn && g.clock <= PANIC_CLOCK && seqOf(p, 'panic')) {
     p.mirrorPose = p.char.mirror;
     const n = seqOf(p, 'panic').length;
+    if (storyOf(p, 'panic')) return showFrame(p, 'panic', storyFrame(p, 'panic', Math.floor(p.panicT / STORY_SECS)));
     return showFrame(p, 'panic', Math.floor(p.animT * ANIM_HZ.panic) % n);
   }
   // Standing without the ball: a defensive stance where the art has one. It is
