@@ -455,6 +455,13 @@ const RUN_TURN_GAP = 0.25;
 const STEAL_DIST = 70;
 const STEAL_IMMUNE = 0.9;       // s of protection after any change of possession
 const STEAL_CD = 0.5;           // s before a player may try again
+// The steal and the robbed player's reaction, for characters with the art
+// (steal_r / steal_l / stolen, handover 10). The steal plays on EVERY press,
+// hit or miss, lunging at the opponent's side; on a hit the ball travels from
+// the opponent into his swiping hand and on to the top of his own dribble as
+// it finishes -- no pickup. `stolen` cancels on any input.
+const STEAL_HZ = 8, STOLEN_HZ = 6;
+const STEAL_REACH = [0.50, 0.33];   // the swipe frame's hand: out, up (shares of standing)
 
 const CLOCK_BASE = 10, CLOCK_FLOOR = 3, CLOCK_STEP = 0.5, PTS_PER_STEP = 12;
 const POINTS_PER_BASKET = 3;
@@ -1221,6 +1228,7 @@ function makePlayer(n) {
     dribPh: 0,                      // which bounce of the dribble we are in
     runDir: 0, runIdle: 9,          // for the shoe squeak on a change of direction
     turnT: 0, pickupT: 0, celebT: 0, celebSeq: null,
+    stealT: 0, stealSeq: null, stealFrom: null, stolenT: 0,
     panicT: 0, panicPh: null,       // how long the clock has been in panic range; its story's start in dribT
     breakPh: null,                  // a story break's start in dribT
     breakSeq: null, breakT: 0, breakAt: BREAK_MIN + Math.random() * (BREAK_MAX - BREAK_MIN),
@@ -1280,6 +1288,7 @@ function startMatch() {
     p.state = PS.IDLE;
     p.made = 0; p.points = 0; p.power = 0; p.angle = 74;
     p.throwT = 99; p.turnT = 0; p.pickupT = 0; p.celebT = 0; p.celebSeq = null;
+    p.stealT = 0; p.stealSeq = null; p.stealFrom = null; p.stolenT = 0;
     p.breakSeq = null; p.breakT = 0; p.stillT = 0; p.lockout = 0; p.stealCd = 0;
     p.overSeq = null; p.overT = 0;
     p.dribT = 0; p.animT = 0; p.dribPh = 0; p.runDir = 0; p.runIdle = 9;
@@ -2338,13 +2347,27 @@ function giveBall(p, viaPickup) {
 function trySteal(p) {
   const opp = opponentOf(p);
   p.stealCd = STEAL_CD;
+  // The lunge plays whether or not it connects, toward the opponent.
+  const toRight = opp ? opp.px >= p.px : p.facing >= 0;
+  const lunge = toRight ? 'steal_r' : 'steal_l';
+  if (seqOf(p, lunge)) { p.stealSeq = lunge; p.stealT = seqOf(p, lunge).length / STEAL_HZ; p.stealFrom = null; }
   if (!opp) return;
   if (g.owner !== opp.n) return;             // nobody to rob
   if (opp.state !== PS.DRIBBLE) return;      // aiming and shooting are safe
   if (g.stealImmune > 0) return;             // no instant steal-backs
   if (Math.abs(p.px - opp.px) > STEAL_DIST) return;
-  giveBall(p, true);                         // the thief gathers it
-  opp.turnT = TURN_TIME;                     // the victim spins
+  const ballFrom = [g.ball.x, g.ball.y];
+  if (p.stealT > 0) {
+    giveBall(p, false);                      // the swipe carries it in
+    p.stealFrom = ballFrom;
+  } else {
+    giveBall(p, true);                       // the thief gathers it
+  }
+  if (seqOf(opp, 'stolen')) {                // the victim reacts...
+    opp.stolenT = seqOf(opp, 'stolen').length / STOLEN_HZ;
+  } else {
+    opp.turnT = TURN_TIME;                   // ...or, without the art, spins
+  }
   opp.celebT = 0; opp.celebSeq = null;
   p.facing = Math.sign(opp.px - p.px) || p.facing;
   // No toast: it used to say PLAYER n STEALS! in the top-left corner, and the
@@ -2475,10 +2498,14 @@ function step(dt) {
   for (const p of players) {
     p.animT += dt;
     p.throwT += dt;
-    for (const k of ['turnT', 'pickupT', 'celebT', 'breakT', 'stealCd', 'lockout']) {
+    for (const k of ['turnT', 'pickupT', 'celebT', 'breakT', 'stealCd', 'lockout', 'stealT', 'stolenT']) {
       p[k] = Math.max(0, p[k] - dt);
     }
     if (!p.breakT) p.breakSeq = null;
+    // Moving cuts a steal short, like a break; any key cuts `stolen` short --
+    // losing the ball is punishment enough without losing the chase as well.
+    if (p.held.left || p.held.right) { p.stealT = 0; p.stealFrom = null; }
+    if (p.stolenT > 0 && (p.held.left || p.held.right || p.held.up || p.held.down)) p.stolenT = 0;
     // The panic's story starts when the clock first dips under PANIC_CLOCK,
     // and is kept while it stays there, so stopping after a run carries on
     // from where it was (arm up) rather than noticing the clock all over again.
@@ -2573,7 +2600,20 @@ function step(dt) {
       // where he gathered it to the side he dribbles on now.
       const pb = p.char && p.char.pickupBall;
       const pickup = pb && seqOf(p, 'pickup');
-      if (p.pickupT > 0 && pickup) {
+      if (p.stealT > 0 && p.stealFrom && seqOf(p, p.stealSeq)) {
+        // A steal that connected: from where the opponent had it into the
+        // swiping hand by the middle of the lunge, then to the top of his own
+        // dribble by its end. The dribble waits at the top of a bounce.
+        const dur = seqOf(p, p.stealSeq).length / STEAL_HZ;
+        const t = 1 - p.stealT / dur;
+        const dir = p.stealSeq === 'steal_r' ? 1 : -1;
+        const hand = [p.px + dir * STEAL_REACH[0] * bodyH(p), GROUND - STEAL_REACH[1] * bodyH(p)];
+        const top = [p.px + bodyH(p) * 0.26 * ballSide(p, 'dribble_idle'), GROUND - BALL_R - peak];
+        const [a, c, f] = t < 0.5 ? [p.stealFrom, hand, t / 0.5] : [hand, top, (t - 0.5) / 0.5];
+        b.x = a[0] + (c[0] - a[0]) * f;
+        b.y = a[1] + (c[1] - a[1]) * f;
+        p.dribT = Math.PI / 2;
+      } else if (p.pickupT > 0 && pickup) {
         const k = pickupFrame(p, pickup.length);
         const [out, up] = pb[k] || [0, 0];
         p.dribT = Math.PI / 2;
@@ -2784,6 +2824,10 @@ function animatePlayer(p) {
   }
 
   if (p.state === PS.DRIBBLE) {
+    if (p.stealT > 0 && p.stealFrom && seqOf(p, p.stealSeq)) {
+      const n = seqOf(p, p.stealSeq).length;
+      return showFrame(p, p.stealSeq, Math.min(n - 1, Math.floor((n / STEAL_HZ - p.stealT) * STEAL_HZ)));
+    }
     const pickup = seqOf(p, 'pickup');
     if (p.pickupT > 0 && pickup) {
       return showFrame(p, 'pickup', pickupFrame(p, pickup.length));
@@ -2809,6 +2853,16 @@ function animatePlayer(p) {
   }
 
   // IDLE -- no ball: following through, celebrating, chasing, or just standing.
+  // A steal attempt, or just robbed: these come first -- they are the reply
+  // to a key press, and moving has already cut the steal short.
+  if (p.stealT > 0 && seqOf(p, p.stealSeq)) {
+    const n = seqOf(p, p.stealSeq).length;
+    return showFrame(p, p.stealSeq, Math.min(n - 1, Math.floor((n / STEAL_HZ - p.stealT) * STEAL_HZ)));
+  }
+  if (p.stolenT > 0 && seqOf(p, 'stolen')) {
+    const n = seqOf(p, 'stolen').length;
+    return showFrame(p, 'stolen', Math.min(n - 1, Math.floor((n / STOLEN_HZ - p.stolenT) * STOLEN_HZ)));
+  }
   const shot = seqOf(p, 'shot');
   if (p.n === g.shooter && shot) {
     if (p.throwT < RISE_HOLD && shot.length >= 3) return showFrame(p, 'shot', shot.length - 3);

@@ -941,58 +941,271 @@ sequences:
       drawn anywhere: the game draws the ball separately, in the gap between
       his hands.
 
-  steal:
-    title: Steal attempt
+  # --- Group C: the steal and being robbed (handover 10) -------------------
+  # Rick, 2026-09-26: one steal PER SIDE (steal_r lunges at an opponent on
+  # the viewer's right, steal_l at one on the left), ONE-HANDED with the
+  # other arm out for balance, generic rather than in character -- "it can
+  # happen a lot during the game, so let's make it fluent rather than
+  # unique". It plays on every press, hit or miss, three frames at 8 fps. On
+  # a hit the swipe plays out and the ball ends up in his hand as it
+  # finishes (no pickup). Frame 3 of both, and of `stolen`, is the STILL
+  # POSE a character holds without the ball: his standing dribble's
+  # highest-hand frame, face-on, dribbling hand on the viewer's LEFT -- so
+  # whatever follows (the still pose after a miss, the dribble after a hit)
+  # carries straight on. The guides use the zombie's dribble_idle numbers
+  # for it (hand 0.42, drop 0.095, stance 0.27).
+  steal_r:
+    title: Steal attempt, to the viewer's right
     kind: one_shot
     frames: 3
     ref: front
-    # NEW. Plays on every steal press, successful or not, so it has to read as
-    # an attempt rather than as taking possession. Deliberately a forward lunge
-    # toward the viewer rather than a sideways one: the game steals in both
-    # directions, and mirroring one sequence when the others are drawn per-side
-    # is worse than not mirroring at all.
+    guide:
+      file: art/guides/steal_r.png
+      side: right
+      colors: true
+      ears: true
+      nose: true
+      note: &stealnote |
+        POSE GUIDE: TWO images are attached, and they do different jobs.
+
+        The COLOUR image of the character is the only authority on WHO HE
+        IS. His colours, his proportions, his build, his height, his face,
+        his kit and the drawing style all come from that image and from the
+        SUBJECT above, and nothing below changes any of them. It does NOT
+        decide which way he faces: the FRAMES below do.
+
+        The other image is a POSE GUIDE: a stick figure on a white
+        background, standing in a row on one ground line, in the same
+        left-to-right order as the FRAMES listed below. The Nth figure in
+        the pose guide is the pose for the Nth frame. Take the GEOMETRY from
+        it and only the geometry: where each foot stands on the ground line,
+        how deeply the knees are bent, how far the body leans, how low the
+        shoulders and head are, which way the head is turned, and where the
+        elbows and hands are. Where the words below and the pose guide
+        describe the same thing, they agree; the pose guide is the exact
+        version of it.
+
+        THE COLOURS ON THE POSE GUIDE name the limbs: the RED arm is the
+        REACHING arm and the BLUE arm the BALANCING arm; the ORANGE leg is
+        on the same side as the red arm, the GREEN leg on the same side as
+        the blue arm.
+
+        THE HANDS ON THE POSE GUIDE: the FLAT hand with its fingers spread
+        sideways is palm-down; a narrow shape pointing down is a hand
+        hanging loose; a broad paddle with spread fingers is an open hand.
+
+        THE HEAD ON THE POSE GUIDE: the small TRIANGLE is his nose, pointing
+        the way he looks, and the ovals are his ears. In the last figure the
+        triangle is in the middle of the face: there he looks straight at
+        the viewer.
+
+        Draw the character from the colour reference standing in those
+        positions. The pose guide is an instruction, not artwork: its thin
+        lines, its colours, its joint dots, its white background, its
+        circular head, its triangle, its ovals and its face lines are NOT
+        part of the drawing and must not appear anywhere in it.
+      frames:
+        - {pose: calibration}
+        - &steal_load
+          name: load
+          drop: 0.12
+          lean: 0.04
+          turn: 40
+          yaw: 55
+          hand: [0.16, 0.40]
+          hand_shape: flat
+          free: [-0.20, 0.46]
+          joints: {ank_d: [0.22, 0.09], ank_f: [-0.20, 0.09]}
+        - &steal_swipe
+          name: swipe
+          drop: 0.16
+          lean: 0.13
+          arch: 0.02
+          turn: 45
+          yaw: 60
+          sh_tilt: 0.04
+          hand: [0.50, 0.33]
+          hand_shape: flat
+          palm: 10
+          free: [-0.28, 0.72]
+          free_shape: open
+          joints: {ank_d: [0.34, 0.09], ank_f: [-0.20, 0.09], knee_d: [0.27, 0.21]}
+        - &still_r
+          name: still
+          drop: 0.095
+          stance: 0.27
+          free: [-0.22, 0.42]
+          free_shape: flat
+    ground: |
+      All frames share one ground line: the soles of both feet touch the
+      same horizontal line in every frame, including the lunge.
     view: |
-      front view, facing the viewer, squared to camera, lunging forward toward
-      the viewer.
+      three-quarter view, chest turned toward the RIGHT edge of the picture
+      while staying partly toward the viewer, so the jersey number stays
+      readable and reads forwards, head and eyes turned to the RIGHT, where
+      the opponent is -- except in the last frame, which is squarely
+      face-on.
     preamble: |
-      He is stabbing a hand in to knock the ball away from an opponent in front
-      of him. Fast, committed and slightly off-balance — this is a snatch, not a
-      careful reach.
+      He is stabbing ONE hand in to knock the ball away from an opponent
+      standing just off the RIGHT edge of the picture. Fast, committed and a
+      little off-balance -- a snatch, not a careful reach -- and fluid: it
+      happens many times a game.
     poses:
       - >-
-          The dip: dropping sharply into a deep crouch, weight thrown
-          forward, both arms starting to sweep down and forward toward the
-          floor in front of him, eyes fixed low, teeth gritted.
+          The load: dropping into a crouch, weight shifting toward the
+          right, the reaching hand (on the viewer's RIGHT) drawn back low
+          beside his hip, the other arm swinging back, eyes locked on the
+          ball.
       - >-
-          The swipe: fully extended in a low forward lunge, leading leg
-          stretched out, the leading hand raked down and across in front
-          of him at about knee height, palm open and fingers spread, the
-          other arm flung back and wide for balance. {balance_low}
+          The swipe: a low lunge to the RIGHT, the leading (right-hand)
+          foot stepped out wide with the knee bent over it, the reaching
+          arm fully extended out to the right, the hand palm-down and
+          fingers spread at knee-to-hip height, raking at the ball. The
+          other arm is flung out straight behind him, up and back, for
+          balance.
       - >-
-          Recover: pulling back upright out of the lunge, weight coming
-          back over the feet, both arms returning in toward the body,
-          settling into a low athletic stance.
+          Back in his stance: face-on to the viewer, feet planted a little
+          wider than his shoulders, knees bent, the hand on the VIEWER'S
+          LEFT held out palm-down at hip height as if dribbling, the other
+          arm hanging -- exactly his dribbling stance at the top of the
+          bounce.
+    closing: |
+      This is a one-shot, not a loop. Frame {first} continues from his
+      face-on stance; frame {last} is that same stance again.
     extra: |
-      The soles of both feet stay on the ground line throughout, including in
-      the lunge.
+      One hand does the stealing; the other never reaches for the ball. No
+      basketball is drawn in any frame: the game draws it separately.
+
+  steal_l:
+    title: Steal attempt, to the viewer's left
+    kind: one_shot
+    frames: 3
+    ref: front
+    guide:
+      file: art/guides/steal_l.png
+      side: left
+      colors: true
+      ears: true
+      nose: true
+      note: *stealnote
+      frames:
+        - {pose: calibration}
+        - *steal_load
+        - *steal_swipe
+        - name: still
+          drop: 0.095
+          stance: 0.27
+          hand: 0.42
+    ground: |
+      All frames share one ground line: the soles of both feet touch the
+      same horizontal line in every frame, including the lunge.
+    view: |
+      three-quarter view, chest turned toward the LEFT edge of the picture
+      while staying partly toward the viewer, so the jersey number stays
+      readable and reads forwards, head and eyes turned to the LEFT, where
+      the opponent is -- except in the last frame, which is squarely
+      face-on.
+    preamble: |
+      He is stabbing ONE hand in to knock the ball away from an opponent
+      standing just off the LEFT edge of the picture. Fast, committed and a
+      little off-balance -- a snatch, not a careful reach -- and fluid: it
+      happens many times a game.
+    poses:
+      - >-
+          The load: dropping into a crouch, weight shifting toward the
+          left, the reaching hand (on the viewer's LEFT) drawn back low
+          beside his hip, the other arm swinging back, eyes locked on the
+          ball.
+      - >-
+          The swipe: a low lunge to the LEFT, the leading foot stepped out
+          wide with the knee bent over it, the reaching arm fully extended
+          out to the left, the hand palm-down and fingers spread at
+          knee-to-hip height, raking at the ball. The other arm is flung
+          out straight behind him, up and back, for balance.
+      - >-
+          Back in his stance: face-on to the viewer, feet planted a little
+          wider than his shoulders, knees bent, the hand on the VIEWER'S
+          LEFT held out palm-down at hip height as if dribbling, the other
+          arm hanging -- exactly his dribbling stance at the top of the
+          bounce.
+    closing: |
+      This is a one-shot, not a loop. Frame {first} continues from his
+      face-on stance; frame {last} is that same stance again.
+    extra: |
+      One hand does the stealing; the other never reaches for the ball. No
+      basketball is drawn in any frame: the game draws it separately.
 
   stolen:
     title: Ball stolen
     kind: one_shot
     frames: 3
     ref: front
-    # The counterpart to `steal`, and the ONLY one-shot that must not end in the
-    # dribbling stance -- the ball is gone, so it hands over to `idle` instead.
-    # That is the clause most likely to come back wrong, so it is spelled out in
-    # the closing rather than left to the shared default.
-    #
-    # Today the victim plays `turn` as a spin, which reads as a pirouette rather
-    # than as losing the ball.
-    #
-    # It cancels on any input, like the idle breaks: losing the ball is already
-    # the punishment, and locking the victim out of the chase would be a second
-    # one. Three frames at 6 fps is half a second, inside the 0.9 s possession
-    # immunity, so it never delays a counter-steal either.
+    # The victim's reaction, three frames at 6 fps (half a second), cancelled
+    # by any input so he can chase at once. Frame 3 is the STILL POSE (see
+    # the steal above), not a defensive stance: the still pose is what he
+    # holds without the ball, so anything else would jump when it hands
+    # over (Rick, 2026-09-26).
+    guide:
+      file: art/guides/stolen.png
+      side: left
+      colors: true
+      ears: true
+      nose: true
+      note: |
+        POSE GUIDE: TWO images are attached, and they do different jobs.
+
+        The COLOUR image of the character is the only authority on WHO HE
+        IS. His colours, his proportions, his build, his height, his face,
+        his kit and the drawing style all come from that image and from the
+        SUBJECT above, and nothing below changes any of them. It does NOT
+        decide which way he faces: in this sheet he faces the viewer.
+
+        The other image is a POSE GUIDE: a stick figure on a white
+        background, standing in a row on one ground line, in the same
+        left-to-right order as the FRAMES listed below. The Nth figure in
+        the pose guide is the pose for the Nth frame. Take the GEOMETRY from
+        it and only the geometry: where each foot stands, how deeply the
+        knees are bent, how low the shoulders and head are, and where the
+        elbows and hands are.
+
+        THE COLOURS ON THE POSE GUIDE name the limbs: the RED arm and the
+        ORANGE leg are on the VIEWER'S LEFT, the BLUE arm and the GREEN leg
+        on the viewer's right.
+
+        THE HANDS ON THE POSE GUIDE: the FLAT hand with its fingers spread
+        sideways is palm-down; a narrow shape pointing down is a hand
+        hanging loose; a small rounded square is a clenched FIST.
+
+        THE HEAD ON THE POSE GUIDE: the small TRIANGLE is his nose and the
+        two ovals his ears; his face points at the viewer.
+
+        Draw the character from the colour reference standing in those
+        positions. The pose guide is an instruction, not artwork: its thin
+        lines, its colours, its joint dots, its white background, its
+        circular head, its triangle, its ovals and its face lines are NOT
+        part of the drawing and must not appear anywhere in it.
+      frames:
+        - {pose: calibration}
+        - name: gone
+          drop: 0.12
+          tilt: 0.01
+          lean: 0.012
+          stance: 0.27
+          hand: 0.30
+          palm: 8
+          head: 4
+        - name: temper
+          drop: 0.0
+          stance: 0.24
+          hand: [0.10, 0.66]
+          hand_shape: fist
+          free: [-0.10, 0.66]
+          free_shape: fist
+          joints: {elb_d: [0.22, 0.64], elb_f: [-0.22, 0.64]}
+        - name: still
+          drop: 0.095
+          stance: 0.27
+          hand: 0.42
     ground: |
       All frames share one ground line: the soles of the feet touch the same
       horizontal line in every frame. The feet stay planted throughout.
@@ -1002,38 +1215,32 @@ sequences:
     preamble: |
       An opponent has just knocked the ball out of his hands. Frames {first} to
       {last} are one continuous reaction: half a beat of surprise, a flash of
-      temper, then straight back into a defensive stance. {stolen_face}
+      temper, then straight back into his stance. {stolen_face}
     poses:
       - >-
           The instant it goes: still crouched low in the dribbling stance,
-          the dribbling hand still out with the palm down over nothing at
-          all, head snapped down toward where the ball was, eyes wide open
-          and both brows up.
+          the dribbling hand (on the viewer's LEFT) still out with the palm
+          down over nothing at all, head snapped down toward where the ball
+          was, eyes wide open and both brows up.
       - >-
           The flash of temper: snapping upright, both hands balled into
           fists at chest height with the elbows flared out, shoulders
           hunched up around the neck, head thrust forward, face contorted
           in fury.
       - >-
-          Back to work: dropping into a WIDE low defensive stance, feet
-          planted well wider than the shoulders, both hands coming up and
-          out with the palms open and facing forward, head turned to track
-          the opponent, still scowling.
+          Back in his stance: crouched again, feet a little wider than his
+          shoulders, the hand on the VIEWER'S LEFT held out palm-down at hip
+          height as if dribbling, the other arm hanging, still scowling --
+          exactly his dribbling stance at the top of the bounce.
     closing: |
-      This is a one-shot, not a loop. Frame {first} must continue naturally from
-      the low athletic dribbling stance. Frame {last} must settle into the WIDE
-      defensive stance with both hands up and palms open — he no longer has the
-      ball, so it must NOT return to the dribbling pose.
+      This is a one-shot, not a loop. Frame {first} must continue naturally
+      from the low athletic dribbling stance, and frame {last} settles back
+      into that same stance.
     extra: |
       The three frames must differ clearly in body level and in what the hands
-      are doing: crouched with one hand down, upright with two fists, then wide
-      with two open palms. He is not dribbling at any point after frame {first}.
-    ball: |
-      The character is NOT holding a basketball in any frame — the ball is drawn
-      separately by the game, and in this sequence it has just been taken off
-      him.
-
-  # --- the shot ------------------------------------------------------------
+      are doing: crouched with the hand low, upright with two fists, then the
+      stance with the hand at hip height. No basketball is drawn in any frame:
+      the game draws it separately.
 
   turn:
     title: Turn to shoot
