@@ -59,7 +59,6 @@ CHARACTERS = [
 LEGACY_POSES = {
     "nba":          {"dribble": [1, 5], "aim": [2, 6], "charge": [7, 6], "shot": [8, 4]},
     "highschooler": {"dribble": [1, 2], "aim": [3, 4], "charge": [6, 5], "shot": [7, 8]},
-    "zombie":       {"dribble": [1, 2], "aim": [3, 4], "charge": [6, 5], "shot": [7, 8]},
 }
 LEGACY_IDLE_POSE = 1        # the plain standing pose, used to set the scale
 
@@ -70,7 +69,10 @@ LEGACY_NAME = re.compile(r" \d{3}\.png$")
 # Characters built from BOTH kinds of input: old poses for everything, then each
 # sliced sequence in "<Name> frames/" replacing its old counterpart. Opt-in,
 # because the monkey still has his old poses on disk and must stay strips-only.
-MIXED = {"zombie"}
+# Empty since handover 10: the zombie has a strip for every sequence the game
+# plays, so he is strips-only like the monkey. The next character to migrate
+# joins here while it is part-way.
+MIXED: set[str] = set()
 
 # --- per-sequence corrections -------------------------------------------
 # Each strip is generated separately, so they drift in scale relative to each

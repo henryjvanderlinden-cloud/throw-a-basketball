@@ -735,158 +735,8 @@ window.SPRITE_MANIFEST = {
   {
    "key": "zombie",
    "label": "Zombie",
-   "mirror": true,
+   "mirror": false,
    "sequences": {
-    "dribble_idle": [
-     {
-      "src": "sprites/zombie/dribble_idle/01.png",
-      "w": 86.7,
-      "h": 128.67,
-      "footX": 43.24,
-      "footY": 128.88
-     },
-     {
-      "src": "sprites/zombie/dribble_idle/02.png",
-      "w": 86.91,
-      "h": 128.88,
-      "footX": 43.35,
-      "footY": 128.88
-     },
-     {
-      "src": "sprites/zombie/dribble_idle/03.png",
-      "w": 86.49,
-      "h": 128.88,
-      "footX": 43.14,
-      "footY": 129.09
-     },
-     {
-      "src": "sprites/zombie/dribble_idle/04.png",
-      "w": 86.7,
-      "h": 128.67,
-      "footX": 43.24,
-      "footY": 128.88
-     }
-    ],
-    "run_dribble_r": [
-     {
-      "src": "sprites/zombie/run_dribble_r/01.png",
-      "w": 90.57,
-      "h": 127.63,
-      "footX": 57.67,
-      "footY": 128.46
-     },
-     {
-      "src": "sprites/zombie/run_dribble_r/02.png",
-      "w": 61.84,
-      "h": 129.09,
-      "footX": 30.81,
-      "footY": 129.09
-     },
-     {
-      "src": "sprites/zombie/run_dribble_r/03.png",
-      "w": 88.9,
-      "h": 126.59,
-      "footX": 45.8,
-      "footY": 127.42
-     },
-     {
-      "src": "sprites/zombie/run_dribble_r/04.png",
-      "w": 56.42,
-      "h": 128.46,
-      "footX": 29.46,
-      "footY": 128.46
-     }
-    ],
-    "run_dribble_l": [
-     {
-      "src": "sprites/zombie/run_dribble_l/01.png",
-      "w": 98.74,
-      "h": 129.33,
-      "footX": 34.49,
-      "footY": 129.33
-     },
-     {
-      "src": "sprites/zombie/run_dribble_l/02.png",
-      "w": 66.31,
-      "h": 132.41,
-      "footX": 33.05,
-      "footY": 132.41
-     },
-     {
-      "src": "sprites/zombie/run_dribble_l/03.png",
-      "w": 86.63,
-      "h": 129.33,
-      "footX": 43.01,
-      "footY": 129.33
-     },
-     {
-      "src": "sprites/zombie/run_dribble_l/04.png",
-      "w": 72.67,
-      "h": 129.33,
-      "footX": 36.23,
-      "footY": 129.33
-     }
-    ],
-    "run_r": [
-     {
-      "src": "sprites/zombie/run_r/01.png",
-      "w": 98.59,
-      "h": 127.05,
-      "footX": 54.66,
-      "footY": 127.88
-     },
-     {
-      "src": "sprites/zombie/run_r/02.png",
-      "w": 69.51,
-      "h": 128.29,
-      "footX": 34.65,
-      "footY": 128.29
-     },
-     {
-      "src": "sprites/zombie/run_r/03.png",
-      "w": 106.84,
-      "h": 126.84,
-      "footX": 65.48,
-      "footY": 127.67
-     },
-     {
-      "src": "sprites/zombie/run_r/04.png",
-      "w": 58.16,
-      "h": 127.46,
-      "footX": 29.6,
-      "footY": 127.46
-     }
-    ],
-    "run_l": [
-     {
-      "src": "sprites/zombie/run_l/01.png",
-      "w": 97.72,
-      "h": 130.57,
-      "footX": 41.21,
-      "footY": 130.57
-     },
-     {
-      "src": "sprites/zombie/run_l/02.png",
-      "w": 61.21,
-      "h": 128.53,
-      "footX": 30.5,
-      "footY": 131.18
-     },
-     {
-      "src": "sprites/zombie/run_l/03.png",
-      "w": 102.42,
-      "h": 128.12,
-      "footX": 39.89,
-      "footY": 128.12
-     },
-     {
-      "src": "sprites/zombie/run_l/04.png",
-      "w": 58.96,
-      "h": 128.12,
-      "footX": 25.09,
-      "footY": 128.12
-     }
-    ],
     "aim": [
      {
       "src": "sprites/zombie/aim/01.png",
@@ -901,59 +751,6 @@ window.SPRITE_MANIFEST = {
       "h": 128.82,
       "footX": 48.15,
       "footY": 128.82
-     }
-    ],
-    "charge": [
-     {
-      "src": "sprites/zombie/charge/01.png",
-      "w": 83.92,
-      "h": 137.88,
-      "footX": 41.87,
-      "footY": 137.88
-     },
-     {
-      "src": "sprites/zombie/charge/02.png",
-      "w": 84.67,
-      "h": 117.46,
-      "footX": 42.24,
-      "footY": 117.46
-     },
-     {
-      "src": "sprites/zombie/charge/03.png",
-      "w": 82.24,
-      "h": 89.92,
-      "footX": 41.03,
-      "footY": 89.92
-     }
-    ],
-    "shot": [
-     {
-      "src": "sprites/zombie/shot/01.png",
-      "w": 88.55,
-      "h": 112.03,
-      "footX": 44.15,
-      "footY": 112.03
-     },
-     {
-      "src": "sprites/zombie/shot/02.png",
-      "w": 83.7,
-      "h": 141.12,
-      "footX": 41.72,
-      "footY": 141.12
-     },
-     {
-      "src": "sprites/zombie/shot/03.png",
-      "w": 54.35,
-      "h": 178.12,
-      "footX": 27.05,
-      "footY": 178.12
-     },
-     {
-      "src": "sprites/zombie/shot/04.png",
-      "w": 71.45,
-      "h": 155.15,
-      "footX": 35.6,
-      "footY": 155.15
      }
     ],
     "break_face": [
@@ -1092,6 +889,59 @@ window.SPRITE_MANIFEST = {
       "footY": 127.95
      }
     ],
+    "charge": [
+     {
+      "src": "sprites/zombie/charge/01.png",
+      "w": 83.92,
+      "h": 137.88,
+      "footX": 41.87,
+      "footY": 137.88
+     },
+     {
+      "src": "sprites/zombie/charge/02.png",
+      "w": 84.67,
+      "h": 117.46,
+      "footX": 42.24,
+      "footY": 117.46
+     },
+     {
+      "src": "sprites/zombie/charge/03.png",
+      "w": 82.24,
+      "h": 89.92,
+      "footX": 41.03,
+      "footY": 89.92
+     }
+    ],
+    "dribble_idle": [
+     {
+      "src": "sprites/zombie/dribble_idle/01.png",
+      "w": 86.7,
+      "h": 128.67,
+      "footX": 43.24,
+      "footY": 128.88
+     },
+     {
+      "src": "sprites/zombie/dribble_idle/02.png",
+      "w": 86.91,
+      "h": 128.88,
+      "footX": 43.35,
+      "footY": 128.88
+     },
+     {
+      "src": "sprites/zombie/dribble_idle/03.png",
+      "w": 86.49,
+      "h": 128.88,
+      "footX": 43.14,
+      "footY": 129.09
+     },
+     {
+      "src": "sprites/zombie/dribble_idle/04.png",
+      "w": 86.7,
+      "h": 128.67,
+      "footX": 43.24,
+      "footY": 128.88
+     }
+    ],
     "gameover": [
      {
       "src": "sprites/zombie/gameover/01.png",
@@ -1159,6 +1009,156 @@ window.SPRITE_MANIFEST = {
       "h": 116.43,
       "footX": 46.57,
       "footY": 116.43
+     }
+    ],
+    "run_dribble_l": [
+     {
+      "src": "sprites/zombie/run_dribble_l/01.png",
+      "w": 98.74,
+      "h": 129.33,
+      "footX": 34.49,
+      "footY": 129.33
+     },
+     {
+      "src": "sprites/zombie/run_dribble_l/02.png",
+      "w": 66.31,
+      "h": 132.41,
+      "footX": 33.05,
+      "footY": 132.41
+     },
+     {
+      "src": "sprites/zombie/run_dribble_l/03.png",
+      "w": 86.63,
+      "h": 129.33,
+      "footX": 43.01,
+      "footY": 129.33
+     },
+     {
+      "src": "sprites/zombie/run_dribble_l/04.png",
+      "w": 72.67,
+      "h": 129.33,
+      "footX": 36.23,
+      "footY": 129.33
+     }
+    ],
+    "run_dribble_r": [
+     {
+      "src": "sprites/zombie/run_dribble_r/01.png",
+      "w": 90.57,
+      "h": 127.63,
+      "footX": 57.67,
+      "footY": 128.46
+     },
+     {
+      "src": "sprites/zombie/run_dribble_r/02.png",
+      "w": 61.84,
+      "h": 129.09,
+      "footX": 30.81,
+      "footY": 129.09
+     },
+     {
+      "src": "sprites/zombie/run_dribble_r/03.png",
+      "w": 88.9,
+      "h": 126.59,
+      "footX": 45.8,
+      "footY": 127.42
+     },
+     {
+      "src": "sprites/zombie/run_dribble_r/04.png",
+      "w": 56.42,
+      "h": 128.46,
+      "footX": 29.46,
+      "footY": 128.46
+     }
+    ],
+    "run_l": [
+     {
+      "src": "sprites/zombie/run_l/01.png",
+      "w": 97.72,
+      "h": 130.57,
+      "footX": 41.21,
+      "footY": 130.57
+     },
+     {
+      "src": "sprites/zombie/run_l/02.png",
+      "w": 61.21,
+      "h": 128.53,
+      "footX": 30.5,
+      "footY": 131.18
+     },
+     {
+      "src": "sprites/zombie/run_l/03.png",
+      "w": 102.42,
+      "h": 128.12,
+      "footX": 39.89,
+      "footY": 128.12
+     },
+     {
+      "src": "sprites/zombie/run_l/04.png",
+      "w": 58.96,
+      "h": 128.12,
+      "footX": 25.09,
+      "footY": 128.12
+     }
+    ],
+    "run_r": [
+     {
+      "src": "sprites/zombie/run_r/01.png",
+      "w": 98.59,
+      "h": 127.05,
+      "footX": 54.66,
+      "footY": 127.88
+     },
+     {
+      "src": "sprites/zombie/run_r/02.png",
+      "w": 69.51,
+      "h": 128.29,
+      "footX": 34.65,
+      "footY": 128.29
+     },
+     {
+      "src": "sprites/zombie/run_r/03.png",
+      "w": 106.84,
+      "h": 126.84,
+      "footX": 65.48,
+      "footY": 127.67
+     },
+     {
+      "src": "sprites/zombie/run_r/04.png",
+      "w": 58.16,
+      "h": 127.46,
+      "footX": 29.6,
+      "footY": 127.46
+     }
+    ],
+    "shot": [
+     {
+      "src": "sprites/zombie/shot/01.png",
+      "w": 88.55,
+      "h": 112.03,
+      "footX": 44.15,
+      "footY": 112.03
+     },
+     {
+      "src": "sprites/zombie/shot/02.png",
+      "w": 83.7,
+      "h": 141.12,
+      "footX": 41.72,
+      "footY": 141.12
+     },
+     {
+      "src": "sprites/zombie/shot/03.png",
+      "w": 54.35,
+      "h": 178.12,
+      "footX": 27.05,
+      "footY": 178.12
+     },
+     {
+      "src": "sprites/zombie/shot/04.png",
+      "w": 71.45,
+      "h": 155.15,
+      "footX": 35.6,
+      "footY": 155.15
      }
     ],
     "steal_l": [
@@ -1254,28 +1254,6 @@ window.SPRITE_MANIFEST = {
     "break_head": -1,
     "panic": -1
    },
-   "fixed": [
-    "aim",
-    "break_face",
-    "break_head",
-    "celebrate",
-    "celebrate_collapse",
-    "celebrate_pump",
-    "charge",
-    "dribble_idle",
-    "gameover",
-    "panic",
-    "pickup",
-    "run_dribble_l",
-    "run_dribble_r",
-    "run_l",
-    "run_r",
-    "shot",
-    "steal_l",
-    "steal_r",
-    "stolen",
-    "turn"
-   ],
    "apexFrame": {
     "dribble_idle": 2,
     "run_dribble_r": 1,
