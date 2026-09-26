@@ -103,6 +103,21 @@ STRIPS = {
         ("celebrate",       "celebrate.approved.png", 2, True),
         ("celebrate_pump",  "celebrate_pump.approved.png", 3, True),
         ("gameover",        "gameover.approved.png", 2, True),
+        # Group B, the zombie's own (handover 10), picked by Rick 2026-09-26.
+        # break_face: r3, the most comical, recoloured onto dribble_idle's
+        # palette by tools/recolour-take.py (its kit and skin had drifted).
+        # break_head: r2 ("returns to a natural stance"). panic: r1 ("the most
+        # cartoon-like eye bulging"). The three are STORIES (STORY_SEQ).
+        ("break_face",      "break_face.approved.png", 4, True),
+        ("break_head",      "break_head.approved.png", 4, True),
+        ("panic",           "panic.approved.png", 4, True),
+        # celebrate_collapse: r1, "more ecstatic", WITHOUT its frame 3, the
+        # heap of body parts on the floor (Rick: "I'd definitely not use
+        # [it]"). That frame touched frame 4, so the slicer could not lift it
+        # out; the approved strip is r1 with the heap erased by hand
+        # (celebrate_collapse.r1noheap.png), leaving five frames: triumph,
+        # flying apart, reassembling, nearly whole, whole.
+        ("celebrate_collapse", "celebrate_collapse.approved.png", 5, True),
     ],
 }
 
@@ -111,7 +126,7 @@ BLEED_MAX_SHARE = 0.15      # a stray blob is at most this share of the figure
 
 # Sequences that deliberately leave the floor, so the ground-line check would
 # only produce a misleading warning.
-AIRBORNE = {"celebrate_flip"}
+AIRBORNE = {"celebrate_flip", "celebrate_collapse"}
 
 
 def ink_columns(im: Image.Image) -> np.ndarray:

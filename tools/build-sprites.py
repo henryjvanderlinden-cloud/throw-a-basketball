@@ -108,7 +108,12 @@ SEQ_SCALE = {
                # width in the front-on stance they share with the dribble
                # (22.0 units there; 20.6, 19.5 and 18.2 here at x1.00), then
                # checked by eye: heads and the "13" match the dribble's.
-               "celebrate": 1.07, "celebrate_pump": 1.12, "gameover": 1.18},
+               "celebrate": 1.07, "celebrate_pump": 1.12, "gameover": 1.18,
+               # Group B (handover 10), by eye beside the dribble: head, "13"
+               # and torso. Shoe width was no help here -- break_head's r2
+               # and the panic draw small feet (it said x1.35).
+               "break_face": 1.10, "break_head": 1.08, "panic": 1.15,
+               "celebrate_collapse": 1.15},
 }
 
 # How big each character is, as a multiple of the standing height above.
