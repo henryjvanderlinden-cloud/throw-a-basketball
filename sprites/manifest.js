@@ -1030,140 +1030,573 @@ window.SPRITE_MANIFEST = {
   {
    "key": "highschooler",
    "label": "High Schooler",
-   "mirror": true,
+   "mirror": false,
    "sequences": {
-    "dribble_idle": [
-     {
-      "src": "sprites/highschooler/dribble_idle/01.png",
-      "w": 79.51,
-      "h": 128.04,
-      "footX": 39.94,
-      "footY": 128.04
-     },
-     {
-      "src": "sprites/highschooler/dribble_idle/02.png",
-      "w": 79.88,
-      "h": 127.95,
-      "footX": 41.82,
-      "footY": 127.95
-     }
-    ],
-    "run_dribble_r": [
-     {
-      "src": "sprites/highschooler/run_dribble_r/01.png",
-      "w": 79.51,
-      "h": 128.04,
-      "footX": 39.94,
-      "footY": 128.04
-     },
-     {
-      "src": "sprites/highschooler/run_dribble_r/02.png",
-      "w": 79.88,
-      "h": 127.95,
-      "footX": 41.82,
-      "footY": 127.95
-     }
-    ],
-    "run_dribble_l": [
-     {
-      "src": "sprites/highschooler/run_dribble_l/01.png",
-      "w": 79.51,
-      "h": 128.04,
-      "footX": 39.94,
-      "footY": 128.04
-     },
-     {
-      "src": "sprites/highschooler/run_dribble_l/02.png",
-      "w": 79.88,
-      "h": 127.95,
-      "footX": 41.82,
-      "footY": 127.95
-     }
-    ],
-    "run_r": [
-     {
-      "src": "sprites/highschooler/run_r/01.png",
-      "w": 79.51,
-      "h": 128.04,
-      "footX": 39.94,
-      "footY": 128.04
-     },
-     {
-      "src": "sprites/highschooler/run_r/02.png",
-      "w": 79.88,
-      "h": 127.95,
-      "footX": 41.82,
-      "footY": 127.95
-     }
-    ],
-    "run_l": [
-     {
-      "src": "sprites/highschooler/run_l/01.png",
-      "w": 79.51,
-      "h": 128.04,
-      "footX": 39.94,
-      "footY": 128.04
-     },
-     {
-      "src": "sprites/highschooler/run_l/02.png",
-      "w": 79.88,
-      "h": 127.95,
-      "footX": 41.82,
-      "footY": 127.95
-     }
-    ],
     "aim": [
      {
       "src": "sprites/highschooler/aim/01.png",
-      "w": 84.87,
-      "h": 128.01,
-      "footX": 42.39,
-      "footY": 128.01
+      "w": 84.02,
+      "h": 126.71,
+      "footX": 41.92,
+      "footY": 126.71
      },
      {
       "src": "sprites/highschooler/aim/02.png",
-      "w": 84.03,
-      "h": 127.71,
-      "footX": 46.22,
-      "footY": 127.71
+      "w": 85.72,
+      "h": 120.42,
+      "footX": 42.77,
+      "footY": 120.42
+     }
+    ],
+    "break_hair": [
+     {
+      "src": "sprites/highschooler/break_hair/01.png",
+      "w": 83.47,
+      "h": 126.9,
+      "footX": 44.13,
+      "footY": 126.9
+     },
+     {
+      "src": "sprites/highschooler/break_hair/02.png",
+      "w": 84.47,
+      "h": 132.48,
+      "footX": 44.92,
+      "footY": 132.48
+     },
+     {
+      "src": "sprites/highschooler/break_hair/03.png",
+      "w": 86.06,
+      "h": 137.26,
+      "footX": 46.32,
+      "footY": 137.26
+     },
+     {
+      "src": "sprites/highschooler/break_hair/04.png",
+      "w": 74.51,
+      "h": 125.9,
+      "footX": 39.34,
+      "footY": 125.9
+     }
+    ],
+    "break_phone": [
+     {
+      "src": "sprites/highschooler/break_phone/01.png",
+      "w": 87.06,
+      "h": 128.97,
+      "footX": 45.15,
+      "footY": 128.97
+     },
+     {
+      "src": "sprites/highschooler/break_phone/02.png",
+      "w": 82.4,
+      "h": 123.1,
+      "footX": 41.1,
+      "footY": 123.1
+     },
+     {
+      "src": "sprites/highschooler/break_phone/03.png",
+      "w": 88.68,
+      "h": 128.97,
+      "footX": 46.06,
+      "footY": 128.97
+     },
+     {
+      "src": "sprites/highschooler/break_phone/04.png",
+      "w": 82.0,
+      "h": 126.54,
+      "footX": 42.62,
+      "footY": 126.54
+     }
+    ],
+    "celebrate": [
+     {
+      "src": "sprites/highschooler/celebrate/01.png",
+      "w": 90.94,
+      "h": 160.31,
+      "footX": 45.37,
+      "footY": 161.09
+     },
+     {
+      "src": "sprites/highschooler/celebrate/02.png",
+      "w": 95.02,
+      "h": 120.67,
+      "footX": 47.41,
+      "footY": 120.67
+     }
+    ],
+    "celebrate_dab": [
+     {
+      "src": "sprites/highschooler/celebrate_dab/01.png",
+      "w": 105.15,
+      "h": 137.15,
+      "footX": 49.93,
+      "footY": 137.15
+     },
+     {
+      "src": "sprites/highschooler/celebrate_dab/02.png",
+      "w": 99.37,
+      "h": 139.8,
+      "footX": 42.23,
+      "footY": 139.8
+     },
+     {
+      "src": "sprites/highschooler/celebrate_dab/03.png",
+      "w": 86.62,
+      "h": 123.67,
+      "footX": 43.19,
+      "footY": 123.67
+     },
+     {
+      "src": "sprites/highschooler/celebrate_dab/04.png",
+      "w": 97.21,
+      "h": 144.37,
+      "footX": 55.58,
+      "footY": 144.37
+     },
+     {
+      "src": "sprites/highschooler/celebrate_dab/05.png",
+      "w": 76.27,
+      "h": 132.34,
+      "footX": 38.02,
+      "footY": 132.34
+     }
+    ],
+    "celebrate_pump": [
+     {
+      "src": "sprites/highschooler/celebrate_pump/01.png",
+      "w": 76.17,
+      "h": 142.69,
+      "footX": 37.98,
+      "footY": 142.69
+     },
+     {
+      "src": "sprites/highschooler/celebrate_pump/02.png",
+      "w": 98.34,
+      "h": 122.16,
+      "footX": 49.07,
+      "footY": 122.16
+     },
+     {
+      "src": "sprites/highschooler/celebrate_pump/03.png",
+      "w": 98.55,
+      "h": 120.72,
+      "footX": 49.17,
+      "footY": 120.72
      }
     ],
     "charge": [
      {
       "src": "sprites/highschooler/charge/01.png",
-      "w": 86.22,
-      "h": 132.79,
-      "footX": 43.06,
-      "footY": 132.79
+      "w": 89.75,
+      "h": 124.3,
+      "footX": 44.78,
+      "footY": 124.49
      },
      {
       "src": "sprites/highschooler/charge/02.png",
-      "w": 61.65,
-      "h": 140.12,
-      "footX": 30.77,
-      "footY": 140.12
+      "w": 89.36,
+      "h": 107.7,
+      "footX": 44.58,
+      "footY": 107.89
+     },
+     {
+      "src": "sprites/highschooler/charge/03.png",
+      "w": 87.24,
+      "h": 86.66,
+      "footX": 43.52,
+      "footY": 86.66
+     }
+    ],
+    "dribble_idle": [
+     {
+      "src": "sprites/highschooler/dribble_idle/01.png",
+      "w": 81.34,
+      "h": 125.03,
+      "footX": 40.57,
+      "footY": 125.24
+     },
+     {
+      "src": "sprites/highschooler/dribble_idle/02.png",
+      "w": 81.55,
+      "h": 125.87,
+      "footX": 40.67,
+      "footY": 125.87
+     },
+     {
+      "src": "sprites/highschooler/dribble_idle/03.png",
+      "w": 81.14,
+      "h": 127.74,
+      "footX": 40.46,
+      "footY": 127.74
+     },
+     {
+      "src": "sprites/highschooler/dribble_idle/04.png",
+      "w": 81.14,
+      "h": 126.49,
+      "footX": 40.46,
+      "footY": 126.7
+     }
+    ],
+    "gameover": [
+     {
+      "src": "sprites/highschooler/gameover/01.png",
+      "w": 89.65,
+      "h": 107.34,
+      "footX": 44.74,
+      "footY": 107.34
+     },
+     {
+      "src": "sprites/highschooler/gameover/02.png",
+      "w": 90.32,
+      "h": 122.7,
+      "footX": 45.07,
+      "footY": 122.7
+     }
+    ],
+    "panic": [
+     {
+      "src": "sprites/highschooler/panic/01.png",
+      "w": 79.32,
+      "h": 126.18,
+      "footX": 40.58,
+      "footY": 126.18
+     },
+     {
+      "src": "sprites/highschooler/panic/02.png",
+      "w": 77.49,
+      "h": 123.57,
+      "footX": 39.01,
+      "footY": 123.57
+     },
+     {
+      "src": "sprites/highschooler/panic/03.png",
+      "w": 78.01,
+      "h": 126.97,
+      "footX": 39.14,
+      "footY": 126.97
+     },
+     {
+      "src": "sprites/highschooler/panic/04.png",
+      "w": 81.94,
+      "h": 134.3,
+      "footX": 42.15,
+      "footY": 134.3
+     },
+     {
+      "src": "sprites/highschooler/panic/05.png",
+      "w": 84.56,
+      "h": 141.89,
+      "footX": 41.23,
+      "footY": 141.89
+     },
+     {
+      "src": "sprites/highschooler/panic/06.png",
+      "w": 85.34,
+      "h": 141.37,
+      "footX": 42.93,
+      "footY": 141.37
+     }
+    ],
+    "pickup": [
+     {
+      "src": "sprites/highschooler/pickup/01.png",
+      "w": 94.46,
+      "h": 108.63,
+      "footX": 47.12,
+      "footY": 108.63
+     },
+     {
+      "src": "sprites/highschooler/pickup/02.png",
+      "w": 94.91,
+      "h": 88.84,
+      "footX": 47.34,
+      "footY": 88.84
+     },
+     {
+      "src": "sprites/highschooler/pickup/03.png",
+      "w": 94.69,
+      "h": 119.43,
+      "footX": 47.23,
+      "footY": 119.43
+     }
+    ],
+    "run_dribble_l": [
+     {
+      "src": "sprites/highschooler/run_dribble_l/01.png",
+      "w": 92.99,
+      "h": 121.47,
+      "footX": 34.65,
+      "footY": 121.47
+     },
+     {
+      "src": "sprites/highschooler/run_dribble_l/02.png",
+      "w": 68.7,
+      "h": 121.27,
+      "footX": 30.67,
+      "footY": 121.27
+     },
+     {
+      "src": "sprites/highschooler/run_dribble_l/03.png",
+      "w": 93.19,
+      "h": 121.27,
+      "footX": 39.43,
+      "footY": 121.27
+     },
+     {
+      "src": "sprites/highschooler/run_dribble_l/04.png",
+      "w": 64.92,
+      "h": 121.07,
+      "footX": 31.46,
+      "footY": 121.07
+     }
+    ],
+    "run_dribble_r": [
+     {
+      "src": "sprites/highschooler/run_dribble_r/01.png",
+      "w": 90.31,
+      "h": 124.63,
+      "footX": 55.29,
+      "footY": 124.63
+     },
+     {
+      "src": "sprites/highschooler/run_dribble_r/02.png",
+      "w": 56.59,
+      "h": 125.03,
+      "footX": 28.5,
+      "footY": 125.03
+     },
+     {
+      "src": "sprites/highschooler/run_dribble_r/03.png",
+      "w": 81.28,
+      "h": 124.83,
+      "footX": 37.13,
+      "footY": 124.83
+     },
+     {
+      "src": "sprites/highschooler/run_dribble_r/04.png",
+      "w": 66.63,
+      "h": 125.23,
+      "footX": 33.21,
+      "footY": 125.23
+     }
+    ],
+    "run_l": [
+     {
+      "src": "sprites/highschooler/run_l/01.png",
+      "w": 93.61,
+      "h": 123.92,
+      "footX": 39.07,
+      "footY": 123.92
+     },
+     {
+      "src": "sprites/highschooler/run_l/02.png",
+      "w": 63.5,
+      "h": 122.27,
+      "footX": 30.21,
+      "footY": 123.92
+     },
+     {
+      "src": "sprites/highschooler/run_l/03.png",
+      "w": 96.7,
+      "h": 123.3,
+      "footX": 37.83,
+      "footY": 123.5
+     },
+     {
+      "src": "sprites/highschooler/run_l/04.png",
+      "w": 54.23,
+      "h": 123.09,
+      "footX": 27.32,
+      "footY": 123.92
+     }
+    ],
+    "run_r": [
+     {
+      "src": "sprites/highschooler/run_r/01.png",
+      "w": 109.84,
+      "h": 121.55,
+      "footX": 58.58,
+      "footY": 122.18
+     },
+     {
+      "src": "sprites/highschooler/run_r/02.png",
+      "w": 60.67,
+      "h": 122.81,
+      "footX": 30.23,
+      "footY": 122.81
+     },
+     {
+      "src": "sprites/highschooler/run_r/03.png",
+      "w": 99.59,
+      "h": 121.76,
+      "footX": 61.3,
+      "footY": 121.76
+     },
+     {
+      "src": "sprites/highschooler/run_r/04.png",
+      "w": 63.6,
+      "h": 121.97,
+      "footX": 36.61,
+      "footY": 121.97
      }
     ],
     "shot": [
      {
       "src": "sprites/highschooler/shot/01.png",
-      "w": 49.53,
-      "h": 144.21,
-      "footX": 15.76,
-      "footY": 144.21
+      "w": 74.77,
+      "h": 102.68,
+      "footX": 37.28,
+      "footY": 103.35
      },
      {
       "src": "sprites/highschooler/shot/02.png",
-      "w": 78.75,
-      "h": 137.86,
-      "footX": 38.08,
-      "footY": 137.86
+      "w": 76.56,
+      "h": 137.5,
+      "footX": 38.17,
+      "footY": 138.17
+     },
+     {
+      "src": "sprites/highschooler/shot/03.png",
+      "w": 52.45,
+      "h": 173.66,
+      "footX": 26.12,
+      "footY": 173.66
+     },
+     {
+      "src": "sprites/highschooler/shot/04.png",
+      "w": 62.27,
+      "h": 158.03,
+      "footX": 31.03,
+      "footY": 158.25
+     }
+    ],
+    "steal_l": [
+     {
+      "src": "sprites/highschooler/steal_l/01.png",
+      "w": 105.54,
+      "h": 122.35,
+      "footX": 60.64,
+      "footY": 122.35
+     },
+     {
+      "src": "sprites/highschooler/steal_l/02.png",
+      "w": 147.67,
+      "h": 118.52,
+      "footX": 83.62,
+      "footY": 119.79
+     },
+     {
+      "src": "sprites/highschooler/steal_l/03.png",
+      "w": 87.66,
+      "h": 123.62,
+      "footX": 47.13,
+      "footY": 124.05
+     }
+    ],
+    "steal_r": [
+     {
+      "src": "sprites/highschooler/steal_r/01.png",
+      "w": 97.58,
+      "h": 120.28,
+      "footX": 46.64,
+      "footY": 120.28
+     },
+     {
+      "src": "sprites/highschooler/steal_r/02.png",
+      "w": 138.49,
+      "h": 113.12,
+      "footX": 61.37,
+      "footY": 113.12
+     },
+     {
+      "src": "sprites/highschooler/steal_r/03.png",
+      "w": 91.23,
+      "h": 120.49,
+      "footX": 45.51,
+      "footY": 120.49
+     }
+    ],
+    "stolen": [
+     {
+      "src": "sprites/highschooler/stolen/01.png",
+      "w": 96.61,
+      "h": 118.91,
+      "footX": 51.52,
+      "footY": 118.91
+     },
+     {
+      "src": "sprites/highschooler/stolen/02.png",
+      "w": 94.34,
+      "h": 119.1,
+      "footX": 47.55,
+      "footY": 119.1
+     },
+     {
+      "src": "sprites/highschooler/stolen/03.png",
+      "w": 80.16,
+      "h": 140.47,
+      "footX": 39.98,
+      "footY": 140.47
+     }
+    ],
+    "turn": [
+     {
+      "src": "sprites/highschooler/turn/01.png",
+      "w": 86.94,
+      "h": 127.13,
+      "footX": 43.38,
+      "footY": 128.04
+     },
+     {
+      "src": "sprites/highschooler/turn/02.png",
+      "w": 88.95,
+      "h": 128.04,
+      "footX": 44.38,
+      "footY": 128.04
      }
     ]
    },
-   "ballSide": {},
-   "handX": 17.51,
-   "handY": -144.21
+   "ballSide": {
+    "dribble_idle": -1,
+    "run_dribble_l": -1,
+    "break_phone": -1,
+    "break_hair": -1,
+    "panic": -1
+   },
+   "apexFrame": {
+    "dribble_idle": 2,
+    "run_dribble_r": 1,
+    "run_dribble_l": 1
+   },
+   "loopBounces": {
+    "run_dribble_r": 2,
+    "run_dribble_l": 2
+   },
+   "storySeq": {
+    "break_phone": null,
+    "break_hair": null,
+    "panic": [
+     4,
+     5
+    ]
+   },
+   "standH": 128.04,
+   "pickupBall": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     0.42
+    ]
+   ],
+   "handX": -0.14,
+   "handY": -173.66
   },
   {
    "key": "zombie",

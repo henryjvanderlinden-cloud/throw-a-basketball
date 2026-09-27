@@ -130,6 +130,19 @@ SEQ_SCALE = {
             "steal_l": 1.04, "stolen": 1.04, "celebrate_pump": 1.06,
             "celebrate_crowd": 1.04,
             "turn": 0.97, "aim": 0.97, "charge": 1.00, "shot": 0.97},
+    # The high schooler (2026-09-27): the zombie's body, so the zombie's
+    # numbers as the starting point, then matched on the width of his mop of
+    # hair (front-on frames, against his runs at x1.00) and checked by eye
+    # side by side at in-game scale. His dribble came out small, as the
+    # zombie's and the NBA player's did; it is also what the character picker
+    # measures, so it is held at x1.10 to keep him under the NBA player there
+    # (x1.18 matched the hair and made him the tallest of the four).
+    "highschooler": {"dribble_idle": 1.10, "pickup": 1.14,
+                     "turn": 1.00, "aim": 1.06, "charge": 1.12, "shot": 1.10,
+                     "celebrate": 1.12, "celebrate_pump": 1.10, "gameover": 1.12,
+                     "break_phone": 1.08, "break_hair": 1.10, "panic": 1.10,
+                     "celebrate_dab": 1.12,
+                     "steal_r": 1.08, "steal_l": 1.14, "stolen": 1.10},
 }
 
 # How big each character is, as a multiple of the standing height above.
@@ -180,6 +193,9 @@ BALL_SIDE = {
     # The NBA player: the zombie's layout exactly (2026-09-27).
     "nba": {"dribble_idle": -1, "run_dribble_l": -1,
             "break_flex": -1, "break_yawn": -1, "panic": -1},
+    # The high schooler: the zombie's layout exactly (2026-09-27).
+    "highschooler": {"dribble_idle": -1, "run_dribble_l": -1,
+                     "break_phone": -1, "break_hair": -1, "panic": -1},
     "monkey": {
         "dribble_idle": -1, "break_banana": -1, "break_wave": -1,
         "pickup": -1, "panic": -1, "run_dribble_r": +1, "run_dribble_l": -1,
@@ -196,6 +212,7 @@ APEX_FRAME = {
                "run_dribble_r": 2,     # contact, PASSING, contact, passing
                "run_dribble_l": 2},
     "nba": {"dribble_idle": 3, "run_dribble_r": 2, "run_dribble_l": 2},
+    "highschooler": {"dribble_idle": 3, "run_dribble_r": 2, "run_dribble_l": 2},
 }
 
 # How many bounces of the ball one loop of a sequence covers. Default 1. The
@@ -205,6 +222,7 @@ APEX_FRAME = {
 LOOP_BOUNCES = {
     "zombie": {"run_dribble_r": 2, "run_dribble_l": 2},
     "nba": {"run_dribble_r": 2, "run_dribble_l": 2},
+    "highschooler": {"run_dribble_r": 2, "run_dribble_l": 2},
 }
 
 # STORY SEQUENCES: played ONCE, in order, one frame per HALF bounce (about
@@ -226,6 +244,9 @@ STORY_SEQ = {
     # The NBA player's panic is six frames: look, cock the thumb, thumb, hold,
     # hand on hip; the hip pair (frames 5 and 6) holds until the clock resets.
     "nba": {"break_flex": None, "break_yawn": None, "panic": [4, 5]},
+    # The high schooler's panic is six frames: notice, hand to head, clamped,
+    # arm shooting up, then held up at the clock (frames 5 and 6) until reset.
+    "highschooler": {"break_phone": None, "break_hair": None, "panic": [4, 5]},
 }
 
 # Where the ball is in each frame of the pickup, so the hands meet it instead
@@ -246,6 +267,7 @@ PICKUP_BALL = {
     "zombie": [[0, 0], [0, 0], [0, 0.42]],
     # the zombie's guide, and r2 gathers it in front of his belly the same way
     "nba": [[0, 0], [0, 0], [0, 0.42]],
+    "highschooler": [[0, 0], [0, 0], [0, 0.42]],
 }
 
 # Sequences anchored on the cell rather than on the feet: either the feet

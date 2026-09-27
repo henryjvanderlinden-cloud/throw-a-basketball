@@ -156,6 +156,38 @@ STRIPS = {
         ("steal_l",         "steal_l.approved.png", 3, True),
         ("stolen",          "stolen.approved.png", 3, True, [1, 3, 2]),
     ],
+    # The high schooler's whole roster, 2026-09-27, the zombie as the template
+    # (the zombie's body, so the shared guides; his own four in
+    # art/guides/highschooler/). Picked by Rick: dribble_idle r1 of the pilot
+    # (the face described in words: a keen rookie's too-serious game face);
+    # run_dribble_r r3 (r1 and r2 "way too youthful", r2's colours off),
+    # run_dribble_l r1, run_r r3, run_l r2, pickup r2, steal_r r2, steal_l r1,
+    # stolen r2 played look, look, clench; turn r2, aim r1, charge r2, shot r1;
+    # celebrate r3, celebrate_pump r2, gameover r1; break_phone r2,
+    # break_hair r2, panic r2, celebrate_dab r2. The folder name is
+    # misspelled on disk.
+    "Higschooler": [
+        ("dribble_idle",    "dribble_idle.approved.png", 4, True),
+        ("run_dribble_r",   "run_dribble_r.approved.png", 4, True),
+        ("run_dribble_l",   "run_dribble_l.approved.png", 4, True),
+        ("run_r",           "run_r.approved.png", 4, True),
+        ("run_l",           "run_l.approved.png", 4, True),
+        ("pickup",          "pickup.approved.png", 3, True),
+        ("turn",            "turn.approved.png", 2, True),
+        ("aim",             "aim.approved.png", 2, True),
+        ("charge",          "charge.approved.png", 3, True),
+        ("shot",            "shot.approved.png", 4, True),
+        ("celebrate",       "celebrate.approved.png", 2, True),
+        ("celebrate_pump",  "celebrate_pump.approved.png", 3, True),
+        ("gameover",        "gameover.approved.png", 2, True),
+        ("break_phone",     "break_phone.approved.png", 4, True),
+        ("break_hair",      "break_hair.approved.png", 4, True),
+        ("panic",           "panic.approved.png", 6, True),
+        ("celebrate_dab",   "celebrate_dab.approved.png", 5, True),
+        ("steal_r",         "steal_r.approved.png", 3, True),
+        ("steal_l",         "steal_l.approved.png", 3, True),
+        ("stolen",          "stolen.approved.png", 3, True, [1, 3, 2]),
+    ],
 }
 
 
