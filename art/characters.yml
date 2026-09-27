@@ -31,13 +31,29 @@ monkey:
   refs:
     front: artwork/basketball-players/Monkey poses/Monkey 001.png
     back: artwork/basketball-players/Monkey poses/Monkey 003.png
+  # Face and build described in words (2026-09-27): with only "brown fur"
+  # to go on, the first steal rolls drew a friendly cartoon monkey with a
+  # pale muzzle and big round ears -- not the game's ape -- though the right
+  # reference was attached (handover 11 §0(A), the same failure). The first
+  # rewrite ("dark", "stern, intense stare") overshot: steal_r came back too
+  # dark and "too menacing" (Rick), so the shade and a cheeky temperament
+  # are named too.
   subject: |
     the anthropomorphic monkey basketball player in the attached reference
-    image. Match that character exactly: brown fur, shaggy darker head fur, a
-    long curling tail, a blue sleeveless basketball jersey with a yellow number
-    7, blue shorts with white and yellow trim, blue-and-white high-top sneakers.
-    Identical colours, identical proportions, identical build and identical
-    height as the reference, in every frame.
+    image. Match that character exactly, his face above all: a lean,
+    wiry, long-armed ape with warm mid-brown fur all over, exactly the
+    shade of the reference and no darker, a thick shaggy mop of spiky
+    fur on his head, and an ape face exactly as the reference draws it --
+    a heavy brow ridge, small deep-set eyes, a broad flat nose and a wide
+    thin-lipped mouth, the skin of the face a tan-brown, NOT a pale
+    cartoon muzzle; small ears set close to the head. His look is focused
+    and cheeky -- a mischievous, determined game face, never menacing or
+    snarling. Long muscular arms
+    with big hands, a long curling tail. A blue sleeveless basketball
+    jersey with a yellow number 7, blue shorts with white and yellow trim,
+    blue-and-white high-top sneakers. Identical colours, identical
+    proportions, identical build and identical height as the reference,
+    in every frame.
   traits:
     # Hair sentences in the shared guide notes (make-pose-guide draws hair
     # lines unless the character's skeleton is bald).
@@ -64,6 +80,310 @@ monkey:
       His eyes bulge, his teeth bare right back to the gums and his fur
       bristles.
   sequences:
+    # --- steal / stolen (2026-09-27) -----------------------------------------
+    # His own copies of the shared Group C specs (sequences.yml, handover 10),
+    # on the shared guides, with tail lines added (the shared prose has none).
+    # His stolen is his own (Rick, 2026-09-27): instead of the flash of
+    # temper, a monkey's bewildered scratch and pluck at the top of his head,
+    # on its own guide, art/guides/monkey/stolen.png.
+    steal_r:
+      title: Steal attempt, to the viewer's right
+      kind: one_shot
+      frames: 3
+      ref: front
+      guide:
+        file: art/guides/steal_r.png
+        side: right
+        colors: true
+        ears: true
+        nose: true
+        note: &monkey_stealnote |
+          POSE GUIDE: TWO images are attached, and they do different jobs.
+
+          The COLOUR image of the character is the only authority on WHO HE
+          IS. His colours, his proportions, his build, his height, his face,
+          his kit and the drawing style all come from that image and from the
+          SUBJECT above, and nothing below changes any of them. It does NOT
+          decide which way he faces: the FRAMES below do.
+
+          The other image is a POSE GUIDE: a stick figure on a white
+          background, standing in a row on one ground line, in the same
+          left-to-right order as the FRAMES listed below. The Nth figure in
+          the pose guide is the pose for the Nth frame. Take the GEOMETRY from
+          it and only the geometry: where each foot stands on the ground line,
+          how deeply the knees are bent, how far the body leans, how low the
+          shoulders and head are, which way the head is turned, and where the
+          elbows and hands are. Where the words below and the pose guide
+          describe the same thing, they agree; the pose guide is the exact
+          version of it.
+
+          THE COLOURS ON THE POSE GUIDE name the limbs: the RED arm is the
+          REACHING arm and the BLUE arm the BALANCING arm; the ORANGE leg is
+          on the same side as the red arm, the GREEN leg on the same side as
+          the blue arm.
+
+          THE HANDS ON THE POSE GUIDE: the FLAT hand with its fingers spread
+          sideways is palm-down; a narrow shape pointing down is a hand
+          hanging loose; a broad paddle with spread fingers is an open hand.
+
+          THE HEAD ON THE POSE GUIDE: the small TRIANGLE is his nose, pointing
+          the way he looks, and the ovals are his ears. In the last figure the
+          triangle is in the middle of the face: there he looks straight at
+          the viewer.
+
+          Draw the character from the colour reference standing in those
+          positions. The pose guide is an instruction, not artwork: its thin
+          lines, its colours, its joint dots, its white background, its
+          circular head, its triangle, its ovals and its face lines are NOT
+          part of the drawing and must not appear anywhere in it.
+        frames:
+          - {pose: calibration}
+          - &monkey_steal_load
+            name: load
+            drop: 0.12
+            lean: 0.04
+            turn: 40
+            yaw: 55
+            hand: [0.16, 0.40]
+            hand_shape: flat
+            free: [-0.20, 0.46]
+            joints: {ank_d: [0.22, 0.09], ank_f: [-0.20, 0.09]}
+          - &monkey_steal_swipe
+            name: swipe
+            drop: 0.16
+            lean: 0.13
+            arch: 0.02
+            turn: 45
+            yaw: 60
+            sh_tilt: 0.04
+            hand: [0.50, 0.33]
+            hand_shape: flat
+            palm: 10
+            free: [-0.28, 0.72]
+            free_shape: open
+            joints: {ank_d: [0.34, 0.09], ank_f: [-0.20, 0.09], knee_d: [0.27, 0.21]}
+          - &monkey_still_r
+            name: still
+            drop: 0.095
+            stance: 0.27
+            free: [-0.22, 0.42]
+            free_shape: flat
+      ground: |
+        All frames share one ground line: the soles of both feet touch the
+        same horizontal line in every frame, including the lunge.
+      view: |
+        three-quarter view, chest turned toward the RIGHT edge of the picture
+        while staying partly toward the viewer, so the jersey number stays
+        readable and reads forwards, head and eyes turned to the RIGHT, where
+        the opponent is -- except in the last frame, which is squarely
+        face-on.
+      preamble: |
+        He is stabbing ONE hand in to knock the ball away from an opponent
+        standing just off the RIGHT edge of the picture. Fast, committed and a
+        little off-balance -- a snatch, not a careful reach -- and fluid: it
+        happens many times a game.
+      poses:
+        - >-
+            The load: dropping into a crouch, weight shifting toward the
+            right, the reaching hand (on the viewer's RIGHT) drawn back low
+            beside his hip, the other arm swinging back, eyes locked on the
+            ball. His tail curled up behind him.
+        - >-
+            The swipe: a low lunge to the RIGHT, the leading (right-hand)
+            foot stepped out wide with the knee bent over it, the reaching
+            arm fully extended out to the right, the hand palm-down and
+            fingers spread at knee-to-hip height, raking at the ball. The
+            other arm is flung out straight behind him, up and back, for
+            balance. His tail streams out straight behind him, away from the
+            lunge, for balance.
+        - >-
+            Back in his stance: face-on to the viewer, feet planted a little
+            wider than his shoulders, knees bent, the hand on the VIEWER'S
+            LEFT held out palm-down at hip height as if dribbling, the other
+            arm hanging -- exactly his dribbling stance at the top of the
+            bounce. His tail hanging in a relaxed curl.
+      closing: |
+        This is a one-shot, not a loop. Frame {first} continues from his
+        face-on stance; frame {last} is that same stance again.
+      extra: |
+        One hand does the stealing; the other never reaches for the ball. No
+        basketball is drawn in any frame: the game draws it separately.
+
+    steal_l:
+      title: Steal attempt, to the viewer's left
+      kind: one_shot
+      frames: 3
+      ref: front
+      guide:
+        file: art/guides/steal_l.png
+        side: left
+        colors: true
+        ears: true
+        nose: true
+        note: *monkey_stealnote
+        frames:
+          - {pose: calibration}
+          - *monkey_steal_load
+          - *monkey_steal_swipe
+          - name: still
+            drop: 0.095
+            stance: 0.27
+            hand: 0.42
+      ground: |
+        All frames share one ground line: the soles of both feet touch the
+        same horizontal line in every frame, including the lunge.
+      view: |
+        three-quarter view, chest turned toward the LEFT edge of the picture
+        while staying partly toward the viewer, so the jersey number stays
+        readable and reads forwards, head and eyes turned to the LEFT, where
+        the opponent is -- except in the last frame, which is squarely
+        face-on.
+      preamble: |
+        He is stabbing ONE hand in to knock the ball away from an opponent
+        standing just off the LEFT edge of the picture. Fast, committed and a
+        little off-balance -- a snatch, not a careful reach -- and fluid: it
+        happens many times a game.
+      poses:
+        - >-
+            The load: dropping into a crouch, weight shifting toward the
+            left, the reaching hand (on the viewer's LEFT) drawn back low
+            beside his hip, the other arm swinging back, eyes locked on the
+            ball. His tail curled up behind him.
+        - >-
+            The swipe: a low lunge to the LEFT, the leading foot stepped out
+            wide with the knee bent over it, the reaching arm fully extended
+            out to the left, the hand palm-down and fingers spread at
+            knee-to-hip height, raking at the ball. The other arm is flung
+            out straight behind him, up and back, for balance. His tail
+            streams out straight behind him, away from the lunge, for balance.
+        - >-
+            Back in his stance: face-on to the viewer, feet planted a little
+            wider than his shoulders, knees bent, the hand on the VIEWER'S
+            LEFT held out palm-down at hip height as if dribbling, the other
+            arm hanging -- exactly his dribbling stance at the top of the
+            bounce. His tail hanging in a relaxed curl.
+      closing: |
+        This is a one-shot, not a loop. Frame {first} continues from his
+        face-on stance; frame {last} is that same stance again.
+      extra: |
+        One hand does the stealing; the other never reaches for the ball. No
+        basketball is drawn in any frame: the game draws it separately.
+
+    stolen:
+      title: Ball stolen
+      kind: one_shot
+      frames: 3
+      ref: front
+      # The victim's reaction, three frames at 6 fps (half a second), cancelled
+      # by any input so he can chase at once. Frame 3 is the STILL POSE (see
+      # the steal above), not a defensive stance: the still pose is what he
+      # holds without the ball, so anything else would jump when it hands
+      # over (Rick, 2026-09-26).
+      guide:
+        file: art/guides/monkey/stolen.png
+        side: left
+        colors: true
+        ears: true
+        nose: true
+        note: |
+          POSE GUIDE: TWO images are attached, and they do different jobs.
+
+          The COLOUR image of the character is the only authority on WHO HE
+          IS. His colours, his proportions, his build, his height, his face,
+          his kit and the drawing style all come from that image and from the
+          SUBJECT above, and nothing below changes any of them. It does NOT
+          decide which way he faces: in this sheet he faces the viewer.
+
+          The other image is a POSE GUIDE: a stick figure on a white
+          background, standing in a row on one ground line, in the same
+          left-to-right order as the FRAMES listed below. The Nth figure in
+          the pose guide is the pose for the Nth frame. Take the GEOMETRY from
+          it and only the geometry: where each foot stands, how deeply the
+          knees are bent, how low the shoulders and head are, and where the
+          elbows and hands are.
+
+          THE COLOURS ON THE POSE GUIDE name the limbs: the RED arm and the
+          ORANGE leg are on the VIEWER'S LEFT, the BLUE arm and the GREEN leg
+          on the viewer's right.
+
+          THE HANDS ON THE POSE GUIDE: the FLAT hand with its fingers spread
+          sideways is palm-down; a narrow shape pointing down is a hand
+          hanging loose; a small rounded square is a clenched FIST.
+
+          THE HEAD ON THE POSE GUIDE: the small TRIANGLE is his nose and the
+          two ovals his ears; his face points at the viewer.
+
+          Draw the character from the colour reference standing in those
+          positions. The pose guide is an instruction, not artwork: its thin
+          lines, its colours, its joint dots, its white background, its
+          circular head, its triangle, its ovals and its face lines are NOT
+          part of the drawing and must not appear anywhere in it.
+        frames:
+          - {pose: calibration}
+          - name: gone
+            drop: 0.12
+            tilt: 0.01
+            lean: 0.012
+            stance: 0.27
+            hand: 0.30
+            palm: 8
+            head: 4
+          - name: pluck
+            drop: 0.05
+            stance: 0.25
+            head: -8
+            free: [-0.02, 0.95]
+            free_shape: open
+            joints: {elb_f: [-0.22, 0.90]}
+          - name: still
+            drop: 0.095
+            stance: 0.27
+            hand: 0.42
+      ground: |
+        All frames share one ground line: the soles of the feet touch the same
+        horizontal line in every frame. The feet stay planted throughout.
+      view: |
+        front view, facing the viewer, squared to camera, starting from the low
+        athletic dribbling stance.
+      preamble: |
+        An opponent has just knocked the ball out of his hands. Frames {first} to
+        {last} are one continuous reaction, pure monkey: half a beat of
+        surprise, then a bewildered, very ape-like scratch and pluck at the fur
+        on the top of his own head, then straight back into his stance.
+      poses:
+        - >-
+            The instant it goes: still crouched low in the dribbling stance,
+            the dribbling hand (on the viewer's LEFT) still out with the palm
+            down over nothing at all, head snapped down toward where the ball
+            was, eyes wide open and both brows up, mouth dropped open. His
+            tail shooting straight up in surprise.
+        - >-
+            The pluck: half upright, knees still bent and a little bowed, the
+            arm on the VIEWER'S RIGHT raised with the elbow cocked out high to
+            the side and the fingers on the very TOP of his head, scratching
+            and plucking at the shaggy fur on his crown the way a real monkey
+            does. The other arm hangs long and loose, knuckles low. Head
+            tipped to one side, eyebrows up, lips pushed out in a puzzled
+            "ooh" pout, eyes darting about for where the ball went. A few
+            tufts of fur stick up where he is plucking. His tail curled up in
+            a question mark behind him.
+        - >-
+            Back in his stance: crouched again, feet a little wider than his
+            shoulders, the hand on the VIEWER'S LEFT held out palm-down at hip
+            height as if dribbling, the other arm hanging, still frowning in
+            puzzlement, the fur on his crown still ruffled -- exactly his
+            dribbling stance at the top of the bounce. His tail hanging in a
+            relaxed curl.
+      closing: |
+        This is a one-shot, not a loop. Frame {first} must continue naturally
+        from the low athletic dribbling stance, and frame {last} settles back
+        into that same stance.
+      extra: |
+        The three frames must differ clearly in what the hands are doing:
+        crouched with the hand low over nothing, one hand up on the top of his
+        head, then the stance with the hand at hip height. No basketball is drawn in any frame:
+        the game draws it separately.
+
     break_banana:
       title: "Idle break A: eating a banana"
       kind: one_shot

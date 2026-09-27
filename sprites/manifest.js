@@ -410,6 +410,75 @@ window.SPRITE_MANIFEST = {
       "footY": 137.34
      }
     ],
+    "steal_l": [
+     {
+      "src": "sprites/monkey/steal_l/01.png",
+      "w": 104.07,
+      "h": 109.67,
+      "footX": 56.45,
+      "footY": 109.67
+     },
+     {
+      "src": "sprites/monkey/steal_l/02.png",
+      "w": 166.12,
+      "h": 104.5,
+      "footX": 85.64,
+      "footY": 105.79
+     },
+     {
+      "src": "sprites/monkey/steal_l/03.png",
+      "w": 95.45,
+      "h": 116.56,
+      "footX": 47.62,
+      "footY": 116.56
+     }
+    ],
+    "steal_r": [
+     {
+      "src": "sprites/monkey/steal_r/01.png",
+      "w": 97.09,
+      "h": 113.72,
+      "footX": 48.13,
+      "footY": 113.72
+     },
+     {
+      "src": "sprites/monkey/steal_r/02.png",
+      "w": 155.51,
+      "h": 105.82,
+      "footX": 66.43,
+      "footY": 106.24
+     },
+     {
+      "src": "sprites/monkey/steal_r/03.png",
+      "w": 93.14,
+      "h": 116.63,
+      "footX": 46.47,
+      "footY": 117.05
+     }
+    ],
+    "stolen": [
+     {
+      "src": "sprites/monkey/stolen/01.png",
+      "w": 98.84,
+      "h": 128.76,
+      "footX": 51.35,
+      "footY": 129.15
+     },
+     {
+      "src": "sprites/monkey/stolen/02.png",
+      "w": 88.42,
+      "h": 133.78,
+      "footX": 44.11,
+      "footY": 133.78
+     },
+     {
+      "src": "sprites/monkey/stolen/03.png",
+      "w": 94.4,
+      "h": 116.8,
+      "footX": 47.1,
+      "footY": 117.18
+     }
+    ],
     "turn": [
      {
       "src": "sprites/monkey/turn/01.png",

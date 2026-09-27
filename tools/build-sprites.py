@@ -92,6 +92,9 @@ SEQ_SCALE = {
         "run_r": 0.78, "run_l": 0.73, "break_wave": 0.95,
         "panic": 0.95, "celebrate_flip": 1.16,
         "run_dribble_r": 0.95, "run_dribble_l": 0.98,
+        # Group C (2026-09-27), calibrated strips: each one's still pose (the
+        # last frame, his dribbling stance) brought to the dribble's height.
+        "steal_r": 1.09, "steal_l": 1.15, "stolen": 1.17,
     },
     # Calibration corrections. In both strips the body came out smaller than in
     # the runs and the aim (the "13" about 17 px against 19-20, the head about a

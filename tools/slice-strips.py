@@ -62,6 +62,14 @@ STRIPS = {
         ("panic",           "Monkey_sequence_015.png", 4),
         ("celebrate_pump",  "Monkey_sequence_016.png", 3),
         ("celebrate_flip",  "Monkey_sequence_017.png", 6),
+        # Group C on the guided pipeline (2026-09-27), with a calibration
+        # frame, picked by Rick after two re-rolls of the subject (face
+        # described; then lighter and cheekier): steal_r r1 of the third
+        # batch, steal_l r2 and stolen r1 of the second. His stolen is his
+        # own: a bewildered scratch and pluck at the top of his head.
+        ("steal_r",         "steal_r.approved.png", 3, True),
+        ("steal_l",         "steal_l.approved.png", 3, True),
+        ("stolen",          "stolen.approved.png", 3, True),
     ],
     # The zombie is mid-migration: sequences listed here replace their
     # counterparts from the eight old poses, which still supply the rest (see
