@@ -196,8 +196,7 @@ sequences:
         either side of the head are BOTH of his ears. His face points STRAIGHT
         OUT OF THE PICTURE AT THE VIEWER in every frame: nose in the middle of
         his face, both eyes seen, both ears showing equally. The upright line
-        down the face marks its centre and the level line his eyes. The short
-        lines on top are his hair, at rest.
+        down the face marks its centre and the level line his eyes. {guide_hair}
 
         Draw the character from the colour reference standing in those
         positions. The pose guide is an instruction, not artwork: its thin flat
@@ -270,7 +269,7 @@ sequences:
       profile; that is how he stood for that drawing, NOT this pose, so do not
       copy the turn. His head never turns toward the dribbling hand or toward
       either edge of the picture. At most it tips a hair toward the dribbling
-      side in the LOWEST frame. His hair is the same, at rest, in every frame.
+      side in the LOWEST frame. {hair_still}
     poses:
       - >-
           LOWEST, the push landed. The dribbling hand is at its lowest, beside
@@ -359,8 +358,7 @@ sequences:
 
         THE HEAD ON THE POSE GUIDE: the curved line down the face shows which
         way he is looking -- toward the side it bulges to, the way he is
-        running. The small oval is the ear that shows. The short lines on top
-        are his hair sticking out at rest.
+        running. The small oval is the ear that shows. {guide_hair_out}
 
         Draw the character from the reference running through those positions.
         The pose guide is an instruction, not artwork: its thin lines, its
@@ -528,8 +526,7 @@ sequences:
         running. The curved line down the face bulges the same way, and the
         small oval on the other side of the head is the ear that shows. HE IS
         NOT LOOKING BACK OVER HIS SHOULDER AND NOT LOOKING AT THE VIEWER: he
-        looks where he is going, the same way in all five frames. The short
-        lines on top are his hair sticking out at rest.
+        looks where he is going, the same way in all five frames. {guide_hair_out}
 
         Draw the character from the reference running through those positions.
         The pose guide is an instruction, not artwork: its thin lines, its
@@ -864,7 +861,7 @@ sequences:
         are BOTH of his ears. His face points toward the viewer in every
         frame: nose in the middle of his face, both ears showing equally. The
         upright line down the face marks its centre and the level line his
-        eyes. The short lines on top are his hair, at rest.
+        eyes. {guide_hair}
 
         Draw the character from the colour reference standing in those
         positions. The pose guide is an instruction, not artwork: its thin flat
@@ -1417,8 +1414,7 @@ sequences:
         running. The curved line down the face bulges the same way, and the
         small oval on the other side of the head is the ear that shows. HE IS
         NOT LOOKING BACK OVER HIS SHOULDER AND NOT LOOKING AT THE VIEWER: he
-        looks where he is going, the same way in all five frames. The short
-        lines on top are his hair sticking out at rest.
+        looks where he is going, the same way in all five frames. {guide_hair_out}
 
         Draw the character from the reference running through those positions.
         The pose guide is an instruction, not artwork: its thin lines, its
@@ -1612,8 +1608,7 @@ sequences:
         running. The curved line down the face bulges the same way, and the
         small oval on the other side of the head is the ear that shows. HE IS
         NOT LOOKING BACK OVER HIS SHOULDER AND NOT LOOKING AT THE VIEWER: he
-        looks where he is going, the same way in all five frames. The short
-        lines on top are his hair sticking out at rest.
+        looks where he is going, the same way in all five frames. {guide_hair_out}
 
         Draw the character from the reference running through those positions.
         The pose guide is an instruction, not artwork: its thin lines, its

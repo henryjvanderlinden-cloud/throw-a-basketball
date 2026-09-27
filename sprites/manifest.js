@@ -459,140 +459,573 @@ window.SPRITE_MANIFEST = {
   {
    "key": "nba",
    "label": "NBA Player",
-   "mirror": true,
+   "mirror": false,
    "sequences": {
-    "dribble_idle": [
-     {
-      "src": "sprites/nba/dribble_idle/01.png",
-      "w": 97.07,
-      "h": 145.2,
-      "footX": 50.02,
-      "footY": 145.2
-     },
-     {
-      "src": "sprites/nba/dribble_idle/02.png",
-      "w": 94.05,
-      "h": 143.32,
-      "footX": 46.97,
-      "footY": 143.32
-     }
-    ],
-    "run_dribble_r": [
-     {
-      "src": "sprites/nba/run_dribble_r/01.png",
-      "w": 97.07,
-      "h": 145.2,
-      "footX": 50.02,
-      "footY": 145.2
-     },
-     {
-      "src": "sprites/nba/run_dribble_r/02.png",
-      "w": 94.05,
-      "h": 143.32,
-      "footX": 46.97,
-      "footY": 143.32
-     }
-    ],
-    "run_dribble_l": [
-     {
-      "src": "sprites/nba/run_dribble_l/01.png",
-      "w": 97.07,
-      "h": 145.2,
-      "footX": 50.02,
-      "footY": 145.2
-     },
-     {
-      "src": "sprites/nba/run_dribble_l/02.png",
-      "w": 94.05,
-      "h": 143.32,
-      "footX": 46.97,
-      "footY": 143.32
-     }
-    ],
-    "run_r": [
-     {
-      "src": "sprites/nba/run_r/01.png",
-      "w": 97.07,
-      "h": 145.2,
-      "footX": 50.02,
-      "footY": 145.2
-     },
-     {
-      "src": "sprites/nba/run_r/02.png",
-      "w": 94.05,
-      "h": 143.32,
-      "footX": 46.97,
-      "footY": 143.32
-     }
-    ],
-    "run_l": [
-     {
-      "src": "sprites/nba/run_l/01.png",
-      "w": 97.07,
-      "h": 145.2,
-      "footX": 50.02,
-      "footY": 145.2
-     },
-     {
-      "src": "sprites/nba/run_l/02.png",
-      "w": 94.05,
-      "h": 143.32,
-      "footX": 46.97,
-      "footY": 143.32
-     }
-    ],
     "aim": [
      {
       "src": "sprites/nba/aim/01.png",
-      "w": 105.27,
-      "h": 144.13,
-      "footX": 52.58,
-      "footY": 144.13
+      "w": 98.69,
+      "h": 138.38,
+      "footX": 49.24,
+      "footY": 138.38
      },
      {
       "src": "sprites/nba/aim/02.png",
-      "w": 98.89,
-      "h": 144.51,
-      "footX": 51.51,
-      "footY": 144.51
+      "w": 100.96,
+      "h": 135.29,
+      "footX": 50.37,
+      "footY": 135.29
+     }
+    ],
+    "break_flex": [
+     {
+      "src": "sprites/nba/break_flex/01.png",
+      "w": 105.33,
+      "h": 144.57,
+      "footX": 53.95,
+      "footY": 144.57
+     },
+     {
+      "src": "sprites/nba/break_flex/02.png",
+      "w": 104.17,
+      "h": 134.99,
+      "footX": 51.97,
+      "footY": 134.99
+     },
+     {
+      "src": "sprites/nba/break_flex/03.png",
+      "w": 105.8,
+      "h": 137.8,
+      "footX": 55.35,
+      "footY": 137.8
+     },
+     {
+      "src": "sprites/nba/break_flex/04.png",
+      "w": 93.89,
+      "h": 139.2,
+      "footX": 46.83,
+      "footY": 139.2
+     }
+    ],
+    "break_yawn": [
+     {
+      "src": "sprites/nba/break_yawn/01.png",
+      "w": 103.35,
+      "h": 138.93,
+      "footX": 52.91,
+      "footY": 138.93
+     },
+     {
+      "src": "sprites/nba/break_yawn/02.png",
+      "w": 99.52,
+      "h": 141.85,
+      "footX": 49.99,
+      "footY": 141.85
+     },
+     {
+      "src": "sprites/nba/break_yawn/03.png",
+      "w": 99.3,
+      "h": 138.25,
+      "footX": 49.54,
+      "footY": 138.25
+     },
+     {
+      "src": "sprites/nba/break_yawn/04.png",
+      "w": 93.44,
+      "h": 137.58,
+      "footX": 47.28,
+      "footY": 137.58
+     }
+    ],
+    "celebrate": [
+     {
+      "src": "sprites/nba/celebrate/01.png",
+      "w": 117.28,
+      "h": 171.91,
+      "footX": 58.4,
+      "footY": 171.91
+     },
+     {
+      "src": "sprites/nba/celebrate/02.png",
+      "w": 120.92,
+      "h": 131.6,
+      "footX": 60.34,
+      "footY": 131.6
+     }
+    ],
+    "celebrate_crowd": [
+     {
+      "src": "sprites/nba/celebrate_crowd/01.png",
+      "w": 138.95,
+      "h": 147.45,
+      "footX": 70.98,
+      "footY": 147.45
+     },
+     {
+      "src": "sprites/nba/celebrate_crowd/02.png",
+      "w": 95.37,
+      "h": 179.51,
+      "footX": 46.32,
+      "footY": 179.51
+     },
+     {
+      "src": "sprites/nba/celebrate_crowd/03.png",
+      "w": 95.37,
+      "h": 142.51,
+      "footX": 47.96,
+      "footY": 142.51
+     },
+     {
+      "src": "sprites/nba/celebrate_crowd/04.png",
+      "w": 93.46,
+      "h": 178.96,
+      "footX": 46.32,
+      "footY": 178.96
+     },
+     {
+      "src": "sprites/nba/celebrate_crowd/05.png",
+      "w": 102.23,
+      "h": 132.92,
+      "footX": 53.17,
+      "footY": 132.92
+     }
+    ],
+    "celebrate_pump": [
+     {
+      "src": "sprites/nba/celebrate_pump/01.png",
+      "w": 92.61,
+      "h": 154.57,
+      "footX": 46.2,
+      "footY": 155.01
+     },
+     {
+      "src": "sprites/nba/celebrate_pump/02.png",
+      "w": 115.6,
+      "h": 131.14,
+      "footX": 57.69,
+      "footY": 131.14
+     },
+     {
+      "src": "sprites/nba/celebrate_pump/03.png",
+      "w": 115.6,
+      "h": 135.52,
+      "footX": 57.69,
+      "footY": 135.52
      }
     ],
     "charge": [
      {
       "src": "sprites/nba/charge/01.png",
-      "w": 95.59,
-      "h": 167.57,
-      "footX": 47.73,
-      "footY": 167.57
+      "w": 103.03,
+      "h": 132.11,
+      "footX": 51.41,
+      "footY": 132.11
      },
      {
       "src": "sprites/nba/charge/02.png",
-      "w": 98.89,
-      "h": 144.51,
-      "footX": 51.51,
-      "footY": 144.51
+      "w": 106.98,
+      "h": 113.0,
+      "footX": 53.39,
+      "footY": 113.42
+     },
+     {
+      "src": "sprites/nba/charge/03.png",
+      "w": 101.58,
+      "h": 93.68,
+      "footX": 50.68,
+      "footY": 93.68
+     }
+    ],
+    "dribble_idle": [
+     {
+      "src": "sprites/nba/dribble_idle/01.png",
+      "w": 95.64,
+      "h": 136.4,
+      "footX": 49.0,
+      "footY": 136.4
+     },
+     {
+      "src": "sprites/nba/dribble_idle/02.png",
+      "w": 91.87,
+      "h": 136.4,
+      "footX": 45.82,
+      "footY": 136.4
+     },
+     {
+      "src": "sprites/nba/dribble_idle/03.png",
+      "w": 91.87,
+      "h": 136.4,
+      "footX": 45.82,
+      "footY": 136.4
+     },
+     {
+      "src": "sprites/nba/dribble_idle/04.png",
+      "w": 91.64,
+      "h": 136.4,
+      "footX": 45.7,
+      "footY": 136.4
+     }
+    ],
+    "gameover": [
+     {
+      "src": "sprites/nba/gameover/01.png",
+      "w": 114.11,
+      "h": 122.83,
+      "footX": 56.96,
+      "footY": 122.83
+     },
+     {
+      "src": "sprites/nba/gameover/02.png",
+      "w": 113.51,
+      "h": 137.22,
+      "footX": 56.65,
+      "footY": 137.22
+     }
+    ],
+    "panic": [
+     {
+      "src": "sprites/nba/panic/01.png",
+      "w": 84.3,
+      "h": 138.85,
+      "footX": 42.02,
+      "footY": 138.85
+     },
+     {
+      "src": "sprites/nba/panic/02.png",
+      "w": 85.87,
+      "h": 138.85,
+      "footX": 43.72,
+      "footY": 138.85
+     },
+     {
+      "src": "sprites/nba/panic/03.png",
+      "w": 85.35,
+      "h": 138.85,
+      "footX": 46.33,
+      "footY": 138.85
+     },
+     {
+      "src": "sprites/nba/panic/04.png",
+      "w": 83.52,
+      "h": 138.85,
+      "footX": 42.94,
+      "footY": 138.85
+     },
+     {
+      "src": "sprites/nba/panic/05.png",
+      "w": 85.61,
+      "h": 138.85,
+      "footX": 46.07,
+      "footY": 138.85
+     },
+     {
+      "src": "sprites/nba/panic/06.png",
+      "w": 80.91,
+      "h": 138.85,
+      "footX": 42.02,
+      "footY": 138.85
+     }
+    ],
+    "pickup": [
+     {
+      "src": "sprites/nba/pickup/01.png",
+      "w": 90.26,
+      "h": 115.24,
+      "footX": 45.04,
+      "footY": 115.24
+     },
+     {
+      "src": "sprites/nba/pickup/02.png",
+      "w": 85.27,
+      "h": 99.7,
+      "footX": 42.54,
+      "footY": 99.7
+     },
+     {
+      "src": "sprites/nba/pickup/03.png",
+      "w": 86.57,
+      "h": 123.56,
+      "footX": 43.19,
+      "footY": 123.56
+     }
+    ],
+    "run_dribble_l": [
+     {
+      "src": "sprites/nba/run_dribble_l/01.png",
+      "w": 119.44,
+      "h": 136.54,
+      "footX": 45.7,
+      "footY": 137.68
+     },
+     {
+      "src": "sprites/nba/run_dribble_l/02.png",
+      "w": 84.34,
+      "h": 137.22,
+      "footX": 37.84,
+      "footY": 138.13
+     },
+     {
+      "src": "sprites/nba/run_dribble_l/03.png",
+      "w": 105.77,
+      "h": 137.45,
+      "footX": 50.72,
+      "footY": 138.13
+     },
+     {
+      "src": "sprites/nba/run_dribble_l/04.png",
+      "w": 84.34,
+      "h": 138.13,
+      "footX": 42.06,
+      "footY": 138.13
+     }
+    ],
+    "run_dribble_r": [
+     {
+      "src": "sprites/nba/run_dribble_r/01.png",
+      "w": 100.69,
+      "h": 136.3,
+      "footX": 56.38,
+      "footY": 136.3
+     },
+     {
+      "src": "sprites/nba/run_dribble_r/02.png",
+      "w": 84.58,
+      "h": 132.91,
+      "footX": 42.18,
+      "footY": 136.3
+     },
+     {
+      "src": "sprites/nba/run_dribble_r/03.png",
+      "w": 98.35,
+      "h": 136.3,
+      "footX": 49.07,
+      "footY": 136.3
+     },
+     {
+      "src": "sprites/nba/run_dribble_r/04.png",
+      "w": 75.67,
+      "h": 132.91,
+      "footX": 37.73,
+      "footY": 136.3
+     }
+    ],
+    "run_l": [
+     {
+      "src": "sprites/nba/run_l/01.png",
+      "w": 117.67,
+      "h": 138.09,
+      "footX": 51.27,
+      "footY": 140.15
+     },
+     {
+      "src": "sprites/nba/run_l/02.png",
+      "w": 73.63,
+      "h": 140.15,
+      "footX": 35.9,
+      "footY": 140.15
+     },
+     {
+      "src": "sprites/nba/run_l/03.png",
+      "w": 118.82,
+      "h": 138.55,
+      "footX": 46.91,
+      "footY": 138.55
+     },
+     {
+      "src": "sprites/nba/run_l/04.png",
+      "w": 77.3,
+      "h": 138.78,
+      "footX": 34.18,
+      "footY": 138.78
+     }
+    ],
+    "run_r": [
+     {
+      "src": "sprites/nba/run_r/01.png",
+      "w": 121.75,
+      "h": 135.73,
+      "footX": 67.98,
+      "footY": 136.41
+     },
+     {
+      "src": "sprites/nba/run_r/02.png",
+      "w": 78.24,
+      "h": 136.41,
+      "footX": 39.01,
+      "footY": 136.41
+     },
+     {
+      "src": "sprites/nba/run_r/03.png",
+      "w": 127.39,
+      "h": 136.41,
+      "footX": 78.57,
+      "footY": 136.41
+     },
+     {
+      "src": "sprites/nba/run_r/04.png",
+      "w": 72.15,
+      "h": 135.28,
+      "footX": 39.79,
+      "footY": 135.28
      }
     ],
     "shot": [
      {
       "src": "sprites/nba/shot/01.png",
-      "w": 71.15,
-      "h": 171.72,
-      "footX": 23.09,
-      "footY": 171.72
+      "w": 89.16,
+      "h": 100.57,
+      "footX": 44.46,
+      "footY": 100.57
      },
      {
       "src": "sprites/nba/shot/02.png",
-      "w": 101.58,
-      "h": 160.21,
-      "footX": 50.9,
-      "footY": 160.21
+      "w": 80.08,
+      "h": 135.72,
+      "footX": 39.93,
+      "footY": 135.72
+     },
+     {
+      "src": "sprites/nba/shot/03.png",
+      "w": 63.09,
+      "h": 179.26,
+      "footX": 31.43,
+      "footY": 179.26
+     },
+     {
+      "src": "sprites/nba/shot/04.png",
+      "w": 71.0,
+      "h": 166.92,
+      "footX": 35.39,
+      "footY": 166.92
+     }
+    ],
+    "steal_l": [
+     {
+      "src": "sprites/nba/steal_l/01.png",
+      "w": 125.49,
+      "h": 133.21,
+      "footX": 74.57,
+      "footY": 133.21
+     },
+     {
+      "src": "sprites/nba/steal_l/02.png",
+      "w": 174.19,
+      "h": 120.81,
+      "footX": 95.05,
+      "footY": 120.81
+     },
+     {
+      "src": "sprites/nba/steal_l/03.png",
+      "w": 107.23,
+      "h": 137.43,
+      "footX": 54.43,
+      "footY": 138.13
+     }
+    ],
+    "steal_r": [
+     {
+      "src": "sprites/nba/steal_r/01.png",
+      "w": 127.49,
+      "h": 129.18,
+      "footX": 49.08,
+      "footY": 129.91
+     },
+     {
+      "src": "sprites/nba/steal_r/02.png",
+      "w": 185.17,
+      "h": 128.21,
+      "footX": 84.34,
+      "footY": 128.94
+     },
+     {
+      "src": "sprites/nba/steal_r/03.png",
+      "w": 100.82,
+      "h": 137.42,
+      "footX": 50.29,
+      "footY": 137.42
+     }
+    ],
+    "stolen": [
+     {
+      "src": "sprites/nba/stolen/01.png",
+      "w": 95.42,
+      "h": 123.52,
+      "footX": 48.42,
+      "footY": 123.52
+     },
+     {
+      "src": "sprites/nba/stolen/02.png",
+      "w": 92.99,
+      "h": 121.7,
+      "footX": 47.1,
+      "footY": 121.9
+     },
+     {
+      "src": "sprites/nba/stolen/03.png",
+      "w": 81.87,
+      "h": 151.01,
+      "footX": 40.83,
+      "footY": 151.21
+     }
+    ],
+    "turn": [
+     {
+      "src": "sprites/nba/turn/01.png",
+      "w": 96.71,
+      "h": 137.91,
+      "footX": 48.27,
+      "footY": 137.91
+     },
+     {
+      "src": "sprites/nba/turn/02.png",
+      "w": 91.54,
+      "h": 136.88,
+      "footX": 45.68,
+      "footY": 136.88
      }
     ]
    },
-   "ballSide": {},
-   "handX": 20.25,
-   "handY": -171.72
+   "ballSide": {
+    "dribble_idle": -1,
+    "run_dribble_l": -1,
+    "break_flex": -1,
+    "break_yawn": -1,
+    "panic": -1
+   },
+   "apexFrame": {
+    "dribble_idle": 2,
+    "run_dribble_r": 1,
+    "run_dribble_l": 1
+   },
+   "loopBounces": {
+    "run_dribble_r": 2,
+    "run_dribble_l": 2
+   },
+   "storySeq": {
+    "break_flex": null,
+    "break_yawn": null,
+    "panic": [
+     4,
+     5
+    ]
+   },
+   "standH": 145.2,
+   "pickupBall": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     0.42
+    ]
+   ],
+   "handX": -0.89,
+   "handY": -179.26
   },
   {
    "key": "highschooler",

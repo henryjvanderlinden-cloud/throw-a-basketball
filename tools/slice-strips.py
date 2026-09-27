@@ -124,6 +124,38 @@ STRIPS = {
         ("steal_l",         "steal_l.approved.png", 3, True),
         ("stolen",          "stolen.approved.png", 3, True, [1, 3, 2]),
     ],
+    # The NBA player's whole roster, 2026-09-27, the zombie as the template
+    # (guides on his own body, art/guides/nba/). Picked by Rick: dribble_idle
+    # r3 of the second pilot (the face re-described: rounder, fuller, an easy
+    # half-smile); run_dribble_r r3 ("for the skin colour, the shoes and the
+    # face"), run_dribble_l r2, pickup r2, steals r2 both ways, stolen r3
+    # played look, look, clench; turn r2, aim r2, charge r1 ("the pants look
+    # better"), shot r2; run_r r2, run_l r3; celebrate r3, celebrate_pump r3,
+    # gameover r2 ("the face looks better"); break_flex r1, break_yawn r1,
+    # panic r2 (r1's colours, face and unoutlined 34 were off),
+    # celebrate_crowd r1.
+    "NBA player": [
+        ("dribble_idle",    "dribble_idle.approved.png", 4, True),
+        ("run_dribble_r",   "run_dribble_r.approved.png", 4, True),
+        ("run_dribble_l",   "run_dribble_l.approved.png", 4, True),
+        ("run_r",           "run_r.approved.png", 4, True),
+        ("run_l",           "run_l.approved.png", 4, True),
+        ("pickup",          "pickup.approved.png", 3, True),
+        ("turn",            "turn.approved.png", 2, True),
+        ("aim",             "aim.approved.png", 2, True),
+        ("charge",          "charge.approved.png", 3, True),
+        ("shot",            "shot.approved.png", 4, True),
+        ("celebrate",       "celebrate.approved.png", 2, True),
+        ("celebrate_pump",  "celebrate_pump.approved.png", 3, True),
+        ("gameover",        "gameover.approved.png", 2, True),
+        ("break_flex",      "break_flex.approved.png", 4, True),
+        ("break_yawn",      "break_yawn.approved.png", 4, True),
+        ("panic",           "panic.approved.png", 6, True),
+        ("celebrate_crowd", "celebrate_crowd.approved.png", 5, True),
+        ("steal_r",         "steal_r.approved.png", 3, True),
+        ("steal_l",         "steal_l.approved.png", 3, True),
+        ("stolen",          "stolen.approved.png", 3, True, [1, 3, 2]),
+    ],
 }
 
 

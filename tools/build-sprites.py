@@ -119,6 +119,17 @@ SEQ_SCALE = {
                # Group C (handover 10): by eye, each steal's last frame and
                # stolen's crouched frames against the dribble's still pose.
                "steal_r": 1.06, "steal_l": 1.12, "stolen": 1.15},
+    # The NBA player (2026-09-27), anchored on his runs (x1.00, and the same
+    # ratio to the zombie's runs as his aim has to the zombie's aim). The
+    # stationary dribble came out small, as the zombie's did; the breaks,
+    # the panic and the steals end in its still pose and are matched to it.
+    # The shooting chain draws broader shoulders than the front views, so it
+    # is set a touch under. Set by eye, side by side at in-game scale.
+    "nba": {"dribble_idle": 1.10, "gameover": 1.10, "steal_r": 1.10,
+            "break_flex": 1.06, "break_yawn": 1.07, "panic": 1.03,
+            "steal_l": 1.04, "stolen": 1.04, "celebrate_pump": 1.06,
+            "celebrate_crowd": 1.04,
+            "turn": 0.97, "aim": 0.97, "charge": 1.00, "shot": 0.97},
 }
 
 # How big each character is, as a multiple of the standing height above.
@@ -166,6 +177,9 @@ BALL_SIDE = {
                # Group B (handover 10): the breaks and the panic keep the
                # standing dribble's hand, on the viewer's left.
                "break_face": -1, "break_head": -1, "panic": -1},
+    # The NBA player: the zombie's layout exactly (2026-09-27).
+    "nba": {"dribble_idle": -1, "run_dribble_l": -1,
+            "break_flex": -1, "break_yawn": -1, "panic": -1},
     "monkey": {
         "dribble_idle": -1, "break_banana": -1, "break_wave": -1,
         "pickup": -1, "panic": -1, "run_dribble_r": +1, "run_dribble_l": -1,
@@ -181,6 +195,7 @@ APEX_FRAME = {
     "zombie": {"dribble_idle": 3,      # LOWEST, RISING, HIGHEST, DRIVING DOWN
                "run_dribble_r": 2,     # contact, PASSING, contact, passing
                "run_dribble_l": 2},
+    "nba": {"dribble_idle": 3, "run_dribble_r": 2, "run_dribble_l": 2},
 }
 
 # How many bounces of the ball one loop of a sequence covers. Default 1. The
@@ -189,6 +204,7 @@ APEX_FRAME = {
 # runner bounces the ball as each foot lands.
 LOOP_BOUNCES = {
     "zombie": {"run_dribble_r": 2, "run_dribble_l": 2},
+    "nba": {"run_dribble_r": 2, "run_dribble_l": 2},
 }
 
 # STORY SEQUENCES: played ONCE, in order, one frame per HALF bounce (about
@@ -207,6 +223,9 @@ LOOP_BOUNCES = {
 STORY_SEQ = {
     "zombie": {"break_face": None, "break_head": None, "panic": [2, 3]},
     "monkey": {"break_banana": None},
+    # The NBA player's panic is six frames: look, cock the thumb, thumb, hold,
+    # hand on hip; the hip pair (frames 5 and 6) holds until the clock resets.
+    "nba": {"break_flex": None, "break_yawn": None, "panic": [4, 5]},
 }
 
 # Where the ball is in each frame of the pickup, so the hands meet it instead
@@ -225,6 +244,8 @@ PICKUP_BALL = {
     # both hands at the floor, then the ball held in both in front of his belly;
     # 0.42 filmed against r1's hands (0.47 hid the "13" and sat above them)
     "zombie": [[0, 0], [0, 0], [0, 0.42]],
+    # the zombie's guide, and r2 gathers it in front of his belly the same way
+    "nba": [[0, 0], [0, 0], [0, 0.42]],
 }
 
 # Sequences anchored on the cell rather than on the feet: either the feet

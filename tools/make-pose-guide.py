@@ -96,6 +96,46 @@ GAME_LATERAL = 0.26
 # share has stretched the body, and is reported.
 STRETCH_WARN = 0.05
 
+# ----------------------------------------------------- per-character bodies
+# The constants above are the ZOMBIE'S body, and every guide traced so far was
+# drawn on it. A character whose build differs enough to matter (the NBA
+# player: shoulders ~1.3x as wide, a smaller shaved head) carries a
+# `skeleton:` block in art/characters.yml overriding any of the names below.
+# His guides then go to art/guides/<char>/, beside -- never over -- the shared
+# ones, and gen-prompts.py attaches those for him.
+#
+# The frame tables stay the zombie's numbers. What changes with the body:
+#   - the parametric shoulders, hips, head and hanging hands, directly;
+#   - a shoulder placed by `joints` keeps its height, and its distance from
+#     the chest scales by SH_X / BASE_SH_X;
+#   - an elbow placed by `joints` rides along with its shoulder, by the share
+#     a parametric elbow would (1 - ELBOW_ALONG);
+#   - hands placed by `hand`/`free` do NOT move: they are where the ball, the
+#     fists or the knees are, which the body's width does not change.
+#   bald: true   no hair lines on the head, and none across the back of it.
+# A guide written for this character's own body from the start (his own
+# sequences) says `native: true` beside `file`, and nothing is moved.
+SKELETON_KEYS = ("HIP_X", "SH_X", "HEAD_R", "HEAD_UP", "FREE_HAND", "BALD")
+BASE_SH_X = SH_X
+BALD = False
+NATIVE = False
+
+
+def char_skeleton(char: str | None) -> dict:
+    """The character's `skeleton:` overrides, or {}."""
+    if not char:
+        return {}
+    chars = yaml.safe_load((ART / "characters.yml").read_text(encoding="utf-8"))
+    sk = ((chars or {}).get(char) or {}).get("skeleton") or {}
+    unknown = {k.upper() for k in sk} - set(SKELETON_KEYS)
+    if unknown:
+        sys.exit(f"{char}: unknown skeleton field(s) {', '.join(sorted(unknown))}")
+    return {k.upper(): (tuple(v) if isinstance(v, list) else v) for k, v in sk.items()}
+
+
+def apply_skeleton(sk: dict) -> None:
+    globals().update(sk)
+
 
 # ------------------------------------------------------------- the manifest
 
@@ -295,6 +335,22 @@ def skeleton(f: dict, side: int) -> dict:
     drop, tilt = f["drop"], f["tilt"]
     dribble = side                            # +1: the hand nearer the right edge
     over = {k: (dribble * v[0], v[1]) for k, v in (f["joints"] or {}).items()}
+    if SH_X != BASE_SH_X and not NATIVE:
+        # a wider (or narrower) body: see "per-character bodies" above
+        cx0 = over.get("chest", (0.0, 0.0))[0]
+        k = SH_X / BASE_SH_X
+        for sh, elb in (("sh_d", "elb_d"), ("sh_f", "elb_f")):
+            if sh in over:
+                x, y = over[sh]
+                nx = cx0 + (x - cx0) * k
+                if elb in over:
+                    ex, ey = over[elb]
+                    over[elb] = (ex + (nx - x) * (1 - ELBOW_ALONG), ey)
+                over[sh] = (nx, y)
+            elif elb in over:
+                ex, ey = over[elb]
+                sgn = 1 if ex >= cx0 else -1
+                over[elb] = (ex + sgn * (SH_X - BASE_SH_X) * (1 - ELBOW_ALONG), ey)
     narrow = math.cos(math.radians(f["turn"]))
     hip_x, sh_x = HIP_X * narrow, SH_X * narrow
 
@@ -501,6 +557,8 @@ def draw_hand(d, shape: str, wrist, elbow, dribble: int, palm: float, ink) -> No
 def draw_hair(d, hx, hy, r, crown_deg: float, mode: str, ink) -> None:
     """Five strands from the upper head. `crown_deg` is the head tilt, so the
     roots ride the head; the strand DIRECTION is what the frame is about."""
+    if BALD:
+        return
     S = STANDING
     for k, root in enumerate(HAIR_ROOTS):
         a = math.radians(crown_deg + root)                # 0 = straight up
@@ -656,7 +714,7 @@ def draw_back_of_head(d, hx, hy, r, f: dict, side: int, ink) -> None:
     th = math.radians(f["head"] * side)
     ex, ey = math.cos(th), math.sin(th)                   # across the head
     ax, ay = math.sin(th), -math.cos(th)                  # toward the crown
-    for s_ in (0.45, 0.05, -0.35):                        # rows, crown down
+    for s_ in (() if BALD else (0.45, 0.05, -0.35)):      # rows, crown down
         half = r * math.sqrt(max(0.0, 1 - s_ * s_)) * 0.78
         pts = []
         for i in range(9):
@@ -788,14 +846,20 @@ def main() -> None:
                     help="a measure-strip.py preview directory to check against")
     a = ap.parse_args()
 
+    sk = char_skeleton(a.char)
+    apply_skeleton(sk)
     entry = load_sequence(a.seq, a.char)
     spec = guide_spec(entry, a.seq)
     cells = frames(spec)
+    global NATIVE
+    NATIVE = bool(spec.get("native"))
     side = {"right": +1, "left": -1}[str(spec.get("side", "right"))]
     if a.left:
         side = -side
 
     out = ROOT / spec.get("file", f"art/guides/{a.seq}.png")
+    if sk:                                   # his own body, his own guides
+        out = ROOT / "art" / "guides" / a.char / out.name
     if a.left:
         out = out.with_name(out.stem + "-left" + out.suffix)
     out.parent.mkdir(parents=True, exist_ok=True)

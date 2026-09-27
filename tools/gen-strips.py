@@ -788,7 +788,11 @@ class ChatGPT:
             if not (size and in_size and in_size[1]):
                 continue
             a_in, a_got = in_size[0] / in_size[1], size[0] / max(size[1], 1)
-            if abs(a_got - a_in) <= 0.005 * a_in:
+            # ...and a served copy is never LARGER than what was uploaded.
+            # A strip that merely happens to share the guide's aspect (a
+            # three-cell guide is 1260x562; celebrate came back 1881x836,
+            # 2026-09-27, and two genuine rolls were thrown away) is bigger.
+            if abs(a_got - a_in) <= 0.005 * a_in and size[0] <= in_size[0] * 1.02:
                 raise Echo(
                     f"downloaded a {size[0]}x{size[1]} image with the same "
                     f"shape as {src.name} ({in_size[0]}x{in_size[1]}) — that is "

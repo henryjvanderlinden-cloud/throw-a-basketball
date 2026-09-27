@@ -47,6 +47,16 @@ def guide_file(seq: dict) -> str | None:
         return g.get("file") or None
     return g or None
 
+def char_guide(seq: dict, key: str, char: dict) -> str | None:
+    """A character with his own `skeleton:` has his own guides, drawn by
+    make-pose-guide.py --char <key> into art/guides/<key>/ (the same file name).
+    Everyone else is sent the shared guide."""
+    g = guide_file(seq)
+    if g and char.get("skeleton"):
+        return f"art/guides/{key}/{Path(g).name}"
+    return g
+
+
 def resolve(text: str, traits: dict) -> str:
     """Substitute {traits}, then repair the whitespace an empty one leaves."""
     out = TRAIT.sub(lambda m: str(traits.get(m.group(1), "")).strip(), text)
@@ -193,7 +203,7 @@ def main() -> None:
                 "frames": int(seq["frames"]),
                 "calibration": True,
                 "ref": char["refs"][seq.get("ref", "front")],
-                "guide": guide_file(seq),
+                "guide": char_guide(seq, key, char),
                 "travelling": bool(seq.get("travelling")),
                 "airborne": bool(seq.get("airborne")),
                 "own": name in own,

@@ -39,6 +39,11 @@ monkey:
     Identical colours, identical proportions, identical build and identical
     height as the reference, in every frame.
   traits:
+    # Hair sentences in the shared guide notes (make-pose-guide draws hair
+    # lines unless the character's skeleton is bald).
+    guide_hair: The short lines on top are his hair, at rest.
+    guide_hair_out: The short lines on top are his hair sticking out at rest.
+    hair_still: His hair is the same, at rest, in every frame.
     dribble_side: VIEWER'S RIGHT
     trail_left: The tail streams out behind him to the viewer's left.
     trail_right: The tail streams out behind him to the viewer's right.
@@ -236,18 +241,43 @@ nba:
   folder: NBA player
   scale: 1.10
   status: proposed
+  # His body for the pose guides (tools/make-pose-guide.py, "per-character
+  # bodies"). Measured 2026-09-27 off nba-player.png and pose 001 against the
+  # zombie's reference, silhouette half-widths as shares of standing height:
+  # shoulder line 0.19-0.20 (zombie 0.135-0.14), torso between the arms 0.25
+  # wide (0.21), shorts at 0.45 0.37 wide (0.33); a shaved head ~0.135 tall
+  # whose top is his full height. Shoulders set at x1.3 the zombie's (between
+  # the torso's x1.23 and the deltoids' x1.4), hips x1.12, and the hanging
+  # arms held further out, clear of the lats, as both references draw them.
+  skeleton:
+    sh_x: 0.170
+    hip_x: 0.100
+    head_r: 0.065
+    head_up: 0.130
+    free_hand: [-0.060, -0.360]
+    bald: true
   refs:
     front: artwork/basketball-players/nba-player.png
     back: artwork/basketball-players/NBA player poses/NBA player 002.png
   subject: |
-    the tall, heavily muscled professional basketball player in the attached
-    reference image. Match that character exactly: dark brown skin, a shaved
-    head, heavy shoulders and arms, a stern set jaw, a blue sleeveless
+    the tall, heavily muscled African-American professional basketball player
+    in the attached reference image. Match that character exactly, his face
+    above all: dark brown skin, a shaved head, a broad, full, rounded face
+    with full cheeks, a heavy brow, a broad nose and full lips, exactly as the
+    reference draws them. He is easy-going and good-humoured -- a star playing
+    on easy mode against easy opponents, relaxed, amused and enjoying himself,
+    with a confident half-smile as his resting expression, never a scowl.
+    Heavy shoulders and arms, a blue sleeveless
     basketball jersey with a yellow number 34, blue shorts with white and yellow
     trim, white high-top sneakers with blue and yellow flashes over white socks.
     Identical colours, identical proportions, identical build and identical
     height as the reference, in every frame.
   traits:
+    # He is bald: his guides draw no hair (skeleton `bald`), so the notes
+    # say so instead of describing hair lines.
+    guide_hair: His head is shaved smooth; the pose guide draws no hair on it.
+    guide_hair_out: His head is shaved smooth; the pose guide draws no hair on it.
+    hair_still: ""
     dribble_side: VIEWER'S RIGHT
     balance_low: The free arm swings wide for balance.
     coil_mid: Shoulders bunching.
@@ -257,11 +287,130 @@ nba:
       He is affronted rather than shocked — a professional who has just
       been disrespected in front of a crowd.
   sequences:
+    # === The NBA player's full roster (2026-09-27) ============================
+    # The zombie is the template (handover 10). Rick's decisions, 2026-09-27
+    # ("default" to all seven):
+    #
+    #  - His guides are drawn on HIS body: `skeleton:` above, art/guides/nba/.
+    #    The frame tables are the zombie's numbers, which trace the monkey.
+    #  - Wherever the zombie has a sequence, his is the zombie's like for like
+    #    (poses, frame counts, timing), from the shared sequences.yml or from
+    #    the copies below. The POSES stay the monkey's; the FACES are his own
+    #    temperament -- relaxed and good-humoured, a star on easy mode
+    #    (Rick, 2026-09-27: "more light hearted"), not the monkey's shriek.
+    #  - His two idle breaks and his panic are STORIES like the zombie's
+    #    (build-sprites.py STORY_SEQ): played once, a frame per half bounce,
+    #    the dribbling hand on the VIEWER'S LEFT with just two positions (the
+    #    highest and lowest of the stationary dribble: hand 0.42 / drop 0.095,
+    #    hand 0.30 / drop 0.12).
+    #  - The panic is six frames, so Rick's three elements all fit around the
+    #    dribble: look at the clock, thumb cocked back at it and held, then the
+    #    free hand dropped onto his hip; the game holds the last two until the
+    #    clock resets.
+    #  - Working the crowd is his rare showpiece, like the monkey's flip and
+    #    the zombie's collapse.
+    #  - No ball-less loop: without the ball he holds the dribble's still pose.
+    #
+    # The notes below say the same things as the zombie's &dribnote,
+    # &backnote and &frontnote, for a SHAVED head: his guides draw no hair, so
+    # the back of his head is a plain circle with an ear on each side.
+
+    # --- his own: the idle breaks ------------------------------------------
     break_flex:
       title: "Idle break A: kissing the bicep"
       kind: one_shot
       frames: 4
       ref: front
+      guide:
+        file: art/guides/break_flex.png
+        native: true            # drawn on his own body from the start
+        side: left
+        colors: true
+        ears: true
+        nose: true
+        note: &nba_dribnote |
+          POSE GUIDE: TWO images are attached, and they do different jobs.
+
+          The COLOUR image of the character is the only authority on WHO HE
+          IS. His colours, his proportions, his build, his height, his face,
+          his kit and the drawing style all come from that image and from the
+          SUBJECT above, and nothing below changes any of them. It does NOT
+          decide which way he faces: in that drawing he is turned toward the
+          right edge, and in this sheet he faces the viewer squarely.
+
+          The other image is a POSE GUIDE: a stick figure on a white
+          background, standing in a row on one ground line, in the same
+          left-to-right order as the FRAMES listed below. The Nth figure in
+          the pose guide is the pose for the Nth frame. Take the GEOMETRY from
+          it and only the geometry: where each foot stands on the ground line,
+          how deeply the knees are bent and where they are, how low the
+          shoulders and head are, and where the elbows and hands are. Where
+          the words below and the pose guide describe the same thing, they
+          agree; the pose guide is the exact version of it.
+
+          THE COLOURS ON THE POSE GUIDE name the limbs: the RED arm and the
+          ORANGE leg are on the VIEWER'S LEFT, the BLUE arm and the GREEN leg
+          on the viewer's right.
+
+          THE HANDS ON THE POSE GUIDE: the FLAT hand with its fingers spread
+          sideways is the DRIBBLING hand, on the viewer's left, palm to the
+          floor, at exactly that height. It has only TWO positions, HIGH and
+          LOW, and the frames below say which. A small rounded square is a
+          clenched FIST. A narrow shape pointing down is a hand hanging loose.
+          A broad paddle with spread fingers is an open hand.
+
+          THE HEAD ON THE POSE GUIDE: the small TRIANGLE is his nose and the
+          two small ovals are his ears. With the triangle in the middle of the
+          face he looks straight at the viewer; moved to one side, he has
+          turned his head that way. The upright line down the face marks its
+          centre and the level line his eyes. His head is shaved smooth; the
+          pose guide draws no hair on it.
+
+          Draw the character from the colour reference standing in those
+          positions. The pose guide is an instruction, not artwork: its thin
+          lines, its colours, its joint dots, its white background, its
+          circular head, its triangle, its ovals and its face lines are NOT
+          part of the drawing and must not appear anywhere in it.
+        frames:
+          - {pose: calibration}
+          - name: curl
+            drop: 0.095
+            stance: 0.27
+            hand: 0.42
+            free: [-0.25, 0.77]
+            free_shape: fist
+            yaw: -25
+            joints: {elb_f: [-0.32, 0.60]}
+          - name: flex
+            drop: 0.12
+            tilt: 0.01
+            lean: 0.012
+            stance: 0.27
+            hand: 0.30
+            palm: 8
+            free: [-0.29, 0.84]
+            free_shape: fist
+            yaw: -35
+            head: -4
+            joints: {elb_f: [-0.336, 0.658]}
+          - name: kiss
+            drop: 0.095
+            stance: 0.27
+            hand: 0.42
+            free: [-0.27, 0.86]
+            free_shape: fist
+            yaw: -50
+            head: -9
+            joints: {elb_f: [-0.349, 0.69]}
+          - name: smirk
+            drop: 0.12
+            tilt: 0.01
+            lean: 0.012
+            stance: 0.27
+            hand: 0.30
+            palm: 8
+            free: [-0.31, 0.47]
+            free_shape: hang
       ground: |
         All frames share one ground line: the soles of the feet touch the same
         horizontal line in every frame. The feet stay planted throughout.
@@ -269,34 +418,84 @@ nba:
         front view, facing the viewer, squared to camera, in a low athletic
         stance with the knees bent.
       preamble: |
-        The hand on the VIEWER'S RIGHT is dribbling and cycles through four
-        fixed positions; the arm on the VIEWER'S LEFT admires itself. He is
-        entirely serious about this.
+        The hand on the VIEWER'S LEFT is dribbling a basketball: palm to the
+        floor, HIGH in frames {f1} and {f3}, pushed LOW in frames {f2} and
+        {f4}. The arm on the VIEWER'S RIGHT admires itself. He is entirely
+        serious about this.
       poses:
         - >-
-            Dribbling hand pushed all the way down at hip height, palm to
-            the floor. Other arm bent up into a bicep curl, fist by his
-            shoulder, glancing sideways at the muscle.
+            Dribbling hand high. The other arm bent up into a bicep curl, the
+            upper arm raised out to his side, fist up by his shoulder, his head
+            turning to glance sideways at the muscle.
         - >-
-            Dribbling hand halfway up, between hip and chest. Other arm
-            flexed hard at the peak of the curl, bicep bulging, chin
-            tucked toward it, eyebrows raised.
+            Dribbling hand pushed low. The other arm flexed hard at the peak of
+            the curl, the bicep bulging, fist beside his head, chin tucked
+            toward it, eyebrows raised, head turned to it.
         - >-
-            Dribbling hand at its highest, just below chest height. He
-            kisses the bicep, lips pursed against it, eyes closed.
+            Dribbling hand high. He kisses the bicep: head turned right round
+            to it and tipped toward it, lips pursed against the muscle, eyes
+            closed.
         - >-
-            Dribbling hand dropping back toward the hip. Other arm
-            unfolding back down to his side, a small satisfied smirk.
+            Dribbling hand pushed low. The other arm unfolded back down to hang
+            at his side, head turned back to the viewer, a small satisfied
+            smirk.
       closing: |
-        This is a one-shot played between repeats of a dribbling loop. The
-        dribbling hand's four positions must exactly match a normal dribbling
-        cycle so the motion is continuous.
+        This is a one-shot played in the middle of a dribbling loop: frames
+        {f1} and {f3} have the dribbling hand in exactly the same place, and
+        so do frames {f2} and {f4}.
+      extra: |
+        The feet and the dribbling arm do not change between the frames that
+        share a hand position. No basketball is drawn: the game draws the ball
+        separately.
 
     break_yawn:
       title: "Idle break B: an unimpressed yawn"
       kind: one_shot
       frames: 4
       ref: front
+      guide:
+        file: art/guides/break_yawn.png
+        native: true            # drawn on his own body from the start
+        side: left
+        colors: true
+        ears: true
+        nose: true
+        note: *nba_dribnote
+        frames:
+          - {pose: calibration}
+          - name: rising
+            drop: 0.095
+            stance: 0.27
+            hand: 0.42
+            free: [-0.10, 0.66]
+            free_shape: open
+            joints: {elb_f: [-0.232, 0.526]}
+          - name: yawn
+            drop: 0.12
+            tilt: 0.01
+            lean: 0.012
+            stance: 0.27
+            hand: 0.30
+            palm: 8
+            free: [-0.03, 0.74]
+            free_shape: open
+            head: -5
+            joints: {elb_f: [-0.12, 0.56]}
+          - name: rubbing
+            drop: 0.095
+            stance: 0.27
+            hand: 0.42
+            free: [-0.04, 0.81]
+            free_shape: fist
+            head: -6
+            joints: {elb_f: [-0.10, 0.64]}
+          - name: stare
+            drop: 0.12
+            tilt: 0.01
+            lean: 0.012
+            stance: 0.27
+            hand: 0.30
+            palm: 8
       ground: |
         All frames share one ground line: the soles of the feet touch the same
         horizontal line in every frame. The feet stay planted throughout.
@@ -304,35 +503,258 @@ nba:
         front view, facing the viewer, squared to camera, in a low athletic
         stance with the knees bent.
       preamble: |
-        The hand on the VIEWER'S RIGHT is dribbling and cycles through four
-        fixed positions; the arm on the VIEWER'S LEFT covers a huge, theatrical,
-        bored yawn. This game is beneath him.
+        The hand on the VIEWER'S LEFT is dribbling a basketball: palm to the
+        floor, HIGH in frames {f1} and {f3}, pushed LOW in frames {f2} and
+        {f4}. The arm on the VIEWER'S RIGHT covers a huge, theatrical, bored
+        yawn. This game is beneath him.
       poses:
         - >-
-            Dribbling hand pushed all the way down at hip height, palm to
-            the floor. Other hand starting to rise toward his face, mouth
+            Dribbling hand high. The other hand rising toward his face, mouth
             beginning to open, eyelids drooping.
         - >-
-            Dribbling hand halfway up, between hip and chest. Mouth
-            stretched wide in a huge yawn, eyes squeezed shut, other hand
-            held flat in front of it.
+            Dribbling hand pushed low. Mouth stretched wide in a huge yawn,
+            eyes squeezed shut, head tipped back a little, the other hand held
+            flat in front of his open mouth.
         - >-
-            Dribbling hand at its highest, just below chest height. Yawn
-            tailing off, head tipped back, other hand rubbing one eye.
+            Dribbling hand high. The yawn tailing off, mouth closing, the other
+            hand, loosely curled, rubbing one eye.
         - >-
-            Dribbling hand dropping back toward the hip. Other arm
-            returning to his side, eyes reopening with a flat, unimpressed
-            stare straight at the viewer.
+            Dribbling hand pushed low. The other arm back down, hanging at his
+            side, eyes reopened with a lazy, amused grin straight at the viewer.
       closing: |
-        This is a one-shot played between repeats of a dribbling loop. The
-        dribbling hand's four positions must exactly match a normal dribbling
-        cycle so the motion is continuous.
+        This is a one-shot played in the middle of a dribbling loop: frames
+        {f1} and {f3} have the dribbling hand in exactly the same place, and
+        so do frames {f2} and {f4}.
+      extra: |
+        No basketball is drawn: the game draws the ball separately.
 
+    # --- his own: the panic -------------------------------------------------
+    # Rick: "hand on hip, looks at the shot clock, thumbs at it coolly". Three
+    # jobs, and one hand has to keep dribbling (the game locks the ball to the
+    # dribbling hand), so they come one after another in a six-frame story:
+    # look, thumb cocked back at the clock and held, then the free hand dropped
+    # onto his hip. The game holds frames 5 and 6 until the clock resets, so
+    # those two differ only in the dribbling hand.
+    panic:
+      title: Shot-clock panic (composed)
+      kind: one_shot
+      frames: 6
+      ref: front
+      guide:
+        file: art/guides/panic.png
+        native: true            # drawn on his own body from the start
+        side: left
+        colors: true
+        ears: true
+        nose: true
+        note: *nba_dribnote
+        frames:
+          - {pose: calibration}
+          - name: looking
+            drop: 0.095
+            stance: 0.27
+            hand: 0.42
+            yaw: -40
+          - name: cocking
+            drop: 0.12
+            tilt: 0.01
+            lean: 0.012
+            stance: 0.27
+            hand: 0.30
+            palm: 8
+            yaw: -40
+            free: [-0.12, 0.56]
+            free_shape: fist
+            joints: {elb_f: [-0.20, 0.50]}
+          -
+            name: thumb
+            drop: 0.095
+            stance: 0.27
+            hand: 0.42
+            yaw: -40
+            free: [-0.22, 0.80]
+            free_shape: fist
+            joints: {elb_f: [-0.346, 0.661]}
+          -
+            name: held
+            drop: 0.12
+            tilt: 0.01
+            lean: 0.012
+            stance: 0.27
+            hand: 0.30
+            palm: 8
+            yaw: -40
+            free: [-0.22, 0.775]
+            free_shape: fist
+            joints: {elb_f: [-0.328, 0.622]}
+          - name: hip
+            drop: 0.095
+            stance: 0.27
+            hand: 0.42
+            free: [-0.15, 0.40]
+            free_shape: fist
+            joints: {elb_f: [-0.269, 0.545]}
+          - name: hip-low
+            drop: 0.12
+            tilt: 0.01
+            lean: 0.012
+            stance: 0.27
+            hand: 0.30
+            palm: 8
+            free: [-0.15, 0.375]
+            free_shape: fist
+            joints: {elb_f: [-0.256, 0.53]}
+      ground: |
+        All frames share one ground line: the soles of the feet touch the same
+        horizontal line in every frame. The feet stay planted throughout.
+      view: |
+        front view, facing the viewer, squared to camera, in a low athletic
+        stance with the knees bent.
+      preamble: |
+        The shot clock is running out and he is the only man in the building
+        who is not bothered by it. Everything about him is unhurried: no
+        sweat, no wide eyes, no worry.
+
+        The hand on the VIEWER'S LEFT is dribbling a basketball, low and lazy:
+        palm to the floor, HIGH in frames {f1}, {f3} and {f5}, pushed LOW in
+        frames {f2}, {f4} and {f6}. The clock is above and behind him,
+        off-screen to the VIEWER'S UPPER RIGHT. The arm on the VIEWER'S RIGHT
+        does the talking.
+      poses:
+        - >-
+            Dribbling hand high. Head turned up and toward the VIEWER'S UPPER
+            RIGHT, looking at the clock with an amused half-smile, one eyebrow raised. The other
+            arm hangs at his side.
+        - >-
+            Dribbling hand pushed low. Still looking at the clock. The other
+            hand coming up in front of his stomach, elbow tucked in, closed
+            into a loose fist with the THUMB starting to point back over his
+            shoulder.
+        - >-
+            Dribbling hand high. The thumb jerked back over his shoulder toward
+            the clock, fist up beside his shoulder, elbow out to the side, head
+            still turned to the clock, a lazy, amused half-smile, utterly unbothered.
+        - >-
+            Dribbling hand pushed low. The thumb held exactly where it was for
+            a second beat on the gesture, eyebrow still raised.
+        - >-
+            Dribbling hand high. The other hand dropped onto his HIP, the back
+            of the wrist and the knuckles resting on the waistband of his
+            shorts, elbow bowed out wide. His head turned back to look straight
+            at the viewer, one eyebrow still raised and a lazy grin: so what.
+        - >-
+            Dribbling hand pushed low. Exactly the same: hand on hip, elbow
+            out, the same lazy grin at the viewer.
+      closing: |
+        Frames {f1} to {f6} play once, in order. After that the game keeps
+        alternating frames {f5} and {f6} until the clock is reset, so those
+        two differ ONLY in the dribbling hand: the hand on the hip, the head,
+        the face and the body are identical in both.
+      extra: |
+        The feet do not move at any point, and the dribbling hand is in
+        exactly the same place in every HIGH frame, and in every LOW frame.
+        He is calm throughout -- no sweat beads, no bulging eyes, no grimace.
+        No basketball is drawn: the game draws the ball separately.
+
+    # --- his own: the showpiece celebration --------------------------------
+    # Rare, like the monkey's flip and the zombie's collapse: CELEB_RARE.
     celebrate_crowd:
       title: "Made basket celebration C: working the crowd"
       kind: one_shot
       frames: 5
       ref: front
+      guide:
+        file: art/guides/celebrate_crowd.png
+        native: true            # drawn on his own body from the start
+        side: right
+        colors: true
+        ears: true
+        nose: true
+        note: &nba_frontnote |
+          POSE GUIDE: TWO images are attached, and they do different jobs.
+
+          The COLOUR image of the character is the only authority on WHO HE
+          IS. His colours, his proportions, his build, his height, his face,
+          his kit and the drawing style all come from that image and from the
+          SUBJECT above, and nothing below changes any of them. It does NOT
+          decide which way he faces: in that drawing he is turned toward the
+          right edge, and in this sheet he faces the viewer squarely.
+
+          The other image is a POSE GUIDE: a stick figure on a white
+          background, standing in a row on one ground line, in the same
+          left-to-right order as the FRAMES listed below. The Nth figure in
+          the pose guide is the pose for the Nth frame. Take the GEOMETRY from
+          it and only the geometry: where each foot stands on the ground line,
+          how deeply the knees are bent, how low the shoulders and head are,
+          and where the elbows and hands are. Where the words below and the
+          pose guide describe the same thing, they agree; the pose guide is
+          the exact version of it.
+
+          THE COLOURS ON THE POSE GUIDE name the limbs: the RED arm and the
+          ORANGE leg are on the VIEWER'S RIGHT, the BLUE arm and the GREEN leg
+          on the viewer's left. The two arms do DIFFERENT things wherever the
+          pose guide draws them differently.
+
+          THE HANDS ON THE POSE GUIDE: a small rounded square is a clenched
+          FIST. A narrow shape pointing down is an open hand, fingers down. A
+          broad paddle with spread fingers is an OPEN hand.
+
+          THE HEAD ON THE POSE GUIDE: the small TRIANGLE is his nose and the
+          two small ovals on either side of the head are his ears. With the
+          triangle in the middle of the face he looks straight at the viewer;
+          moved to one side, he has turned his head that way. The upright line
+          down the face marks its centre and the level line his eyes. His head
+          is shaved smooth, so the pose guide draws no hair on it. A head with
+          NO face lines and no triangle, only an oval on each side, is hanging
+          so far forward and down that we see only the TOP of his shaved head
+          and not his face.
+
+          Draw the character from the colour reference standing in those
+          positions. The pose guide is an instruction, not artwork: its thin
+          lines, its colours, its joint dots, its white background, its
+          circular head, its triangle and its ovals are NOT part of the
+          drawing and must not appear anywhere in it.
+        frames:
+          - {pose: calibration}
+          - name: arms-out
+            drop: 0.02
+            stance: 0.20
+            hand: [0.40, 0.76]
+            hand_shape: open
+            free: [-0.40, 0.76]
+            free_shape: open
+            yaw: -40
+          - name: scoop-1
+            drop: 0.0
+            stance: 0.20
+            hand: [0.24, 1.10]
+            hand_shape: open
+            free: [-0.24, 1.10]
+            free_shape: open
+            yaw: -20
+          - name: low
+            drop: 0.04
+            stance: 0.20
+            hand: [0.30, 0.62]
+            hand_shape: open
+            free: [-0.30, 0.62]
+            free_shape: open
+            yaw: 40
+            joints: {elb_d: [0.22, 0.58], elb_f: [-0.22, 0.58]}
+          - name: scoop-2
+            drop: 0.0
+            stance: 0.20
+            hand: [0.20, 1.15]
+            hand_shape: open
+            free: [-0.20, 1.15]
+            free_shape: open
+          - name: settle
+            drop: 0.07
+            stance: 0.25
+            hand: [0.40, 0.52]
+            hand_shape: open
+            free: [-0.40, 0.52]
+            free_shape: open
       ground: |
         All frames share one ground line: the soles of both feet touch the same
         horizontal line in every frame, and the feet stay planted throughout.
@@ -340,82 +762,489 @@ nba:
         front view, facing the viewer.
       preamble: |
         He has just sunk a shot and has turned to the crowd to get them on their
-        feet — both arms up with the palms turned upward, scooping the noise
+        feet -- both arms up with the palms turned upward, scooping the noise
         higher, looking from one side of the room to the other. Delighted, and
         completely in charge of the building. Frames {first} to {last} are one
         continuous move.
       poses:
         - >-
-            Standing up tall out of his stance, both arms lifting out and
-            up to shoulder height with the palms turned UP and open, head
-            turned to the VIEWER'S LEFT toward the crowd, broad grin.
+            Standing up tall out of his stance, both arms lifting out wide to
+            shoulder height with the palms turned UP and open, head turned to
+            the VIEWER'S LEFT toward the crowd, broad grin.
         - >-
-            The first scoop: both hands driven UP above his head, palms
-            still turned up, elbows nearly straight, chin lifted, mouth
-            open in a shout.
+            The first scoop: both hands driven UP above his head, palms still
+            turned up, elbows nearly straight, chin lifted, mouth open in a
+            shout.
         - >-
-            Both hands dropped back down to chest height, palms still
-            turned up and open, elbows tucked in, head swinging round to
-            the VIEWER'S RIGHT to take in the other side of the room.
+            Both hands dropped back down to chest height, palms still turned up
+            and open, elbows tucked in, head swinging round to the VIEWER'S
+            RIGHT to take in the other side of the room.
         - >-
             The second scoop: both hands driven UP again and higher, arms
             straight, head back, roaring up at the crowd.
         - >-
-            Arms coming back down and out to his sides with the palms
-            still open, chin up, an enormous satisfied grin, easing back
-            into a low athletic stance.
+            Arms coming back down and out to his sides with the palms still
+            open, chin up, an enormous satisfied grin, easing back into a low
+            athletic stance.
+      closing: |
+        This is a one-shot, not a loop. Frame {first} is the moment the ball
+        drops through the net; frame {last} is where he comes to rest.
       extra: |
         The two raised positions must be clearly and obviously higher than the
-        two low ones — the up-and-down travel of the arms is the whole gesture,
-        and if the four differ only a little the move reads as standing still.
+        two low ones -- the up-and-down travel of the arms is the whole
+        gesture, and if the frames differ only a little the move reads as
+        standing still.
 
-    panic:
-      title: Shot-clock panic
-      kind: loop
-      frames: 4
+    # --- copied from the zombie, like for like ------------------------------
+    # turn / aim / charge / shot, celebrate / celebrate_pump / gameover: the
+    # zombie's own copies (see his comments for how they were traced off the
+    # monkey), with the shaved-head notes above and his own faces.
+    # Generated by copying the zombie's blocks on 2026-09-27; if the zombie's
+    # tables change, change these too.
+    turn:
+      title: Turn to shoot
+      kind: one_shot
+      frames: 2
       ref: front
-      # Rick asked for the right hand resting on his hip. It cannot rest there:
-      # the game locks the ball to the dribbling hand's phase, so a hand on the
-      # hip strands the ball in mid-air. It therefore keeps a small, low, lazy
-      # dribble instead — which arguably reads as MORE composed, since he is the
-      # only man still casually bouncing the ball while the clock dies.
-      ground: |
-        All frames share one ground line: the soles of the feet touch the same
-        horizontal line in every frame. The feet stay planted throughout.
-      view: |
-        front view, facing the viewer, squared to camera, in a low athletic
-        stance with the knees bent.
-      preamble: |
-        The shot clock is running out and he is the only man in the building who
-        is not bothered by it. Everything about him is unhurried: no sweat, no
-        wide eyes, no open mouth.
+      guide:
+        file: art/guides/turn.png
+        side: right
+        colors: true
+        ears: true
+        nose: true
+        note: &nba_backnote |
+          POSE GUIDE: TWO images are attached, and they do different jobs.
 
-        The hand on the VIEWER'S LEFT keeps dribbling through four fixed
-        positions, low and lazy and barely moving. The arm on the VIEWER'S RIGHT
-        does the talking: the THUMB is cocked back over his shoulder toward the
-        clock above and behind him, off-screen to the viewer's upper right.
+          The COLOUR image of the character is the only authority on WHO HE
+          IS. His colours, his proportions, his build, his height, his face,
+          his kit and the drawing style all come from that image and from the
+          SUBJECT above, and nothing below changes any of them. It does NOT
+          decide which way he faces: the FRAMES below do.
+
+          The other image is a POSE GUIDE: a stick figure on a white
+          background, standing in a row on one ground line, in the same
+          left-to-right order as the FRAMES listed below. The Nth figure in
+          the pose guide is the pose for the Nth frame. Take the GEOMETRY from
+          it and only the geometry: where each foot stands on the ground line,
+          how deeply the knees are bent, how low the shoulders and head are,
+          and where the elbows and hands are. Where the words below and the
+          pose guide describe the same thing, they agree; the pose guide is
+          the exact version of it.
+
+          THE COLOURS ON THE POSE GUIDE name the limbs: the RED arm and the
+          ORANGE leg are on the VIEWER'S RIGHT, the BLUE arm and the GREEN leg
+          on the viewer's left.
+
+          THE HEAD ON THE POSE GUIDE: in the first figure the upright line and
+          the level line mark the centre of his face, looking at the viewer. A
+          head with a small TRIANGLE jutting out of one side is seen in
+          profile: the triangle is his nose, pointing the way he looks. A head
+          with NO face lines and no triangle, only an oval on each side, has
+          NO face: we are looking at the BACK of his shaved head, and the ovals
+          are his two ears. His head is shaved smooth; the pose guide draws no
+          hair on it.
+
+          SEEN FROM BEHIND, his hands are in FRONT of his body, so where the
+          pose guide puts them in front of his chest they are hidden from the
+          viewer by his own back: only the elbows, sticking out to either
+          side, show that his arms are bent and raised.
+
+          Draw the character from the colour reference standing in those
+          positions. The pose guide is an instruction, not artwork: its thin
+          lines, its colours, its joint dots, its white background, its
+          circular head, its triangle and its ovals are NOT part of the
+          drawing and must not appear anywhere in it.
+        frames:
+          - {pose: calibration}
+          - name: half-turned
+            yaw: 90
+            turn: 55
+            drop: 0.04
+            stance: 0.19
+            hand: [0.25, 0.43]
+            hand_shape: hang
+            free: [-0.25, 0.43]
+          - name: turned
+            back: true
+            drop: 0.05
+            stance: 0.20
+            hand: [0.08, 0.61]
+            hand_shape: fist
+            free: [-0.08, 0.61]
+            free_shape: fist
+            joints: {elb_d: [0.21, 0.58], elb_f: [-0.21, 0.58]}
+      view: |
+        the character turning on the spot, away from the viewer.
       poses:
         - >-
-            Dribbling hand low at knee height, palm to the floor. Head
-            turned up and to the VIEWER'S RIGHT, looking flatly at the
-            clock, one eyebrow raised. Other arm still down at his side.
+            Halfway through the turn: a three-quarter view from behind,
+            shoulders rotated away from the viewer so that we see most of his
+            back and the number on it, feet pivoting wide apart with the knees
+            bent, both arms hanging out a little from his sides with the hands
+            open at hip height. His head is turned to the VIEWER'S RIGHT in
+            profile, lifting to look up and away over his shoulder.
         - >-
-            Dribbling hand risen to hip height, palm down. Other hand
-            coming up to his chest, elbow tucked in tight, thumb starting
-            to cock backwards.
+            Almost fully turned: his back square to the viewer, knees bent in
+            a wide shooting stance, both elbows bent and sticking out to his
+            sides with the hands up in front of his chest, out of sight. The
+            back of his head toward the viewer, tilted up.
+      closing: |
+        This is a one-shot, not a loop. Frame {first} must continue naturally from
+        a front view facing the viewer; frame {last} must settle into a back view
+        squared away from the viewer.
+
+    aim:
+      title: Aim hold
+      kind: loop
+      frames: 2
+      ref: back
+      guide:
+        file: art/guides/aim.png
+        side: right
+        colors: true
+        ears: true
+        note: *nba_backnote
+        frames:
+          - {pose: calibration}
+          - name: aim
+            back: true
+            drop: 0.03
+            stance: 0.18
+            hand: [0.08, 0.63]
+            hand_shape: fist
+            free: [-0.08, 0.63]
+            free_shape: fist
+            joints: {elb_d: [0.21, 0.60], elb_f: [-0.21, 0.60]}
+          - name: settle
+            back: true
+            drop: 0.065
+            stance: 0.18
+            hand: [0.08, 0.595]
+            hand_shape: fist
+            free: [-0.08, 0.595]
+            free_shape: fist
+            joints: {elb_d: [0.21, 0.565], elb_f: [-0.21, 0.565]}
+      view: |
+        back view, seen from directly behind, squared away from the viewer and
+        looking up toward a basket high in front of him.
+      poses:
         - >-
-            Dribbling hand at its highest, just below chest height. Thumb
-            jerked back over his shoulder toward the clock, head still
-            turned to it, mouth a flat line, utterly unimpressed.
+            Knees slightly bent, feet shoulder-width apart, both hands raised
+            in front of the chest as if cradling something -- out of sight
+            behind his back, only the bent elbows showing at his sides -- head
+            tilted up.
         - >-
-            Dribbling hand dropping back toward the hip. Thumb held
-            exactly where it was for a second beat on the gesture, eyebrow
-            still raised.
-      extra: |
-        The feet do not move at any point, and the dribbling hand's four
-        positions must exactly match a normal dribbling cycle so the motion is
-        continuous.
-        He is calm throughout — no sweat beads, no bulging eyes, no grimace.
+            The same pose settled very slightly lower: knees a touch more
+            bent, hands a fraction lower, weight eased. A small breathing
+            settle, nothing more -- the two frames should be close.
+
+    charge:
+      title: Charge / wind-up
+      kind: loop
+      frames: 3
+      ref: back
+      guide:
+        file: art/guides/charge.png
+        side: right
+        colors: true
+        ears: true
+        note: *nba_backnote
+        frames:
+          - {pose: calibration}
+          - name: upright
+            back: true
+            drop: 0.03
+            stance: 0.21
+            hand: [0.08, 0.63]
+            hand_shape: fist
+            free: [-0.08, 0.63]
+            free_shape: fist
+            joints: {elb_d: [0.21, 0.60], elb_f: [-0.21, 0.60]}
+          - name: crouching
+            back: true
+            drop: 0.12
+            stance: 0.21
+            hand: [0.08, 0.54]
+            hand_shape: fist
+            free: [-0.08, 0.54]
+            free_shape: fist
+            joints: {elb_d: [0.21, 0.51], elb_f: [-0.21, 0.51]}
+          - &nba_coiled
+            name: coiled
+            back: true
+            drop: 0.22
+            stance: 0.23
+            hand: [0.07, 0.44]
+            hand_shape: fist
+            free: [-0.07, 0.44]
+            free_shape: fist
+            # hunched forward over the thighs: seen from behind, the back
+            # tips toward the camera and the shoulders come down toward the hips
+            joints: {chest: [0, 0.52], sh_d: [0.13, 0.52], sh_f: [-0.13, 0.52],
+                     head: [0, 0.62], elb_d: [0.20, 0.41], elb_f: [-0.20, 0.41]}
+      ground: |
+        All frames share one ground line: the soles of the feet touch the same
+        horizontal line in every frame. The character's head height changes
+        between frames only because he is crouching, not because the drawing has
+        been rescaled.
+      view: |
+        back view, seen from directly behind, squared away from the viewer and
+        looking up toward a basket high in front of him.
+      preamble: |
+        Frames {first} to {last} are one single motion, coiling deeper each frame.
+      poses:
+        - >-
+            Upright: knees slightly bent, feet planted wide, hands up at chest
+            height in front of him (elbows showing at his sides), back
+            straight. The beginning of the wind-up.
+        - >-
+            Crouching: knees clearly bent, hips dropped, hands drawn in closer
+            to the chest, shoulders starting to hunch.
+        - >-
+            Fully coiled: a deep squat, knees wide and deeply bent, hips low,
+            back compressed and rounded forward over his thighs, hands tucked
+            tight against the chest, loaded and about to spring.
+      closing: |
+        Frames {first} to {last} are one continuous deepening crouch and will be
+        played forwards and then backwards, so the motion must read smoothly in
+        both directions.
+
+    shot:
+      title: The shot
+      kind: one_shot
+      frames: 4
+      ref: back
+      guide:
+        file: art/guides/shot.png
+        side: right
+        colors: true
+        ears: true
+        note: *nba_backnote
+        frames:
+          - {pose: calibration}
+          - *nba_coiled
+          - name: rising
+            back: true
+            drop: 0.03
+            stance: 0.19
+            hand: [0.06, 0.99]
+            hand_shape: fist
+            free: [-0.06, 0.99]
+            free_shape: fist
+            joints: {elb_d: [0.20, 0.86], elb_f: [-0.20, 0.86]}
+          - name: release
+            back: true
+            drop: -0.03
+            stance: 0.12
+            hand: [0.15, 1.17]
+            hand_shape: open
+            free: [-0.03, 1.16]
+            free_shape: open
+            feet: {d: 40, f: 40}
+            joints: {ank_d: [0.12, 0.12], ank_f: [-0.12, 0.12],
+                     elb_d: [0.14, 0.995], elb_f: [-0.08, 0.99]}
+          - name: follow-through
+            back: true
+            drop: 0.0
+            stance: 0.15
+            hand: [0.15, 1.10]
+            hand_shape: hang
+            free: [-0.04, 1.08]
+            free_shape: hang
+            joints: {elb_d: [0.17, 0.97], elb_f: [-0.13, 0.97]}
+      ground: |
+        Frames {f1}, {f2} and {f4} share one ground line with the soles of the
+        feet touching it; in frame {f3} he is up on his toes on that same line.
+      view: |
+        back view, seen from directly behind, squared away from the viewer and
+        looking up toward a basket high in front of him.
+      preamble: |
+        Frames {first} to {last} are one continuous shooting motion.
+      poses:
+        - >-
+            Fully coiled: a deep squat, knees wide and deeply bent, hips low,
+            back rounded forward, hands tucked tight against the chest.
+        - >-
+            Driving upward: legs extending, hips rising, both hands lifting
+            up to the top of his head, elbows bent and pointing out and up.
+        - >-
+            Full extension: standing at full stretch up on the toes, both
+            arms straight overhead, wrists snapped forward, fingers spread.
+            This is the moment of release.
+        - >-
+            Follow-through: still tall, arms still overhead but relaxing,
+            elbows bending, wrists flopped loosely downward, weight settling
+            back onto the heels.
+      closing: |
+        This is a one-shot, not a loop. Frame {first} must continue naturally from
+        a deep crouch, and frame {last} is the end of the motion.
+
+    celebrate:
+      title: Made basket celebration A — arms overhead
+      kind: one_shot
+      frames: 2
+      ref: front
+      guide:
+        file: art/guides/celebrate.png
+        side: right
+        colors: true
+        ears: true
+        nose: true
+        note: *nba_frontnote
+        frames:
+          - {pose: calibration}
+          - name: triumph
+            drop: 0.0
+            stance: 0.18
+            hand: [0.19, 1.15]
+            hand_shape: fist
+            free: [-0.21, 1.15]
+            free_shape: fist
+          - name: settling
+            drop: 0.045
+            stance: 0.24
+            hand: [0.23, 0.42]
+            hand_shape: fist
+            free: [-0.21, 0.76]
+            free_shape: fist
+            joints: {elb_d: [0.24, 0.58], elb_f: [-0.24, 0.585]}
+      ground: |
+        Frames {f1} and {f2} share one ground line: the soles of both feet
+        are flat on that line in both frames.
+      view: |
+        front view, facing the viewer, squared to camera.
+      poses:
+        - >-
+            Triumph: standing tall, both arms thrown straight up overhead in
+            a wide V with the fists clenched, head tipped back, laughing out loud with a huge open-mouthed grin, eyes creased with delight.
+        - >-
+            Settling: dropped back into a low, wide athletic stance. The arm
+            on the VIEWER'S LEFT is bent with its fist pumped up beside his
+            shoulder; the arm on the VIEWER'S RIGHT is down, its fist clenched
+            beside his hip. A broad, easy grin, looking straight at the viewer: of course it went in.
+      closing: |
+        This is a one-shot, not a loop. Frame {first} is the moment the ball
+        drops through the net; frame {last} is where he comes to rest.
+
+    celebrate_pump:
+      title: Made basket celebration B — low fist pump
+      kind: one_shot
+      frames: 3
+      ref: front
+      guide:
+        file: art/guides/celebrate_pump.png
+        side: right
+        colors: true
+        ears: true
+        nose: true
+        note: *nba_frontnote
+        frames:
+          - {pose: calibration}
+          - name: smug
+            drop: 0.0
+            stance: 0.22
+            hand: [0.10, 0.66]
+            hand_shape: fist
+            free: [-0.10, 0.66]
+            free_shape: fist
+            joints: {elb_d: [0.24, 0.62], elb_f: [-0.24, 0.62]}
+          - name: pump
+            drop: 0.085
+            stance: 0.27
+            hand: [0.05, 0.58]
+            hand_shape: fist
+            free: [-0.19, 0.46]
+            free_shape: fist
+            joints: {elb_d: [0.16, 0.52], elb_f: [-0.22, 0.55]}
+          - name: settled
+            drop: 0.075
+            stance: 0.27
+            hand: [0.19, 0.44]
+            hand_shape: fist
+            free: [-0.19, 0.44]
+            free_shape: fist
+            joints: {elb_d: [0.25, 0.56], elb_f: [-0.25, 0.56]}
+      ground: |
+        All frames share one ground line: the soles of both feet touch the
+        same horizontal line in every frame, and the feet stay planted.
+      view: |
+        front view, facing the viewer, squared to camera.
+      preamble: |
+        He has just sunk a shot and is quietly pleased with himself -- cocky
+        rather than ecstatic. This must read as a DIFFERENT reaction from the
+        arms-overhead celebration, not a smaller version of it. Nothing goes
+        above his chest.
+      poses:
+        - >-
+            Standing up tall out of his stance, both fists clenched in front
+            of his chest with the elbows out, chin lifted, one eyebrow raised,
+            a smug closed-mouth smirk.
+        - >-
+            The pump: knees bent into a wide stance, shoulders hunched
+            forward. The fist on the VIEWER'S LEFT is driven sharply down to
+            his hip; the fist on the VIEWER'S RIGHT stays up in front of his
+            chest. A cheeky grin, one eyebrow raised.
+        - >-
+            Settled: still in the wide, low stance, BOTH fists down at his
+            hips with the elbows bent out, a relaxed, amused smile at the viewer.
+      closing: |
+        This is a one-shot, not a loop.
+
+    gameover:
+      title: Game over, panting
+      kind: loop
+      frames: 2
+      ref: front
+      guide:
+        file: art/guides/gameover.png
+        side: right
+        colors: true
+        ears: true
+        nose: true
+        note: *nba_frontnote
+        frames:
+          - {pose: calibration}
+          - name: exhaled
+            back: true
+            drop: 0.07
+            stance: 0.27
+            hand: [0.19, 0.37]
+            hand_shape: hang
+            free: [-0.19, 0.37]
+            joints: {chest: [0, 0.64], sh_d: [0.15, 0.64], sh_f: [-0.15, 0.64],
+                     head: [0, 0.61]}
+          - name: inhaling
+            drop: 0.07
+            stance: 0.27
+            hand: [0.19, 0.37]
+            hand_shape: hang
+            free: [-0.19, 0.37]
+            joints: {chest: [0, 0.71], sh_d: [0.16, 0.715], sh_f: [-0.16, 0.715],
+                     head: [0, 0.79]}
+      ground: |
+        Frames {f1} and {f2} share one ground line: the soles of both feet
+        touch the same horizontal line.
+      view: |
+        front view, facing the viewer. In BOTH frames he is doubled over,
+        exhausted, bent forward at the waist toward the viewer, feet planted
+        wide, with BOTH PALMS PLANTED FLAT ON HIS OWN BENT KNEES, elbows
+        locked straight, propping himself up. The feet, legs and the
+        hands-on-knees are in EXACTLY the same position in both frames -- do
+        not let the arms hang loose.
+      critical: |
+        Frames {f1} and {f2} differ in ONE thing: how high his shoulders and
+        head are. That difference must be large and unmistakable, because it
+        is the whole animation.
+      poses:
+        - >-
+            EXHALED, at his lowest: shoulders dropped right down, back deeply
+            rounded, head hanging straight down so far that we see the top of
+            his head and not his face. {spent_low}
+        - >-
+            INHALING, at his highest: shoulders heaved right up around his
+            ears, chest puffed out, head lifted so the face points at the
+            viewer, heavy-lidded, breathing hard through an open mouth, spent but not beaten.
+
 
 
 
@@ -436,6 +1265,11 @@ highschooler:
     colours, identical proportions, identical build and identical height as the
     reference, in every frame.
   traits:
+    # Hair sentences in the shared guide notes (make-pose-guide draws hair
+    # lines unless the character's skeleton is bald).
+    guide_hair: The short lines on top are his hair, at rest.
+    guide_hair_out: The short lines on top are his hair sticking out at rest.
+    hair_still: His hair is the same, at rest, in every frame.
     dribble_side: VIEWER'S RIGHT
     balance_low: The free arm swings out for balance.
     coil_mid: Shoulders hunching.
@@ -629,6 +1463,11 @@ zombie:
     socks. Identical colours, identical proportions, identical build and identical
     height as the reference, in every frame.
   traits:
+    # Hair sentences in the shared guide notes (make-pose-guide draws hair
+    # lines unless the character's skeleton is bald).
+    guide_hair: The short lines on top are his hair, at rest.
+    guide_hair_out: The short lines on top are his hair sticking out at rest.
+    hair_still: His hair is the same, at rest, in every frame.
     dribble_side: VIEWER'S RIGHT
     balance_low: The free arm hangs and swings loosely.
     # Posture, deliberately NOT in the subject block: the subject is pasted into
