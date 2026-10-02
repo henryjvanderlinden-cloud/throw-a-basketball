@@ -474,7 +474,13 @@ const STEAL_CD = 0.5;           // s before a player may try again
 // hit or miss, lunging at the opponent's side; on a hit the ball travels from
 // the opponent into his swiping hand and on to the top of his own dribble as
 // it finishes -- no pickup. `stolen` cancels on any input.
+//
+// The two take turns rather than overlapping: the robbed player stands for
+// STOLEN_DELAY after the ball goes -- never less than the thief's swipe takes
+// to play out (three frames at STEAL_HZ, 0.375 s) -- and only then reacts.
+// Any key during that wait cancels the reaction too, the same as during it.
 const STEAL_HZ = 8, STOLEN_HZ = 6;
+const STOLEN_DELAY = 0.5;
 const STEAL_REACH = [0.50, 0.33];   // the swipe frame's hand: out, up (shares of standing)
 
 const CLOCK_BASE = 10, CLOCK_FLOOR = 3, CLOCK_STEP = 0.5, PTS_PER_STEP = 12;
@@ -1102,7 +1108,7 @@ const CELEBRATE_TIME = 1.3;     // the vector fallback, which has no sequences
 // early and often; the clock floor is what stops them being a liability.
 const BREAK_MIN = 2, BREAK_MAX = 4;
 const BREAK_CLOCK_FLOOR = 4;    // never mug for the crowd under this much time
-const PANIC_CLOCK = 2;          // ...and start panicking about it under this
+const PANIC_CLOCK = 3;          // ...and start panicking about it under this
 
 // STORY SEQUENCES (the manifest's storySeq, from build-sprites.py STORY_SEQ):
 // played once, in order, one frame per HALF bounce, so the ball meets the hand
@@ -1303,7 +1309,7 @@ function makePlayer(n) {
     dribPh: 0,                      // which bounce of the dribble we are in
     runDir: 0, runIdle: 9,          // for the shoe squeak on a change of direction
     turnT: 0, pickupT: 0, celebT: 0, celebSeq: null,
-    stealT: 0, stealSeq: null, stealFrom: null, stolenT: 0,
+    stealT: 0, stealSeq: null, stealFrom: null, stolenT: 0, stolenWait: 0,
     panicT: 0, panicPh: null,       // how long the clock has been in panic range; its story's start in dribT
     breakPh: null,                  // a story break's start in dribT
     breakSeq: null, breakT: 0, breakAt: BREAK_MIN + Math.random() * (BREAK_MAX - BREAK_MIN),
@@ -1367,7 +1373,7 @@ function startMatch() {
     p.state = PS.IDLE;
     p.made = 0; p.points = 0; p.power = 0; p.angle = 74;
     p.throwT = 99; p.turnT = 0; p.pickupT = 0; p.celebT = 0; p.celebSeq = null;
-    p.stealT = 0; p.stealSeq = null; p.stealFrom = null; p.stolenT = 0;
+    p.stealT = 0; p.stealSeq = null; p.stealFrom = null; p.stolenT = 0; p.stolenWait = 0;
     p.breakSeq = null; p.breakT = 0; p.stillT = 0; p.lockout = 0; p.stealCd = 0;
     p.overSeq = null; p.overT = 0;
     p.dribT = 0; p.animT = 0; p.dribPh = 0; p.runDir = 0; p.runIdle = 9;
@@ -2447,8 +2453,9 @@ function trySteal(p) {
   } else {
     giveBall(p, true);                       // the thief gathers it
   }
-  if (seqOf(opp, 'stolen')) {                // the victim reacts...
-    opp.stolenT = seqOf(opp, 'stolen').length / STOLEN_HZ;
+  if (seqOf(opp, 'stolen')) {                // the victim reacts, once the swipe is done...
+    opp.stolenT = 0;
+    opp.stolenWait = Math.max(STOLEN_DELAY, p.stealT);
   } else {
     opp.turnT = TURN_TIME;                   // ...or, without the art, spins
   }
@@ -2614,6 +2621,12 @@ function step(dt) {
     // losing the ball is punishment enough without losing the chase as well.
     if (p.held.left || p.held.right) { p.stealT = 0; p.stealFrom = null; }
     if (p.stolenT > 0 && (p.held.left || p.held.right || p.held.up || p.held.down)) p.stolenT = 0;
+    if (p.stolenWait > 0) {
+      if (p.held.left || p.held.right || p.held.up || p.held.down || g.owner === p.n) p.stolenWait = 0;
+      else if ((p.stolenWait = Math.max(0, p.stolenWait - dt)) === 0 && seqOf(p, 'stolen')) {
+        p.stolenT = seqOf(p, 'stolen').length / STOLEN_HZ;
+      }
+    }
     // The panic's story starts when the clock first dips under PANIC_CLOCK,
     // and is kept while it stays there, so stopping after a run carries on
     // from where it was (arm up) rather than noticing the clock all over again.
