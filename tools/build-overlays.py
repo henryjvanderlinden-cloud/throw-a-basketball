@@ -49,6 +49,8 @@ JOBS = [
     # corner, so it gets the extra resolution.
     ("incredible-blue", "incredible-blue-text.png", 720),
     ("incredible-red", "incredible-red-text.png", 720),
+    # BACKBOARD BONANZA!, also drawn 600 wide across the middle.
+    ("bonanza", "backboard-bonanza-transparent.png", 720),
 ]
 
 

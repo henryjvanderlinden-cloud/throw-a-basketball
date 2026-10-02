@@ -144,12 +144,18 @@
     <!-- support -->
     <rect x="474" y="10" width="12" height="34" fill="var(--muted)"/>
     <rect x="384" y="40" width="192" height="9" fill="var(--muted)"/>
-    <!-- backboards (left / right wings) -->
-    <rect id="bbL" x="390" y="49" width="12" height="96" fill="#c9d4e2" stroke="var(--ink)" stroke-width="2"/>
-    <rect id="bbR" x="558" y="49" width="12" height="96" fill="#c9d4e2" stroke="var(--ink)" stroke-width="2"/>
-    <!-- inner target squares -->
-    <rect x="402" y="96" width="4" height="34" fill="none" stroke="var(--accent)" stroke-width="3"/>
-    <rect x="554" y="96" width="4" height="34" fill="none" stroke="var(--accent)" stroke-width="3"/>
+    <!-- backboards (left / right wings), each with its inner target square.
+         Each wing is its own group so Backboard Bonanza can fold it up on a
+         hinge at its outer top corner: the left one away to the left, the right
+         one away to the right. The rim and its brackets are not part of them. -->
+    <g id="wingL">
+      <rect id="bbL" x="390" y="49" width="12" height="96" fill="#c9d4e2" stroke="var(--ink)" stroke-width="2"/>
+      <rect x="402" y="96" width="4" height="34" fill="none" stroke="var(--accent)" stroke-width="3"/>
+    </g>
+    <g id="wingR">
+      <rect id="bbR" x="558" y="49" width="12" height="96" fill="#c9d4e2" stroke="var(--ink)" stroke-width="2"/>
+      <rect x="554" y="96" width="4" height="34" fill="none" stroke="var(--accent)" stroke-width="3"/>
+    </g>
     <!-- brackets tying the rim to the boards -->
     <path d="M396,145 L422,166 M564,145 L538,166" stroke="var(--muted)" stroke-width="4" fill="none"/>
     <!-- net -->
@@ -368,6 +374,14 @@
            preserveAspectRatio="xMidYMid meet" opacity="0"/>
   </g>
 
+  <!-- BACKBOARD BONANZA! The announcement of the late-game phase. Centred, 600
+       wide at full size like INCREDIBLE!, and the game stands still while it is
+       up, because at that size it covers the hoop. -->
+  <g id="bonanza" opacity="0" pointer-events="none">
+    <image id="bzArt" x="180" y="99" width="600" height="402"
+           preserveAspectRatio="xMidYMid meet"/>
+  </g>
+
   <!-- The start gate. Last of all, so nothing underneath it can be touched
        while it is up: it covers the buttons as well as the menu. It exists for
        one reason -- a browser will not play a sound until the player has
@@ -490,7 +504,8 @@ const el = {
   court: $('court'), scrim: $('scrim'), vectorScene: $('vectorScene'),
   ceiling: $('ceiling'), floorLine: $('floorLine'),
   shP: [$('shP0'), $('shP1')], shBall: $('shBall'),
-  bbL: $('bbL'), bbR: $('bbR'),
+  bbL: $('bbL'), bbR: $('bbR'), wingL: $('wingL'), wingR: $('wingR'),
+  bonanza: $('bonanza'), bzArt: $('bzArt'),
   toast: $('toast'), toastText: $('toastText'), toastBox: $('toastBox'),
   band: $('band'), pads: $('pads'),
   sbL: $('sbL'), sbLPts: $('sbLPts'), sbLMade: $('sbLMade'),
@@ -623,6 +638,57 @@ const MIDDLE_C = [180 + 600 / 2, 255 + 130 / 2];
 const INCREDIBLE_EVERY = 10;  // baskets, per player
 let badgeT = 0, badgeSpin = false, badgeC = CORNER_LC, badgeSide = 'left';
 let BADGES = [];              // filled once the element map exists
+
+// ---------------------------------------------------------------- backboard bonanza
+// The late-game phase. From the tenth basket of a match -- both players'
+// baskets counted together -- the two side boards stop being fixtures: after
+// every shot, once somebody has gathered the rebound, one or both of them
+// switch, folding up out of the way or dropping back into place. The shooter
+// always sees the boards before he lets go; what he cannot count on is them
+// still being there next time.
+//
+// It is announced by the BACKBOARD BONANZA! graphic, which waits for the
+// basket's own badge (SCORE!, or INCREDIBLE! when the tenth is somebody's own
+// tenth too) to finish, then pops from 25% to full size three times, holds for
+// a second and fades. The game stands still meanwhile -- clock, ball and
+// players -- because at full size it covers the hoop. As it fades the boards
+// make their first switch, so the phase can be seen to have begun.
+//
+// A folded board is out of play entirely: the ball goes through where it was.
+// A board only counts once it is fully back down, and while either is moving
+// the ball is always in somebody's hands, so nothing is ever hit mid-swing.
+const BZ_AFTER = 10;          // baskets, both players together
+const BZ_PULSES = 3, BZ_PULSE = 0.35, BZ_MIN = 0.25;
+const BZ_HOLD = 1.0, BZ_FADE = 0.35;
+const BZ_SECS = BZ_PULSES * BZ_PULSE + BZ_HOLD + BZ_FADE;
+const BZ_C = [480, 300];      // the middle of the court
+const FOLD_SECS = 0.35;       // one swing, up or down
+const FOLD_DEG = 92;          // a touch past flat, tucked up under the beam
+// Each wing turns about its outer top corner, so it lies flat outward when up.
+const HINGE = [[390, 49], [570, 49]];
+const FOLD_DIR = [1, -1];     // left swings left (clockwise), right swings right
+
+// After a shot exactly one of three things happens, equally often: the left
+// board switches, the right one does, or both do. Something always changes,
+// and every layout -- both down, either one, neither -- comes round.
+function bzShuffle() {
+  const r = Math.floor(Math.random() * 3);
+  const flip = [r !== 1, r !== 0];
+  let moved = false;
+  for (let i = 0; i < 2; i++) if (flip[i]) { g.bz.up[i] = !g.bz.up[i]; moved = true; }
+  if (moved) playSfx('board', 0.55, 0.7);
+}
+
+function bzBegin() {
+  g.bz.introT = BZ_SECS;
+  // The freeze must not leave anybody mid-wind-up with no key to release.
+  for (const p of players) {
+    if (p.state === PS.AIM || p.state === PS.CHARGE) { p.state = PS.DRIBBLE; p.power = 0; }
+  }
+}
+
+// A board takes part in the physics only when it is fully down.
+const boardLive = i => !g.bz.up[i] && g.bz.fold[i] === 0;
 
 // `right` is the player's own side -- true for player 1, false for player 2.
 // The steal graphic is shared between them, so the box is placed here rather
@@ -830,6 +896,8 @@ function buildStartGate() {
   qImage(el.bgScore1, OVERLAY_DIR + 'score-red.webp', PRI.BADGE);
   qImage(el.bgWow0, OVERLAY_DIR + 'incredible-blue.webp', PRI.LATER);
   qImage(el.bgWow1, OVERLAY_DIR + 'incredible-red.webp', PRI.LATER);
+  // Not wanted before the tenth basket of a match either.
+  qImage(el.bzArt, OVERLAY_DIR + 'bonanza.webp', PRI.LATER);
 }
 
 function startSettle() {
@@ -1257,7 +1325,11 @@ function reset() {
     winner: null,
     stealImmune: 0,
     clockOn: false, clockLimit: CLOCK_BASE, clock: CLOCK_BASE,
-    flash: 0
+    flash: 0,
+    // Backboard Bonanza: `wait` once the tenth basket is in and the intro is
+    // queued behind its badge; `introT` while the intro plays; `on` after.
+    // `up[i]` is where wing i is headed, `fold[i]` how far up it is (0..1).
+    bz: { wait: false, introT: 0, on: false, shot: false, up: [false, false], fold: [0, 0] }
   };
   toastT = 0; badgeT = 0;
   if (!HAS_SPRITES) { numPlayers = 1; startMatch(); return; }
@@ -1303,6 +1375,7 @@ function startMatch() {
   g.scoredThisShot = false;
   players[0].state = PS.DRIBBLE;
   g.clockOn = false; g.clockLimit = CLOCK_BASE; g.clock = CLOCK_BASE;
+  g.bz = { wait: false, introT: 0, on: false, shot: false, up: [false, false], fold: [0, 0] };
   g.ms = MS.PLAY;
   for (const q of players) queueCharacter(q);
   // The backdrop has been waiting behind the menus; it is on screen now, and
@@ -1714,11 +1787,13 @@ function onPress(n, dir) {
     return;
   }
   if (g.ms === MS.OVER) { if (dir === 'up') reset(); return; }
+  if (g.bz.introT > 0) return;          // the game is standing still
   if (dir === 'up') pressUp(n);
 }
 
 function onRelease(n, dir) {
   if (g.ms !== MS.PLAY) return;
+  if (g.bz.introT > 0) return;
   if (dir === 'up') {
     const p = players[n];
     if (p && p.state === PS.CHARGE) shoot(n);
@@ -2344,6 +2419,8 @@ function giveBall(p, viaPickup) {
   // Gathering the ball is what starts the clock again. Chasing a rebound is
   // untimed; the moment somebody has it, they are on the clock.
   g.clockOn = true;
+  // In the Bonanza, the gathered rebound is the moment the boards switch.
+  if (g.bz.on && g.bz.shot) { g.bz.shot = false; bzShuffle(); }
 }
 
 function trySteal(p) {
@@ -2391,6 +2468,7 @@ function shoot(n) {
   g.owner = null;
   g.shooter = n;
   g.scoredThisShot = false;
+  g.bz.shot = true;                // the next gathered rebound switches the boards
   p.state = PS.IDLE;
   p.lockout = PICKUP_LOCKOUT;      // only the shooter waits to re-catch
   p.power = 0;
@@ -2496,6 +2574,29 @@ function step(dt) {
   badgeT = Math.max(0, badgeT - dt);
   stepSplash(dt);
   if (g.ms === MS.MODE || g.ms === MS.SELECT) return;
+
+  // Backboard Bonanza: the wings swing toward wherever they are headed...
+  for (let i = 0; i < 2; i++) {
+    const to = g.bz.up[i] ? 1 : 0;
+    const f = g.bz.fold[i];
+    g.bz.fold[i] = to > f ? Math.min(to, f + dt / FOLD_SECS) : Math.max(to, f - dt / FOLD_SECS);
+  }
+  // ...the intro waits for the basket's own badge to finish...
+  if (g.bz.wait && badgeT <= 0 && g.ms === MS.PLAY) { g.bz.wait = false; bzBegin(); }
+  // ...and while it is up, nothing else moves: not the clock, not the ball,
+  // not the players.
+  if (g.bz.introT > 0) {
+    g.bz.introT = Math.max(0, g.bz.introT - dt);
+    if (g.bz.introT === 0) {
+      g.bz.on = true;
+      // The boards make their first switch as the graphic fades -- unless a
+      // shot is still in the air, in which case they wait for its rebound
+      // like every other switch, rather than moving under the ball.
+      if (g.owner !== null) { g.bz.shot = false; bzShuffle(); }
+      else g.bz.shot = true;
+    }
+    return;
+  }
 
   for (const p of players) {
     p.animT += dt;
@@ -2672,7 +2773,7 @@ function step(dt) {
 
     // hoop rig
     let board = collideRect(b, BEAM, REST_BOARD);
-    for (const r of BOARDS) board = Math.max(board, collideRect(b, r, REST_BOARD));
+    BOARDS.forEach((r, i) => { if (boardLive(i)) board = Math.max(board, collideRect(b, r, REST_BOARD)); });
     const rimL = collideCircle(b, HOOP.cx - HOOP.halfW, HOOP.rimY, HOOP.nubR, REST_RIM);
     const rimR = collideCircle(b, HOOP.cx + HOOP.halfW, HOOP.rimY, HOOP.nubR, REST_RIM);
     const rim = Math.max(rimL, rimR);
@@ -2700,6 +2801,9 @@ function step(dt) {
         const wow = s.made % INCREDIBLE_EVERY === 0;
         showBadge(wow ? (s.n ? el.bgWow1 : el.bgWow0)
                       : (s.n ? el.bgScore1 : el.bgScore0), wow, s.n === 0);
+        // The tenth basket between them opens the Bonanza, once its badge is done.
+        const baskets = players.reduce((n, q) => n + q.made, 0);
+        if (baskets === BZ_AFTER && !g.bz.on && !g.bz.wait && !g.bz.introT) g.bz.wait = true;
         [s.celebSeq, s.celebT] = pickCelebration(s);
       }
     }
@@ -3021,6 +3125,33 @@ function render() {
 
   el.toast.setAttribute('opacity', Math.min(1, toastT / 0.4).toFixed(2));
 
+  // The side boards, each turned about its hinge by how far up it is. Eased,
+  // so a board swings rather than ticking round at a constant rate.
+  [el.wingL, el.wingR].forEach((w, i) => {
+    const f = g.bz.fold[i], e = f * f * (3 - 2 * f);
+    const [hx, hy] = HINGE[i];
+    w.setAttribute('transform', e > 0
+      ? `rotate(${(FOLD_DIR[i] * FOLD_DEG * e).toFixed(2)} ${hx} ${hy})` : '');
+  });
+
+  // BACKBOARD BONANZA!: out of 25% and up to full size three times, each pop
+  // easing out so it lands rather than stops; then held, then faded.
+  const bzT = g.bz.introT;
+  if (bzT > 0) {
+    const t = BZ_SECS - bzT;
+    let k = 1;
+    if (t < BZ_PULSES * BZ_PULSE) {
+      const u = (t % BZ_PULSE) / BZ_PULSE;
+      k = BZ_MIN + (1 - BZ_MIN) * (1 - Math.pow(1 - u, 3));
+    }
+    el.bonanza.setAttribute('opacity', Math.min(1, bzT / BZ_FADE).toFixed(2));
+    el.bonanza.setAttribute('transform',
+      'translate(' + BZ_C[0] + ',' + BZ_C[1] + ') scale(' + k.toFixed(4) +
+      ') translate(' + (-BZ_C[0]) + ',' + (-BZ_C[1]) + ')');
+  } else {
+    el.bonanza.setAttribute('opacity', '0');
+  }
+
   // Whichever badge is up: scaled, maybe turned, and faded on the way out so it
   // does not simply vanish mid-animation.
   el.badge.setAttribute('opacity', Math.min(1, badgeT / BADGE_FADE).toFixed(2));
@@ -3116,6 +3247,7 @@ window.__hoop = {
     return { t: badgeT, spin: badgeSpin, side: badgeSide,
              art: (up && up.getAttribute('href') || '').split('/').pop() };
   },
+  get bonanza() { return g.bz; },
   get court() { return (COURTS[courtIdx] || {}).id; },
   get courts() { return COURTS.map(c => c.id); },
   nextCourt: () => applyCourt(courtIdx + 1, true, true),
