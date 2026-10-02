@@ -473,14 +473,16 @@ const STEAL_CD = 0.5;           // s before a player may try again
 // (steal_r / steal_l / stolen, handover 10). The steal plays on EVERY press,
 // hit or miss, lunging at the opponent's side; on a hit the ball travels from
 // the opponent into his swiping hand and on to the top of his own dribble as
-// it finishes -- no pickup. `stolen` cancels on any input.
+// it finishes -- no pickup.
 //
 // The two take turns rather than overlapping: the robbed player stands for
 // STOLEN_DELAY after the ball goes -- never less than the thief's swipe takes
 // to play out (three frames at STEAL_HZ, 0.375 s) -- and only then reacts.
-// Any key during that wait cancels the reaction too, the same as during it.
+// From the moment he is robbed until his reaction has played out he is rooted
+// to the spot: no running and no steal attempts, whatever he presses.
 const STEAL_HZ = 8, STOLEN_HZ = 6;
-const STOLEN_DELAY = 0.5;
+const STOLEN_DELAY = 0.25;
+const robbed = p => p.stolenWait > 0 || p.stolenT > 0;
 const STEAL_REACH = [0.50, 0.33];   // the swipe frame's hand: out, up (shares of standing)
 
 const CLOCK_BASE = 10, CLOCK_FLOOR = 3, CLOCK_STEP = 0.5, PTS_PER_STEP = 12;
@@ -2620,9 +2622,8 @@ function step(dt) {
     // Moving cuts a steal short, like a break; any key cuts `stolen` short --
     // losing the ball is punishment enough without losing the chase as well.
     if (p.held.left || p.held.right) { p.stealT = 0; p.stealFrom = null; }
-    if (p.stolenT > 0 && (p.held.left || p.held.right || p.held.up || p.held.down)) p.stolenT = 0;
     if (p.stolenWait > 0) {
-      if (p.held.left || p.held.right || p.held.up || p.held.down || g.owner === p.n) p.stolenWait = 0;
+      if (g.owner === p.n) p.stolenWait = 0;
       else if ((p.stolenWait = Math.max(0, p.stolenWait - dt)) === 0 && seqOf(p, 'stolen')) {
         p.stolenT = seqOf(p, 'stolen').length / STOLEN_HZ;
       }
@@ -2644,7 +2645,8 @@ function step(dt) {
 
   // ---- movement / aiming
   for (const p of players) {
-    const left = p.held.left, right = p.held.right;
+    const locked = robbed(p);              // just robbed: rooted until he has reacted
+    const left = p.held.left && !locked, right = p.held.right && !locked;
     if (p.state === PS.AIM || p.state === PS.CHARGE) {
       if (left) p.angle += AIM_RATE * dt;
       if (right) p.angle -= AIM_RATE * dt;
@@ -2673,7 +2675,7 @@ function step(dt) {
     }
     if (p.state === PS.CHARGE) p.power = Math.min(1, p.power + CHARGE_RATE * dt);
     // Holding the steal button keeps trying, at one attempt per cooldown.
-    if (numPlayers > 1 && p.held.down && p.stealCd <= 0 && p.state === PS.IDLE) trySteal(p);
+    if (numPlayers > 1 && p.held.down && !locked && p.stealCd <= 0 && p.state === PS.IDLE) trySteal(p);
   }
 
   // ---- ball
@@ -2914,7 +2916,7 @@ function animatePlayer(p) {
   p.mirrorPose = false;
   if (!p.char) return;
 
-  const moving = p.held.left || p.held.right;
+  const moving = (p.held.left || p.held.right) && !robbed(p);
   const right = p.facing >= 0;
 
   if (g.ms === MS.OVER) {
