@@ -649,8 +649,9 @@ let BADGES = [];              // filled once the element map exists
 //
 // It is announced by the BACKBOARD BONANZA! graphic, which waits for the
 // basket's own badge (SCORE!, or INCREDIBLE! when the tenth is somebody's own
-// tenth too) to finish, then pops from 25% to full size three times, holds for
-// a second and fades. The game stands still meanwhile -- clock, ball and
+// tenth too) to finish, then pops exactly as SCORE! does -- the same sine
+// between 80% and full size, at the same three pulses a second -- rises once
+// more to full size, holds there for a second and fades. The game stands still meanwhile -- clock, ball and
 // players -- because at full size it covers the hoop. As it fades the boards
 // make their first switch, so the phase can be seen to have begun.
 //
@@ -658,9 +659,13 @@ let BADGES = [];              // filled once the element map exists
 // A board only counts once it is fully back down, and while either is moving
 // the ball is always in somebody's hands, so nothing is ever hit mid-swing.
 const BZ_AFTER = 10;          // baskets, both players together
-const BZ_PULSES = 3, BZ_PULSE = 0.35, BZ_MIN = 0.25;
+// The pop borrows the SCORE! badge's numbers outright, so the two always
+// move to the same beat. Three full pulses, then half of a fourth, which ends
+// on the peak: that is what lets the hold start at full size without a jump.
+const BZ_PULSE = BADGE_SECS / POP_PULSES;
+const BZ_POP = (POP_PULSES + 0.5) * BZ_PULSE;
 const BZ_HOLD = 1.0, BZ_FADE = 0.35;
-const BZ_SECS = BZ_PULSES * BZ_PULSE + BZ_HOLD + BZ_FADE;
+const BZ_SECS = BZ_POP + BZ_HOLD + BZ_FADE;
 const BZ_C = [480, 300];      // the middle of the court
 const FOLD_SECS = 0.35;       // one swing, up or down
 const FOLD_DEG = 92;          // a touch past flat, tucked up under the beam
@@ -3134,16 +3139,13 @@ function render() {
       ? `rotate(${(FOLD_DIR[i] * FOLD_DEG * e).toFixed(2)} ${hx} ${hy})` : '');
   });
 
-  // BACKBOARD BONANZA!: out of 25% and up to full size three times, each pop
-  // easing out so it lands rather than stops; then held, then faded.
+  // BACKBOARD BONANZA!: the SCORE! pulse, rising onto full size; then held,
+  // then faded.
   const bzT = g.bz.introT;
   if (bzT > 0) {
     const t = BZ_SECS - bzT;
     let k = 1;
-    if (t < BZ_PULSES * BZ_PULSE) {
-      const u = (t % BZ_PULSE) / BZ_PULSE;
-      k = BZ_MIN + (1 - BZ_MIN) * (1 - Math.pow(1 - u, 3));
-    }
+    if (t < BZ_POP) k = POP_MIN + (1 - POP_MIN) * Math.sin(((t / BZ_PULSE) % 1) * Math.PI);
     el.bonanza.setAttribute('opacity', Math.min(1, bzT / BZ_FADE).toFixed(2));
     el.bonanza.setAttribute('transform',
       'translate(' + BZ_C[0] + ',' + BZ_C[1] + ') scale(' + k.toFixed(4) +
